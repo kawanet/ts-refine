@@ -37,15 +37,19 @@ export async function runSemicolons(project: Project, {dryRun, absIncludes, absE
 
     // Collect primitive (end, hasSemi) tuples rather than node refs so that
     // later replaceText calls do not invalidate held references via ts-morph
-    // AST recomputation. Apply edits back-to-front to preserve earlier offsets.
+    // AST recomputation. Sort by end descending so each edit always sits
+    // after every offset still to be touched. Note: forEachDescendant visits
+    // parent before child, so a nested layout (describe → it → assert) yields
+    // an array where the outer statement has a larger end than the inner ones
+    // even though it was pushed first; plain array-reverse is not enough.
     const targets: {end: number; hasSemi: boolean}[] = [];
     sf.forEachDescendant((node) => {
       if (!isSemiEligibleStatement(node)) return;
       targets.push({end: node.getEnd(), hasSemi: node.getText().endsWith(";")});
     });
+    targets.sort((a, b) => b.end - a.end);
 
-    for (let i = targets.length - 1; i >= 0; i--) {
-      const t = targets[i];
+    for (const t of targets) {
       if (mode === "remove" && t.hasSemi) {
         // Keep `;` when its removal would change ASI semantics, observed on
         // the current text (covers the case where a later statement already

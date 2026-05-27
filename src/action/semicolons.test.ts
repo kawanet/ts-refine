@@ -95,6 +95,33 @@ describe("runSemicolons insert (dry-run, sample/semicolons-mixed)", () => {
   });
 });
 
+describe("runSemicolons remove handles nested ASI-eligible statements", () => {
+  it("strips `;` from describe/it/assert blocks without overflowing offsets", async () => {
+    // Regression: forEachDescendant visits parent before child, so a naive
+    // reverse-array iteration tried to edit the outer call's end position
+    // after the inner statement's `;` had already shifted the file. Sorting
+    // targets by end descending fixes the order; this test pins it.
+    const project = new Project({useInMemoryFileSystem: true});
+    const sf = project.createSourceFile("nest.ts", [
+      "describe('outer', () => {",
+      "  it('inner', () => {",
+      "    const x = 1;",
+      "    inner(x);",
+      "  });",
+      "});",
+    ].join("\n"));
+
+    await runSemicolons(project, {dryRun: true, absIncludes: [], absExcludes: [], mode: "remove"});
+
+    const text = sf.getFullText();
+    assert.equal(text.includes("const x = 1;"), false, "inner const lost its ;");
+    assert.equal(text.includes("inner(x);"), false, "inner call lost its ;");
+    // The outer describe/it expression statements must also have lost the `;`
+    // after the closing `})`; check by ensuring no `;` remains in the file.
+    assert.equal(text.includes(";"), false, "no `;` should remain in the file");
+  });
+});
+
 describe("runSemicolons remove keeps `;` at ASI-hazard sites", () => {
   it("retains `;` before a method-chain continuation on the next line", async () => {
     // Generate an inline fixture project so the hazard can be exercised
