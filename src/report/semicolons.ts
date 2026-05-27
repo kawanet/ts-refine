@@ -6,8 +6,7 @@ import type {Project} from "ts-morph"
 
 import {displayPath, selectSourceFiles} from "../lib/source-files.ts"
 import {isSemiEligibleStatement} from "../lib/statement-kinds.ts"
-import type {Writer} from "../lib/writable.ts"
-import type {ReportFileOpts} from "./unused-exports.ts"
+import type {ReportOpts} from "./unused-exports.ts"
 
 // Fixed 12-row layout: 0% and 100% match exactly, the middle buckets use a
 // half-open (prev < p <= curr) range, and 91-99% is half-open to exclude 100.
@@ -26,7 +25,7 @@ const BUCKETS: {label: string; test: (p: number) => boolean}[] = [
     {label: "100%", test: (p) => p === 100},
 ]
 
-export async function runReportSemicolons(project: Project, stream: Writer, {absIncludes, absExcludes}: ReportFileOpts): Promise<void> {
+export async function runReportSemicolons(project: Project, {stream, absIncludes, absExcludes}: ReportOpts): Promise<void> {
     const sourceFiles = selectSourceFiles(project, {absIncludes, absExcludes}).filter((sf) => !sf.getFilePath().endsWith(".d.ts"))
 
     type PerFile = {path: string; total: number; withSemi: number; percent: number}

@@ -9,12 +9,13 @@ import type {Project} from "ts-morph"
 import {displayPath, selectSourceFiles} from "../lib/source-files.ts"
 import type {Writer} from "../lib/writable.ts"
 
-export type ReportFileOpts = {
+export type ReportOpts = {
+    stream: Writer
     absIncludes: string[]
     absExcludes: string[]
 }
 
-export async function runReportUnusedExports(project: Project, stream: Writer, {absIncludes, absExcludes}: ReportFileOpts): Promise<void> {
+export async function runReportUnusedExports(project: Project, {stream, absIncludes, absExcludes}: ReportOpts): Promise<void> {
     // Skip .d.ts: type declaration files are external-consumption surfaces by definition.
     const sourceFiles = selectSourceFiles(project, {absIncludes, absExcludes}).filter((sf) => !sf.getFilePath().endsWith(".d.ts"))
 

@@ -10,7 +10,7 @@ describe("runReportSemicolons (sample/semicolons-mixed)", () => {
     it("buckets files by trailing `;` ratio and reports a recommendation", async () => {
         const project = new Project({tsConfigFilePath: SAMPLE_TSCONFIG})
         const lines: string[] = []
-        await runReportSemicolons(project, {write: (l) => lines.push(l)}, {absIncludes: [], absExcludes: []})
+        await runReportSemicolons(project, {stream: {write: (l) => lines.push(l)}, absIncludes: [], absExcludes: []})
 
         const out = lines.join("")
         assert.match(out, /^### semicolons\n/)

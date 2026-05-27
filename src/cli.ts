@@ -14,18 +14,9 @@ import {Project} from "ts-morph"
 import {runOrganizeImports} from "./action/organize-imports.ts"
 import {runSemicolons} from "./action/semicolons.ts"
 import {parseArgs} from "./lib/parse-args.ts"
-import type {Writer} from "./lib/writable.ts"
-import {runReportSemicolons} from "./report/semicolons.ts"
-import {runReportUnusedExports} from "./report/unused-exports.ts"
+import {reportNames, runReports} from "./report/run-reports.ts"
 
-// Report registry. The key order here is the execution order when multiple
-// reports are requested. Adding a new report only needs an entry here.
-const REPORTS: Record<string, (project: Project, stream: Writer, opts: {absIncludes: string[]; absExcludes: string[]}) => Promise<void>> = {
-    "unused-exports": runReportUnusedExports,
-    semicolons: runReportSemicolons,
-}
-
-const opts = await parseArgs(process.argv.slice(2), {reportNames: Object.keys(REPORTS)})
+const opts = await parseArgs(process.argv.slice(2), {reportNames})
 
 const project = new Project({tsConfigFilePath: opts.tsconfigPath})
 
@@ -40,8 +31,5 @@ if (opts.removeSemicolons || opts.insertSemicolons) {
 }
 
 if (opts.reportNames.length > 0) {
-    for (const name of Object.keys(REPORTS)) {
-        if (!opts.reportNames.includes(name)) continue
-        await REPORTS[name](project, process.stdout, fileOpts)
-    }
+    await runReports(project, {...fileOpts, reportNames: opts.reportNames, stream: process.stdout})
 }
