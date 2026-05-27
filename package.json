@@ -23,7 +23,8 @@
   "files": [
     "LICENSE",
     "README.md",
-    "src/**/*.ts"
+    "src/**/*.ts",
+    "!src/**/*.test.ts"
   ],
   "homepage": "https://github.com/kawanet/ts-survey#readme",
   "license": "MIT",
