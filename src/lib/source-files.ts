@@ -7,9 +7,9 @@ import {minimatch} from "minimatch"
 import path from "node:path"
 import type {Project, SourceFile} from "ts-morph"
 
-import type {TsSurveyOpts} from "@kawanet/ts-survey"
+import type {RunReportsOpts} from "@kawanet/ts-survey"
 
-export function selectSourceFiles(project: Project, {absIncludes, absExcludes}: TsSurveyOpts): SourceFile[] {
+export function selectSourceFiles(project: Project, {absIncludes, absExcludes}: Pick<RunReportsOpts, "absIncludes" | "absExcludes">): SourceFile[] {
     let files = absIncludes.length > 0 ? project.getSourceFiles(absIncludes) : project.getSourceFiles()
     if (absExcludes.length > 0) {
         files = files.filter((sf) => {

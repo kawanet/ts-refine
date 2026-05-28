@@ -2,7 +2,7 @@
 // Two-line layout (`\` continuation + 2-space indent) lets
 // `grep -E '^ +--'` extract just the flags.
 
-import type {TsSurveyReport, Writer} from "@kawanet/ts-survey"
+import type {RunReportsOpts, TsSurveyReport} from "@kawanet/ts-survey"
 
 // Fixed emission order so the output is byte-identical regardless of
 // upstream property order. member-separators is printed for the human
@@ -20,7 +20,7 @@ function buildTsSurveyFlags(report: TsSurveyReport): string[] {
 // Always starts with `--apply` (the verb the recommendation translates to).
 // Empty recommendations still emit `ts-survey --apply`, paralleling
 // `--format prettier`'s empty `{}`.
-export function writeTsSurveyCommand(report: TsSurveyReport, stream: Writer): void {
+export function writeTsSurveyCommand(report: TsSurveyReport, stream: RunReportsOpts["stream"]): void {
     const flags = buildTsSurveyFlags(report)
     if (flags.length === 0) {
         stream.write("ts-survey --apply\n")
@@ -32,7 +32,7 @@ export function writeTsSurveyCommand(report: TsSurveyReport, stream: Writer): vo
 
 // `## recommendation` block in the default-survey Markdown. Skipped
 // when no recommendations fired (the empty form carries no information).
-export function writeTsSurveyMarkdown(report: TsSurveyReport, stream: Writer): void {
+export function writeTsSurveyMarkdown(report: TsSurveyReport, stream: RunReportsOpts["stream"]): void {
     const flags = buildTsSurveyFlags(report)
     if (flags.length === 0) return
     stream.write("## recommendation\n")

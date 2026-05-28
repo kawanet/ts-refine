@@ -16,7 +16,7 @@
 // Reports that didn't recommend anything contribute no fields, so an
 // empty TsSurveyReport renders as `{}`.
 
-import type {TsSurveyReport, Writer} from "@kawanet/ts-survey"
+import type {RunReportsOpts, TsSurveyReport} from "@kawanet/ts-survey"
 import type {Options as PrettierOptions} from "prettier"
 
 // Collects the recommendations that fired into a PrettierOptions object.
@@ -56,7 +56,7 @@ function buildPrettierOptions(report: TsSurveyReport): PrettierOptions {
     return opts
 }
 
-export function writePrettierConfig(report: TsSurveyReport, stream: Writer): void {
+export function writePrettierConfig(report: TsSurveyReport, stream: RunReportsOpts["stream"]): void {
     stream.write(JSON.stringify(buildPrettierOptions(report), null, 4) + "\n")
 }
 
@@ -64,7 +64,7 @@ export function writePrettierConfig(report: TsSurveyReport, stream: Writer): voi
 // Markdown output. The whole block is skipped when no recommendations
 // fired — an empty `{}` block would be pure noise. The trailing blank
 // line matches the convention every other report block follows.
-export function writePrettierMarkdown(report: TsSurveyReport, stream: Writer): void {
+export function writePrettierMarkdown(report: TsSurveyReport, stream: RunReportsOpts["stream"]): void {
     const opts = buildPrettierOptions(report)
     if (Object.keys(opts).length === 0) return
     stream.write("### .prettierrc\n")

@@ -9,7 +9,7 @@
 // swaps the report stream for a sink so the Markdown body doesn't mix
 // into the formatted output.
 
-import type {TsSurveyReport, Writer} from "@kawanet/ts-survey"
+import type {RunReportsOpts, TsSurveyReport} from "@kawanet/ts-survey"
 
 import {writePrettierConfig} from "../lib/format-prettier.ts"
 import {writeTsSurveyCommand} from "../lib/format-ts-survey.ts"
@@ -17,13 +17,13 @@ import {writeTsSurveyCommand} from "../lib/format-ts-survey.ts"
 export const formatNames = ["prettier", "ts-survey"] as const
 
 export interface FormatDispatch {
-    reportStream: Writer
+    reportStream: RunReportsOpts["stream"]
     finalize: (report: TsSurveyReport) => void
 }
 
-const NULL_SINK: Writer = {write: () => {}}
+const NULL_SINK: RunReportsOpts["stream"] = {write: () => {}}
 
-export function selectFormat(name: string | null, stdout: Writer): FormatDispatch {
+export function selectFormat(name: string | null, stdout: RunReportsOpts["stream"]): FormatDispatch {
     if (name === null) {
         return {reportStream: stdout, finalize: () => {}}
     }

@@ -6,12 +6,8 @@ import type {Project} from "ts-morph";
 
 export {}; // external module indicator
 
-// Sink contract for report writers. Callers pass `process.stdout` or
-// any object with `write(line)`.
-export type Writer = {write: (line: string) => void}
-
 // Common base for every entry. Leaf Opts interfaces inherit it.
-export interface TsSurveyOpts {
+interface TsSurveyOpts {
     absIncludes: string[]
     absExcludes: string[]
 }
@@ -50,7 +46,7 @@ export type TsSurveyReportName =
     | "bracket-spacing"
 
 export interface RunReportsOpts extends TsSurveyOpts {
-    stream: Writer
+    stream: {write: (line: string) => void}
     reportNames: TsSurveyReportName[]
 }
 
