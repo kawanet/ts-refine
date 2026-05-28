@@ -157,10 +157,9 @@ export function parseArgs(argv: string[]): ParseArgsResult | undefined {
         return undefined
     }
 
-    // Survey baseline gates only the recommendation/.prettierrc summary
-    // blocks in cli.ts. When --report is absent the default depends on
-    // --apply: apply mode runs the recommendation-bearing reports only;
-    // every other mode also pulls in the extras (Markdown-only reports).
+    // surveyDefault gates the recommendation / .prettierrc summary blocks
+    // in cli.ts. With no --report, --apply takes applyReportNames only;
+    // other modes take the full union.
     const surveyDefault = !apply && !hasReport && !hasFormat
     const effectiveReports = hasReport ? requestedReports : apply ? [...applyReportNames] : [...knownReportNames]
 
