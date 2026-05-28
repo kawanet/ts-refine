@@ -4,6 +4,9 @@
 
 import type {RunReportsOpts, TsSurveyReport} from "@kawanet/ts-survey"
 
+// Local alias for readability — not exported.
+type Writer = RunReportsOpts["stream"]
+
 // Fixed emission order so the output is byte-identical regardless of
 // upstream property order. member-separators is printed for the human
 // record even though `--apply` does not consume it.
@@ -20,7 +23,7 @@ function buildTsSurveyFlags(report: TsSurveyReport): string[] {
 // Always starts with `--apply` (the verb the recommendation translates to).
 // Empty recommendations still emit `ts-survey --apply`, paralleling
 // `--format prettier`'s empty `{}`.
-export function writeTsSurveyCommand(report: TsSurveyReport, stream: RunReportsOpts["stream"]): void {
+export function writeTsSurveyCommand(report: TsSurveyReport, stream: Writer): void {
     const flags = buildTsSurveyFlags(report)
     if (flags.length === 0) {
         stream.write("ts-survey --apply\n")
@@ -32,7 +35,7 @@ export function writeTsSurveyCommand(report: TsSurveyReport, stream: RunReportsO
 
 // `## recommendation` block in the default-survey Markdown. Skipped
 // when no recommendations fired (the empty form carries no information).
-export function writeTsSurveyMarkdown(report: TsSurveyReport, stream: RunReportsOpts["stream"]): void {
+export function writeTsSurveyMarkdown(report: TsSurveyReport, stream: Writer): void {
     const flags = buildTsSurveyFlags(report)
     if (flags.length === 0) return
     stream.write("## recommendation\n")

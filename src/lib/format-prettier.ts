@@ -19,6 +19,10 @@
 import type {RunReportsOpts, TsSurveyReport} from "@kawanet/ts-survey"
 import type {Options as PrettierOptions} from "prettier"
 
+// Local alias derived from the published shape — not exported, kept
+// solely to keep the signatures below readable.
+type Writer = RunReportsOpts["stream"]
+
 // Collects the recommendations that fired into a PrettierOptions object.
 // Shared by the raw --format prettier output and the .prettierrc fence
 // embedded in the default Markdown survey.
@@ -56,7 +60,7 @@ function buildPrettierOptions(report: TsSurveyReport): PrettierOptions {
     return opts
 }
 
-export function writePrettierConfig(report: TsSurveyReport, stream: RunReportsOpts["stream"]): void {
+export function writePrettierConfig(report: TsSurveyReport, stream: Writer): void {
     stream.write(JSON.stringify(buildPrettierOptions(report), null, 4) + "\n")
 }
 
@@ -64,7 +68,7 @@ export function writePrettierConfig(report: TsSurveyReport, stream: RunReportsOp
 // Markdown output. The whole block is skipped when no recommendations
 // fired — an empty `{}` block would be pure noise. The trailing blank
 // line matches the convention every other report block follows.
-export function writePrettierMarkdown(report: TsSurveyReport, stream: RunReportsOpts["stream"]): void {
+export function writePrettierMarkdown(report: TsSurveyReport, stream: Writer): void {
     const opts = buildPrettierOptions(report)
     if (Object.keys(opts).length === 0) return
     stream.write("### .prettierrc\n")

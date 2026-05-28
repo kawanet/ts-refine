@@ -14,16 +14,19 @@ import type {RunReportsOpts, TsSurveyReport} from "@kawanet/ts-survey"
 import {writePrettierConfig} from "../lib/format-prettier.ts"
 import {writeTsSurveyCommand} from "../lib/format-ts-survey.ts"
 
+// Local alias for readability — not exported.
+type Writer = RunReportsOpts["stream"]
+
 export const formatNames = ["prettier", "ts-survey"] as const
 
 export interface FormatDispatch {
-    reportStream: RunReportsOpts["stream"]
+    reportStream: Writer
     finalize: (report: TsSurveyReport) => void
 }
 
-const NULL_SINK: RunReportsOpts["stream"] = {write: () => {}}
+const NULL_SINK: Writer = {write: () => {}}
 
-export function selectFormat(name: string | null, stdout: RunReportsOpts["stream"]): FormatDispatch {
+export function selectFormat(name: string | null, stdout: Writer): FormatDispatch {
     if (name === null) {
         return {reportStream: stdout, finalize: () => {}}
     }

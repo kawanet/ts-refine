@@ -3,7 +3,9 @@ import {describe, it} from "node:test"
 import type {RunReportsOpts} from "@kawanet/ts-survey"
 import {selectFormat} from "./run-format.ts"
 
-function makeStdout(): {writer: RunReportsOpts["stream"]; out: () => string} {
+type Writer = RunReportsOpts["stream"]
+
+function makeStdout(): {writer: Writer; out: () => string} {
     let out = ""
     return {writer: {write: (s) => (out += s)}, out: () => out}
 }
