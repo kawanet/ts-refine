@@ -13,7 +13,7 @@ describe("selectFormat", () => {
         const {writer, out} = makeStdout()
         const f = selectFormat(null, writer)
         assert.equal(f.reportStream, writer)
-        f.finalize({semicolons: {mode: "remove"}})
+        f.finalize({semicolons: {semicolons: "off"}})
         assert.equal(out(), "")
     })
 
@@ -23,7 +23,7 @@ describe("selectFormat", () => {
         // Markdown body would have been written here — sink swallows it.
         f.reportStream.write("### dropped\n")
         assert.equal(out(), "")
-        f.finalize({semicolons: {mode: "remove"}, indent: {width: 4}})
+        f.finalize({semicolons: {semicolons: "off"}, indent: {width: 4}})
         const json = JSON.parse(out())
         assert.equal(json.semi, false)
         assert.equal(json.tabWidth, 4)
@@ -35,10 +35,10 @@ describe("selectFormat", () => {
         const f = selectFormat("ts-survey", writer)
         f.reportStream.write("### dropped\n")
         assert.equal(out(), "")
-        f.finalize({semicolons: {mode: "remove"}, indent: {width: 4}, memberSeparators: {separator: "none"}})
+        f.finalize({semicolons: {semicolons: "off"}, indent: {width: 4}, memberSeparators: {separator: "none"}})
         // Two-line form: `ts-survey \` continuation, then the flags
         // indented by two spaces so `grep '^ +--'` picks them up.
-        assert.equal(out(), "ts-survey \\\n  --remove-semicolons --indent 4 --member-separator none\n")
+        assert.equal(out(), "ts-survey \\\n  --semicolons off --indent 4 --member-separator none\n")
     })
 
     it("throws on an unknown format name", () => {

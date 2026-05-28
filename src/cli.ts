@@ -5,7 +5,7 @@
 // order (not input order):
 //   1. --organize-imports
 //   2. --indent <N>
-//   3. --remove-semicolons / --insert-semicolons
+//   3. --semicolons on|off
 // Organize-imports first reorders the structure; indent rewrites the
 // leading whitespace once that structure is final; the semicolons pass
 // only touches trailing characters and stays last.
@@ -47,9 +47,8 @@ try {
     if (opts.indentWidth !== null) {
         await runIndent(project, {...fileOpts, dryRun: opts.dryRun, width: opts.indentWidth})
     }
-    if (opts.removeSemicolons || opts.insertSemicolons) {
-        const mode: "remove" | "insert" = opts.removeSemicolons ? "remove" : "insert"
-        await runSemicolons(project, {...fileOpts, dryRun: opts.dryRun, mode})
+    if (opts.semicolons !== null) {
+        await runSemicolons(project, {...fileOpts, dryRun: opts.dryRun, semicolons: opts.semicolons})
     }
     // When no action was specified, parseArgs fills reportNames with every
     // registered report (the survey default), so this call is a no-op only

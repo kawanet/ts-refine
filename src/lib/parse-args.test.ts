@@ -21,7 +21,7 @@ describe("parseArgs", () => {
         const r = parseArgs(["--organize-imports", "-p", SAMPLE_TSCONFIG])
         assert.ok(r && !("help" in r))
         assert.equal(r.organizeImports, true)
-        assert.equal(r.removeSemicolons, false)
+        assert.equal(r.semicolons, null)
         assert.equal(r.reportNames.length, 0)
     })
 
@@ -128,9 +128,21 @@ describe("parseArgs", () => {
         assert.equal(r, undefined)
     })
 
-    it("returns undefined when both --remove-semicolons and --insert-semicolons are set", () => {
-        const r = quiet(() => parseArgs(["--remove-semicolons", "--insert-semicolons", "-p", SAMPLE_TSCONFIG]))
+    it("rejects --semicolons with an invalid value", () => {
+        const r = quiet(() => parseArgs(["--semicolons", "yes", "-p", SAMPLE_TSCONFIG]))
         assert.equal(r, undefined)
+    })
+
+    it("accepts --semicolons on", () => {
+        const r = parseArgs(["--semicolons", "on", "-p", SAMPLE_TSCONFIG])
+        assert.ok(r && !("help" in r))
+        assert.equal(r.semicolons, "on")
+    })
+
+    it("accepts --semicolons off", () => {
+        const r = parseArgs(["--semicolons", "off", "-p", SAMPLE_TSCONFIG])
+        assert.ok(r && !("help" in r))
+        assert.equal(r.semicolons, "off")
     })
 
     it("returns undefined when action and --report are mixed", () => {

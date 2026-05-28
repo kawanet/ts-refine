@@ -2,11 +2,10 @@
 // process.argv; this module receives the slice as input.
 //
 // Action categories (mirroring the action/ and report/ directories):
-//   action (write): --organize-imports / --remove-semicolons / --insert-semicolons
+//   action (write): --organize-imports / --indent N / --semicolons on|off
 //   report (read) : --report <names>
-// Multiple actions can run in one invocation. Actions are exclusive with
-// --report / --format (write vs read). --remove-semicolons and
-// --insert-semicolons are mutually exclusive.
+// Multiple actions can run in one invocation. Actions are exclusive
+// with --report / --format (write vs read).
 //
 // Defaults reflect the "survey" in the package name: when the user
 // supplies neither an action nor an explicit --report, every known
@@ -31,8 +30,7 @@ import {reportNames as knownReportNames} from "../report/run-reports.ts"
 
 export interface ParsedArgs {
     organizeImports: boolean
-    removeSemicolons: boolean
-    insertSemicolons: boolean
+    semicolons: "on" | "off" | null
     indentWidth: number | null
     reportNames: string[]
     format: string | null
@@ -56,8 +54,7 @@ export function parseArgs(argv: string[]): ParseArgsResult | undefined {
     if (argv.includes("--help") || argv.includes("-h")) return {help: true}
 
     let organizeImports = false
-    let removeSemicolons = false
-    let insertSemicolons = false
+    let semicolons: "on" | "off" | null = null
     let indentWidth: number | null = null
     let format: string | null = null
     let tsconfigPath: string | null = null
@@ -73,10 +70,13 @@ export function parseArgs(argv: string[]): ParseArgsResult | undefined {
         const a = argv[i]
         if (a === "--organize-imports") {
             organizeImports = true
-        } else if (a === "--remove-semicolons") {
-            removeSemicolons = true
-        } else if (a === "--insert-semicolons") {
-            insertSemicolons = true
+        } else if (a === "--semicolons") {
+            const v = argv[++i]
+            if (v !== "on" && v !== "off") {
+                console.error(`--semicolons expects 'on' or 'off'; got: ${v ?? "(missing)"}`)
+                return undefined
+            }
+            semicolons = v
         } else if (a === "--indent") {
             const v = argv[++i]
             if (!v || v.startsWith("-")) {
@@ -144,11 +144,7 @@ export function parseArgs(argv: string[]): ParseArgsResult | undefined {
     }
 
     // Validate flag combinations before checking inputs to give actionable errors.
-    if (removeSemicolons && insertSemicolons) {
-        console.error("--remove-semicolons and --insert-semicolons are mutually exclusive")
-        return undefined
-    }
-    const hasAction = organizeImports || removeSemicolons || insertSemicolons || indentWidth !== null
+    const hasAction = organizeImports || semicolons !== null || indentWidth !== null
     const hasReport = requestedReports.length > 0
     if (hasAction && hasReport) {
         console.error("action flags cannot be combined with --report")
@@ -181,8 +177,7 @@ export function parseArgs(argv: string[]): ParseArgsResult | undefined {
 
     return {
         organizeImports,
-        removeSemicolons,
-        insertSemicolons,
+        semicolons,
         indentWidth,
         reportNames: effectiveReports,
         format,

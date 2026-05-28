@@ -25,7 +25,7 @@ describe("runReportSemicolons (sample/semicolons-mixed)", () => {
         // as the return value (Partial<RunSemicolonsOpts>). A tied fixture
         // returns an empty partial.
         assert.equal(/^recommendation:/m.test(out), false)
-        if (Object.keys(ret).length > 0) assert.ok(ret.mode === "remove" || ret.mode === "insert")
+        if (Object.keys(ret).length > 0) assert.ok(ret.semicolons === "on" || ret.semicolons === "off")
     })
 
     it("uses integer bucket boundaries for exact 50% and near-boundary tails", async () => {

@@ -23,7 +23,7 @@ export interface RunOrganizeImportsOpts extends TsSurveyOpts {
 }
 
 export interface RunSemicolonsOpts extends RunOrganizeImportsOpts {
-    mode: "remove" | "insert"
+    semicolons: "on" | "off"
 }
 
 export interface RunIndentOpts extends RunOrganizeImportsOpts {

@@ -48,7 +48,7 @@ export async function runReportSemicolons(project: Project, {stream, absIncludes
     // exactly 50% are ambiguous and excluded from the comparison.
     const below = perFile.filter((f) => f.withSemi * 2 < f.total).length
     const above = perFile.filter((f) => f.withSemi * 2 > f.total).length
-    const recommendMode: "remove" | "insert" | undefined = below > above ? "remove" : above > below ? "insert" : undefined
+    const recommend: "on" | "off" | undefined = below > above ? "off" : above > below ? "on" : undefined
 
     stream.write("### semicolons\n")
     stream.write("\n")
@@ -70,7 +70,7 @@ export async function runReportSemicolons(project: Project, {stream, absIncludes
     console.error(`report semicolons: ${perFile.length} files counted / ${sourceFiles.length} files total`)
     // The recommendation is rendered in the trailing `## recommendation`
     // section, so all we return here is the action params shape.
-    return recommendMode ? {mode: recommendMode} : {}
+    return recommend ? {semicolons: recommend} : {}
 }
 
 function bucketIndex({total, withSemi}: {total: number; withSemi: number}): number {

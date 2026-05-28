@@ -9,13 +9,13 @@ function capture(report: Parameters<typeof writePrettierConfig>[0]): string {
 }
 
 describe("writePrettierConfig", () => {
-    it("maps semicolons.mode=remove → semi: false", () => {
-        const out = capture({semicolons: {mode: "remove"}})
+    it("maps semicolons.semicolons=off → semi: false", () => {
+        const out = capture({semicolons: {semicolons: "off"}})
         assert.equal(JSON.parse(out).semi, false)
     })
 
-    it("maps semicolons.mode=insert → semi: true", () => {
-        const out = capture({semicolons: {mode: "insert"}})
+    it("maps semicolons.semicolons=on → semi: true", () => {
+        const out = capture({semicolons: {semicolons: "on"}})
         assert.equal(JSON.parse(out).semi, true)
     })
 
@@ -32,7 +32,7 @@ describe("writePrettierConfig", () => {
     })
 
     it("combines multiple recommendations into one JSON object", () => {
-        const out = capture({semicolons: {mode: "remove"}, indent: {width: 2}})
+        const out = capture({semicolons: {semicolons: "off"}, indent: {width: 2}})
         const json = JSON.parse(out)
         assert.equal(json.semi, false)
         assert.equal(json.tabWidth, 2)
@@ -40,7 +40,7 @@ describe("writePrettierConfig", () => {
     })
 
     it("uses 4-space indentation matching the family .prettierrc convention", () => {
-        const out = capture({semicolons: {mode: "remove"}})
+        const out = capture({semicolons: {semicolons: "off"}})
         assert.match(out, /\n {4}"semi":/)
     })
 
@@ -63,16 +63,16 @@ describe("writePrettierConfig", () => {
         assert.equal(json.trailingComma, "none")
     })
 
-    it("combines semicolons=remove with member=none into semi:false + trailingComma:'none'", () => {
-        const json = JSON.parse(capture({semicolons: {mode: "remove"}, memberSeparators: {separator: "none"}}))
+    it("combines semicolons=off with member=none into semi:false + trailingComma:'none'", () => {
+        const json = JSON.parse(capture({semicolons: {semicolons: "off"}, memberSeparators: {separator: "none"}}))
         assert.equal(json.semi, false)
         assert.equal(json.trailingComma, "none")
     })
 
     it("lets semicolons win the semi flag when the two reports disagree", () => {
-        // semicolons:insert × member=none is contradictory. Keep semi:true (the
+        // semicolons:on × member=none is contradictory. Keep semi:true (the
         // stronger signal) and drop trailingComma rather than emit a self-conflict.
-        const json = JSON.parse(capture({semicolons: {mode: "insert"}, memberSeparators: {separator: "none"}}))
+        const json = JSON.parse(capture({semicolons: {semicolons: "on"}, memberSeparators: {separator: "none"}}))
         assert.equal(json.semi, true)
         assert.equal(json.trailingComma, undefined)
     })
@@ -106,7 +106,7 @@ describe("writePrettierMarkdown", () => {
     }
 
     it("wraps the JSON in a `### .prettierrc` fenced block ending in a trailing blank line", () => {
-        const out = captureMd({semicolons: {mode: "remove"}, indent: {width: 4}})
+        const out = captureMd({semicolons: {semicolons: "off"}, indent: {width: 4}})
         // Section header + table-style blank + fence open + body + fence close + trailing blank.
         assert.match(out, /^### \.prettierrc\n\n```json\n/)
         assert.match(out, /\n```\n\n$/)

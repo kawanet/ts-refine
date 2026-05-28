@@ -9,14 +9,14 @@ function capture(fn: (s: {write: (chunk: string) => void}) => void): string {
 }
 
 describe("writeTsSurveyCommand", () => {
-    it("maps semicolons.mode=remove → --remove-semicolons", () => {
-        const out = capture((s) => writeTsSurveyCommand({semicolons: {mode: "remove"}}, s))
-        assert.equal(out, "ts-survey \\\n  --remove-semicolons\n")
+    it("maps semicolons.semicolons=off → --semicolons off", () => {
+        const out = capture((s) => writeTsSurveyCommand({semicolons: {semicolons: "off"}}, s))
+        assert.equal(out, "ts-survey \\\n  --semicolons off\n")
     })
 
-    it("maps semicolons.mode=insert → --insert-semicolons", () => {
-        const out = capture((s) => writeTsSurveyCommand({semicolons: {mode: "insert"}}, s))
-        assert.equal(out, "ts-survey \\\n  --insert-semicolons\n")
+    it("maps semicolons.semicolons=on → --semicolons on", () => {
+        const out = capture((s) => writeTsSurveyCommand({semicolons: {semicolons: "on"}}, s))
+        assert.equal(out, "ts-survey \\\n  --semicolons on\n")
     })
 
     it("maps indent.width → --indent N", () => {
@@ -43,11 +43,11 @@ describe("writeTsSurveyCommand", () => {
         const out = capture((s) =>
             writeTsSurveyCommand(
                 // Input keys are intentionally reversed; the output order is fixed.
-                {bracketSpacing: {bracketSpacing: "on"}, newLine: {newLine: "lf"}, memberSeparators: {separator: "none"}, indent: {width: 4}, semicolons: {mode: "remove"}},
+                {bracketSpacing: {bracketSpacing: "on"}, newLine: {newLine: "lf"}, memberSeparators: {separator: "none"}, indent: {width: 4}, semicolons: {semicolons: "off"}},
                 s,
             ),
         )
-        assert.equal(out, "ts-survey \\\n  --remove-semicolons --indent 4 --member-separator none --new-line lf --bracket-spacing on\n")
+        assert.equal(out, "ts-survey \\\n  --semicolons off --indent 4 --member-separator none --new-line lf --bracket-spacing on\n")
     })
 
     it("emits a bare `ts-survey` when nothing was recommended", () => {
@@ -57,7 +57,7 @@ describe("writeTsSurveyCommand", () => {
     })
 
     it("keeps the args on a separate line so `grep '^ +--'` extracts flags only", () => {
-        const out = capture((s) => writeTsSurveyCommand({semicolons: {mode: "remove"}}, s))
+        const out = capture((s) => writeTsSurveyCommand({semicolons: {semicolons: "off"}}, s))
         const second = out.split("\n")[1]
         assert.match(second, /^ +--/)
     })
@@ -65,9 +65,9 @@ describe("writeTsSurveyCommand", () => {
 
 describe("writeTsSurveyMarkdown", () => {
     it("wraps the command in a `## recommendation` fenced block", () => {
-        const out = capture((s) => writeTsSurveyMarkdown({semicolons: {mode: "remove"}, indent: {width: 4}}, s))
+        const out = capture((s) => writeTsSurveyMarkdown({semicolons: {semicolons: "off"}, indent: {width: 4}}, s))
         assert.match(out, /^## recommendation\n\n```sh\nts-survey \\\n/)
-        assert.match(out, /\n {2}--remove-semicolons --indent 4\n```\n\n$/)
+        assert.match(out, /\n {2}--semicolons off --indent 4\n```\n\n$/)
     })
 
     it("emits nothing when no recommendations fired (no empty ## recommendation block)", () => {

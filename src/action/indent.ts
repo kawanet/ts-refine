@@ -32,7 +32,7 @@ export const runIndent: typeof declared.runIndent = async (project, {dryRun, abs
         if (after === before) continue
 
         // Refresh ts-morph's in-memory view so a later action in the same
-        // dispatch (e.g. --remove-semicolons) sees the rewritten text.
+        // dispatch (e.g. --semicolons off) sees the rewritten text.
         sf.replaceWithText(after)
         changedCount++
         if (dryRun) {

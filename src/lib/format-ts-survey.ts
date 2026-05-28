@@ -20,8 +20,7 @@ import type {Writer} from "./writable.ts"
 // order.
 function buildTsSurveyFlags(report: TsSurveyReport): string[] {
     const flags: string[] = []
-    if (report.semicolons?.mode === "remove") flags.push("--remove-semicolons")
-    else if (report.semicolons?.mode === "insert") flags.push("--insert-semicolons")
+    if (report.semicolons?.semicolons) flags.push(`--semicolons ${report.semicolons.semicolons}`)
     if (typeof report.indent?.width === "number") flags.push(`--indent ${report.indent.width}`)
     if (report.memberSeparators?.separator) flags.push(`--member-separator ${report.memberSeparators.separator}`)
     if (report.newLine?.newLine) flags.push(`--new-line ${report.newLine.newLine}`)

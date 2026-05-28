@@ -1,8 +1,8 @@
-// --remove-semicolons / --insert-semicolons: rewrite trailing `;` on every
-// ASI-eligible statement file-wide. The remove side guards against ASI hazards
-// by checking the next non-trivia code character; it mirrors the TS LS rule
-// `isSemicolonDeletionContext` (formatting/rules.ts) closely enough to avoid
-// the common pitfalls.
+// --semicolons on|off: rewrite trailing `;` on every ASI-eligible
+// statement file-wide. The "off" side guards against ASI hazards by
+// checking the next non-trivia code character; it mirrors the TS LS
+// rule `isSemicolonDeletionContext` (formatting/rules.ts) closely
+// enough to avoid the common pitfalls.
 
 import type * as declared from "@kawanet/ts-survey"
 import fs from "node:fs/promises"
@@ -15,7 +15,7 @@ import {isSemiEligibleStatement} from "../lib/statement-kinds.ts"
 // removed. Matches the TS LS deletion-context list.
 const ASI_HAZARD_CHARS = new Set(["[", "(", "+", "-", "/", "`", ".", ","])
 
-export const runSemicolons: typeof declared.runSemicolons = async (project, {dryRun, absIncludes, absExcludes, mode}) => {
+export const runSemicolons: typeof declared.runSemicolons = async (project, {dryRun, absIncludes, absExcludes, semicolons}) => {
     // Exclude .d.ts to match the semicolons report scope.
     const sourceFiles = selectSourceFiles(project, {absIncludes, absExcludes}).filter((sf) => !sf.getFilePath().endsWith(".d.ts"))
 
@@ -42,13 +42,13 @@ export const runSemicolons: typeof declared.runSemicolons = async (project, {dry
         targets.sort((a, b) => b.end - a.end)
 
         for (const t of targets) {
-            if (mode === "remove" && t.hasSemi) {
+            if (semicolons === "off" && t.hasSemi) {
                 // Keep `;` when its removal would change ASI semantics, observed on
                 // the current text (covers the case where a later statement already
                 // had its `;` removed in this same pass).
                 if (hasAsiHazardAfter(sf.getFullText(), t.end)) continue
                 sf.replaceText([t.end - 1, t.end], "")
-            } else if (mode === "insert" && !t.hasSemi) {
+            } else if (semicolons === "on" && !t.hasSemi) {
                 sf.replaceText([t.end, t.end], ";")
             }
         }
@@ -66,8 +66,7 @@ export const runSemicolons: typeof declared.runSemicolons = async (project, {dry
     }
 
     const verb = dryRun ? "would change" : "changed"
-    const opName = mode === "remove" ? "remove-semicolons" : "insert-semicolons"
-    console.error(`${opName}: ${verb} ${changedCount} / ${totalCount} files`)
+    console.error(`semicolons ${semicolons}: ${verb} ${changedCount} / ${totalCount} files`)
 }
 
 // Scan forward from fromPos through whitespace and comments. The first
