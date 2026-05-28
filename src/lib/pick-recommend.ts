@@ -2,7 +2,7 @@
 // broken by the occurrence count at the primary (the `lines` field),
 // and a tie at both falls back to undefined.
 
-export type RecommendBucket = {files: number; lines: number}
+type RecommendBucket = {files: number; lines: number}
 
 export function pickRecommendByFiles<K>(keys: readonly K[], get: (k: K) => RecommendBucket | undefined): K | undefined {
     let recommend: K | undefined

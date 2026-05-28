@@ -9,7 +9,7 @@ import type {ApplyOverrides} from "./parse-args.ts"
 
 // LS settings + runApply-only concerns (organize gate, newline post-pass,
 // CR diagnostic). Local to this module — runApply reads the shape only.
-export interface ResolvedSettings {
+interface ResolvedSettings {
     formatSettings: FormatCodeSettings
     organizeImports: boolean
     newLineNormalize: "\n" | "\r\n" | undefined

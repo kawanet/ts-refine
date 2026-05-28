@@ -15,7 +15,7 @@ export interface ApplyOverrides {
     bracketSpacing?: "on" | "off"
 }
 
-export interface ParsedArgs {
+interface ParsedArgs {
     apply: boolean
     applyOverrides: ApplyOverrides
     reportNames: string[]
@@ -29,11 +29,11 @@ export interface ParsedArgs {
     absExcludes: string[]
 }
 
-export interface HelpRequested {
+interface HelpRequested {
     help: true
 }
 
-export type ParseArgsResult = ParsedArgs | HelpRequested
+type ParseArgsResult = ParsedArgs | HelpRequested
 
 export function parseArgs(argv: string[]): ParseArgsResult | undefined {
     if (argv.includes("--help") || argv.includes("-h")) return {help: true}

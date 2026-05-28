@@ -19,7 +19,7 @@ type Writer = RunReportsOpts["stream"]
 
 export const formatNames = ["prettier", "ts-survey"] as const
 
-export interface FormatDispatch {
+interface FormatDispatch {
     reportStream: Writer
     finalize: (report: TsSurveyReport) => void
 }
