@@ -10,8 +10,23 @@
 
 import {initProject, runOrganizeImports, runReports, runSemicolons} from "./index.ts"
 import {parseArgs} from "./lib/parse-args.ts"
+import {usage} from "./lib/usage.ts"
 
 const opts = await parseArgs(process.argv.slice(2))
+
+// parseArgs encodes its outcome in the return value instead of exiting:
+//   - undefined        — error path; a specific message has already been
+//                        written to stderr. Append usage and exit 1.
+//   - {help: true}     — --help / -h. Usage to stdout and exit 0.
+//   - ParsedArgs       — normal dispatch.
+if (opts === undefined) {
+    console.error(usage())
+    process.exit(1)
+}
+if ("help" in opts) {
+    console.log(usage())
+    process.exit(0)
+}
 
 const project = initProject(opts.tsconfigPath)
 
