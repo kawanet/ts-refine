@@ -132,11 +132,11 @@ export function parseArgs(argv: string[]): ParseArgsResult | undefined {
     const hasAction = organizeImports || removeSemicolons || insertSemicolons || indentWidth !== null
     const hasReport = requestedReports.length > 0
     if (hasAction && hasReport) {
-        console.error("action flags (--organize-imports / --indent / --remove-semicolons / --insert-semicolons) cannot be combined with --report")
+        console.error("action flags cannot be combined with --report")
         return undefined
     }
     if (hasAction && format !== null) {
-        console.error("action flags (--organize-imports / --indent / --remove-semicolons / --insert-semicolons) cannot be combined with --format")
+        console.error("action flags cannot be combined with --format")
         return undefined
     }
 
