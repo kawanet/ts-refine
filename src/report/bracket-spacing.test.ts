@@ -39,6 +39,19 @@ describe("runReportBracketSpacing (sample/braces-mixed)", () => {
         assert.deepEqual(ret, {})
     })
 
+    it("treats CR-only and CRLF multi-line objects as multi-line (not just LF)", async () => {
+        const project = new Project({useInMemoryFileSystem: true})
+        // CR-only line terminators (rare but supported by the new-line
+        // report); the brace inner content contains no LF so a naive
+        // `\n` test would misclassify it as a single-line tight object.
+        project.createSourceFile("cr.ts", "export const a = {\r    p: 1,\r}\r")
+        project.createSourceFile("crlf.ts", "export const b = {\r\n    p: 1,\r\n}\r\n")
+        const lines: string[] = []
+        const ret = await runReportBracketSpacing(project, {stream: {write: (l) => lines.push(l)}, absIncludes: [], absExcludes: []})
+        assert.match(lines.join(""), /\| total \| 0 \| 0 \| \|/)
+        assert.deepEqual(ret, {})
+    })
+
     it("counts ObjectBindingPattern (destructure) alongside ObjectLiteralExpression", async () => {
         const project = new Project({useInMemoryFileSystem: true})
         project.createSourceFile("d.ts", "export const f = ({ a, b }: {a: 1; b: 2}) => a + b\n")

@@ -94,7 +94,9 @@ function classifyBraces(text: string): Style | null {
     if (text.length < 2 || text[0] !== "{" || text[text.length - 1] !== "}") return null
     const inner = text.slice(1, -1)
     if (inner.trim().length === 0) return null
-    if (inner.includes("\n")) return null
+    // CR-only files (no LF) are rare but real; the new-line report
+    // already classifies them, so the multi-line skip matches.
+    if (/[\r\n]/.test(inner)) return null
     return inner.startsWith(" ") && inner.endsWith(" ") ? "on" : "off"
 }
 
