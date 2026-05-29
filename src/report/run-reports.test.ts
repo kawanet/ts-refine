@@ -19,8 +19,7 @@ describe("runReports", () => {
                     // validation that the production CLI also relies on.
                     reportNames: ["typo-name" as unknown as TsSurveyReportName],
                     stream: {write: (l) => lines.push(l)},
-                    absIncludes: [],
-                    absExcludes: [],
+                    paths: [],
                 }),
             /unknown report name: typo-name/,
         )
@@ -34,8 +33,7 @@ describe("runReports", () => {
             // router re-orders.
             reportNames: ["semicolons", "unused-exports"],
             stream: {write: (l) => lines.push(l)},
-            absIncludes: [],
-            absExcludes: [],
+            paths: [],
         })
         const out = lines.join("")
         const unusedPos = out.indexOf("### unused-exports")

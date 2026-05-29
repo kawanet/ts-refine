@@ -10,7 +10,7 @@ describe("runReportMemberSeparators (sample/members-mixed)", () => {
     it("groups files by primary separator and recommends the file-count majority", async () => {
         const project = new Project({tsConfigFilePath: SAMPLE_TSCONFIG})
         const lines: string[] = []
-        await runReportMemberSeparators(project, {stream: {write: (l) => lines.push(l)}, absIncludes: [], absExcludes: []})
+        await runReportMemberSeparators(project, {stream: {write: (l) => lines.push(l)}, paths: []})
 
         const out = lines.join("")
         assert.match(out, /^### member-separators\n/)
@@ -39,7 +39,7 @@ describe("runReportMemberSeparators (sample/members-mixed)", () => {
         project.createSourceFile("b.ts", "export interface B {\n    a: number;\n    b: number;\n}\n")
         project.createSourceFile("c.ts", "export interface C {\n    a: number,\n}\n")
         const lines: string[] = []
-        const ret = await runReportMemberSeparators(project, {stream: {write: (l) => lines.push(l)}, absIncludes: [], absExcludes: []})
+        const ret = await runReportMemberSeparators(project, {stream: {write: (l) => lines.push(l)}, paths: []})
         const out = lines.join("")
         // Recommendation is no longer inlined in the Markdown; it comes back
         // as the return value (RunMemberSeparatorsOpts.separator).
@@ -53,7 +53,7 @@ describe("runReportMemberSeparators (sample/members-mixed)", () => {
         project.createSourceFile("a.ts", "export interface A {\n    a: number;\n    b: number;\n    c: number;\n    d: number;\n    e: number;\n}\n")
         project.createSourceFile("b.ts", "export interface B {\n    a: number,\n}\n")
         const lines: string[] = []
-        const ret = await runReportMemberSeparators(project, {stream: {write: (l) => lines.push(l)}, absIncludes: [], absExcludes: []})
+        const ret = await runReportMemberSeparators(project, {stream: {write: (l) => lines.push(l)}, paths: []})
         assert.deepEqual(ret, {separator: "semi"})
     })
 
@@ -62,7 +62,7 @@ describe("runReportMemberSeparators (sample/members-mixed)", () => {
         project.createSourceFile("a.ts", "export interface A {\n    a: number;\n    b: number;\n}\n")
         project.createSourceFile("b.ts", "export interface B {\n    a: number,\n    b: number,\n}\n")
         const lines: string[] = []
-        const ret = await runReportMemberSeparators(project, {stream: {write: (l) => lines.push(l)}, absIncludes: [], absExcludes: []})
+        const ret = await runReportMemberSeparators(project, {stream: {write: (l) => lines.push(l)}, paths: []})
         assert.deepEqual(ret, {})
     })
 
@@ -70,7 +70,7 @@ describe("runReportMemberSeparators (sample/members-mixed)", () => {
         const project = new Project({useInMemoryFileSystem: true})
         project.createSourceFile("m.ts", "export class M {\n    x() { return 1 }\n    y() { return 2 }\n}\n")
         const lines: string[] = []
-        await runReportMemberSeparators(project, {stream: {write: (l) => lines.push(l)}, absIncludes: [], absExcludes: []})
+        await runReportMemberSeparators(project, {stream: {write: (l) => lines.push(l)}, paths: []})
         const out = lines.join("")
         // No members remain after the `}`-trailing skip; the file should
         // not be counted.
@@ -85,7 +85,7 @@ describe("runReportMemberSeparators (sample/members-mixed)", () => {
         const project = new Project({useInMemoryFileSystem: true})
         project.createSourceFile("props.ts", "export class Props {\n    config = {}\n    fn = function () {}\n    semi = {};\n}\n")
         const lines: string[] = []
-        await runReportMemberSeparators(project, {stream: {write: (l) => lines.push(l)}, absIncludes: [], absExcludes: []})
+        await runReportMemberSeparators(project, {stream: {write: (l) => lines.push(l)}, paths: []})
         const out = lines.join("")
 
         assert.match(out, /\| `\\n` \| 2 \| 1 \| props\.ts \|/)

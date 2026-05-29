@@ -16,8 +16,8 @@ import type {ReportOpts} from "./types.ts"
 // too sparse to be useful — every middle bucket was empty for typical files.
 const BUCKET_LABELS = ["0%", "1-10%", "11-49%", "50%", "51-89%", "90-99%", "100%"] as const
 
-export async function runReportSemicolons(project: Project, {stream, absIncludes, absExcludes}: ReportOpts): Promise<Partial<RunSemicolonsOpts>> {
-    const sourceFiles = selectSourceFiles(project, {absIncludes, absExcludes}).filter((sf) => !sf.getFilePath().endsWith(".d.ts"))
+export async function runReportSemicolons(project: Project, {stream, paths}: ReportOpts): Promise<Partial<RunSemicolonsOpts>> {
+    const sourceFiles = selectSourceFiles(project, {paths}).filter((sf) => !sf.getFilePath().endsWith(".d.ts"))
 
     type PerFile = {path: string; total: number; withSemi: number}
     const perFile: PerFile[] = []

@@ -13,7 +13,7 @@ import {runReformat} from "./run-apply.ts"
 // passes (organize-imports) silenced so the test exercises only the
 // indent dimension.
 function opts(width: number): Omit<RunReformatOpts, "report"> & {report: TsSurveyReport} {
-    return {dryRun: true, absIncludes: [], absExcludes: [], indent: width, organizeImports: "off", report: {}}
+    return {dryRun: true, paths: [], indent: width, organizeImports: "off", report: {}}
 }
 
 describe("runReformat --indent (dry-run, in-memory)", () => {
@@ -34,7 +34,7 @@ describe("runReformat --indent (dry-run, in-memory)", () => {
     it("converts space indent to a tab when indent=tab", async () => {
         const project = new Project({useInMemoryFileSystem: true})
         const sf = project.createSourceFile("tab.ts", ["function f() {", "    return 1", "}", ""].join("\n"))
-        await runReformat(project, {dryRun: true, absIncludes: [], absExcludes: [], indent: "tab", organizeImports: "off", report: {}})
+        await runReformat(project, {dryRun: true, paths: [], indent: "tab", organizeImports: "off", report: {}})
         assert.match(sf.getFullText(), /\n\treturn 1\n/)
     })
 

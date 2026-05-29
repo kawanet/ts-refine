@@ -10,7 +10,7 @@ describe("runReportNewLine (sample/newlines-mixed)", () => {
     it("buckets files by primary terminator and returns the majority", async () => {
         const project = new Project({tsConfigFilePath: SAMPLE_TSCONFIG})
         const lines: string[] = []
-        const ret = await runReportNewLine(project, {stream: {write: (l) => lines.push(l)}, absIncludes: [], absExcludes: []})
+        const ret = await runReportNewLine(project, {stream: {write: (l) => lines.push(l)}, paths: []})
 
         const out = lines.join("")
         assert.match(out, /^### new-line\n/)
@@ -26,7 +26,7 @@ describe("runReportNewLine (sample/newlines-mixed)", () => {
         const project = new Project({useInMemoryFileSystem: true})
         project.createSourceFile("x.ts", "const a = 1\r\nconst b = 2\r\n")
         const lines: string[] = []
-        const ret = await runReportNewLine(project, {stream: {write: (l) => lines.push(l)}, absIncludes: [], absExcludes: []})
+        const ret = await runReportNewLine(project, {stream: {write: (l) => lines.push(l)}, paths: []})
         const out = lines.join("")
         assert.match(out, /\| `\\r\\n` \| 2 \| 1 \| /)
         assert.equal(/`\\n`/.test(out), false)
@@ -41,7 +41,7 @@ describe("runReportNewLine (sample/newlines-mixed)", () => {
         project.createSourceFile("lf.ts", "a\nb\nc\nd\ne\n")
         project.createSourceFile("crlf.ts", "x\r\n")
         const lines: string[] = []
-        const ret = await runReportNewLine(project, {stream: {write: (l) => lines.push(l)}, absIncludes: [], absExcludes: []})
+        const ret = await runReportNewLine(project, {stream: {write: (l) => lines.push(l)}, paths: []})
         assert.deepEqual(ret, {newLine: "lf"})
     })
 
@@ -50,7 +50,7 @@ describe("runReportNewLine (sample/newlines-mixed)", () => {
         project.createSourceFile("lf.ts", "const a = 1\n")
         project.createSourceFile("crlf.ts", "const b = 1\r\n")
         const lines: string[] = []
-        const ret = await runReportNewLine(project, {stream: {write: (l) => lines.push(l)}, absIncludes: [], absExcludes: []})
+        const ret = await runReportNewLine(project, {stream: {write: (l) => lines.push(l)}, paths: []})
         assert.deepEqual(ret, {})
         assert.match(lines.join(""), /\| total \| 2 \| 2 \| \|/)
     })

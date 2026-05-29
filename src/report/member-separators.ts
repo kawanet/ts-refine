@@ -39,8 +39,8 @@ const SEP_FLAG_VALUE: Record<Separator, RunMemberSeparatorsOpts["separator"]> = 
 
 type Bucket = {lines: number; files: number; topPath: string; topLines: number}
 
-export async function runReportMemberSeparators(project: Project, {stream, absIncludes, absExcludes}: ReportOpts): Promise<Partial<RunMemberSeparatorsOpts>> {
-    const sourceFiles = selectSourceFiles(project, {absIncludes, absExcludes}).filter((sf) => !sf.getFilePath().endsWith(".d.ts"))
+export async function runReportMemberSeparators(project: Project, {stream, paths}: ReportOpts): Promise<Partial<RunMemberSeparatorsOpts>> {
+    const sourceFiles = selectSourceFiles(project, {paths}).filter((sf) => !sf.getFilePath().endsWith(".d.ts"))
 
     type PerFile = {path: string; counts: Map<Separator, number>; primary: Separator}
     const perFile: PerFile[] = []

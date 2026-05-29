@@ -17,7 +17,7 @@ describe("cli", () => {
             const r = run(args)
             assert.equal(r.status, 0, `args: ${args.join(" ")}`)
             assert.match(r.stdout, /Usage: ts-survey <command>/)
-            assert.match(r.stdout, /report \[names\.\.\.\]/)
+            assert.match(r.stdout, /report \[reports\.\.\.\]/)
             assert.match(r.stdout, /^  reformat /m)
             assert.match(r.stdout, /--output <name>/)
             assert.match(r.stdout, /--organize-imports on\|off/)

@@ -8,7 +8,6 @@ const externals = new Set<string>([
     ...builtinModules,
     ...builtinModules.map((m) => `node:${m}`),
     "@kawanet/ts-survey",
-    "minimatch",
     "ts-morph",
 ])
 

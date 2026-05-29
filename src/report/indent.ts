@@ -17,8 +17,8 @@ import type {ReportOpts} from "./types.ts"
 
 type Bucket = {lines: number; files: number; topPath: string; topLines: number}
 
-export async function runReportIndent(project: Project, {stream, absIncludes, absExcludes}: ReportOpts): Promise<Partial<RunIndentOpts>> {
-    const sourceFiles = selectSourceFiles(project, {absIncludes, absExcludes}).filter((sf) => !sf.getFilePath().endsWith(".d.ts"))
+export async function runReportIndent(project: Project, {stream, paths}: ReportOpts): Promise<Partial<RunIndentOpts>> {
+    const sourceFiles = selectSourceFiles(project, {paths}).filter((sf) => !sf.getFilePath().endsWith(".d.ts"))
 
     // Per-file: detect leading-width distribution, then collapse to one
     // "primary" width (the line-count mode). Files with no leading

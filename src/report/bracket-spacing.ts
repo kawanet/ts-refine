@@ -24,8 +24,8 @@ const STYLE_LABEL: Record<Style, string> = {
 
 type Bucket = {lines: number; files: number; topPath: string; topLines: number}
 
-export async function runReportBracketSpacing(project: Project, {stream, absIncludes, absExcludes}: ReportOpts): Promise<Partial<RunBracketSpacingOpts>> {
-    const sourceFiles = selectSourceFiles(project, {absIncludes, absExcludes}).filter((sf) => !sf.getFilePath().endsWith(".d.ts"))
+export async function runReportBracketSpacing(project: Project, {stream, paths}: ReportOpts): Promise<Partial<RunBracketSpacingOpts>> {
+    const sourceFiles = selectSourceFiles(project, {paths}).filter((sf) => !sf.getFilePath().endsWith(".d.ts"))
 
     type PerFile = {path: string; counts: Map<Style, number>; primary: Style}
     const perFile: PerFile[] = []

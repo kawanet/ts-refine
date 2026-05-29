@@ -7,9 +7,10 @@ import type {Project} from "ts-morph";
 export {}; // external module indicator
 
 // Common base for every entry. Leaf Opts interfaces inherit it.
+// paths holds the positional file arguments (absolute); empty means
+// the whole project.
 interface TsSurveyOpts {
-    absIncludes: string[]
-    absExcludes: string[]
+    paths: string[]
 }
 
 // Recommendation shapes. Not runtime inputs — they describe the value

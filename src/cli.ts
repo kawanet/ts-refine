@@ -26,7 +26,7 @@ if ("help" in opts) {
     process.exit(0)
 }
 
-const fileOpts = {absIncludes: opts.absIncludes, absExcludes: opts.absExcludes}
+const fileOpts = {paths: opts.paths}
 
 // Swallow the Markdown stream in reformat mode; runReformat consumes it.
 const NULL_SINK = {write: () => {}}

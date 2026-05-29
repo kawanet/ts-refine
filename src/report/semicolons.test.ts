@@ -10,7 +10,7 @@ describe("runReportSemicolons (sample/semicolons-mixed)", () => {
     it("buckets files by trailing `;` ratio and returns the action params", async () => {
         const project = new Project({tsConfigFilePath: SAMPLE_TSCONFIG})
         const lines: string[] = []
-        const ret = await runReportSemicolons(project, {stream: {write: (l) => lines.push(l)}, absIncludes: [], absExcludes: []})
+        const ret = await runReportSemicolons(project, {stream: {write: (l) => lines.push(l)}, paths: []})
 
         const out = lines.join("")
         assert.match(out, /^### semicolons\n/)
@@ -42,8 +42,7 @@ describe("runReportSemicolons (sample/semicolons-mixed)", () => {
 
         await runReportSemicolons(project, {
             stream: {write: (l) => lines.push(l)},
-            absIncludes: ["/sample/*.ts"],
-            absExcludes: [],
+            paths: ["/sample/*.ts"],
         })
 
         const out = lines.join("")
@@ -61,8 +60,7 @@ describe("runReportSemicolons (sample/semicolons-mixed)", () => {
         const lines: string[] = []
         const ret = await runReportSemicolons(project, {
             stream: {write: (l) => lines.push(l)},
-            absIncludes: ["/sample/*.ts"],
-            absExcludes: [],
+            paths: ["/sample/*.ts"],
         })
         assert.deepEqual(ret, {semicolons: "off"})
     })
@@ -74,8 +72,7 @@ describe("runReportSemicolons (sample/semicolons-mixed)", () => {
         const lines: string[] = []
         const ret = await runReportSemicolons(project, {
             stream: {write: (l) => lines.push(l)},
-            absIncludes: ["/sample/*.ts"],
-            absExcludes: [],
+            paths: ["/sample/*.ts"],
         })
         assert.deepEqual(ret, {})
     })
@@ -92,8 +89,7 @@ describe("runReportSemicolons (sample/semicolons-mixed)", () => {
         const lines: string[] = []
         const ret = await runReportSemicolons(project, {
             stream: {write: (l) => lines.push(l)},
-            absIncludes: ["/sample/*.ts"],
-            absExcludes: [],
+            paths: ["/sample/*.ts"],
         })
         const out = lines.join("")
         // 3 members counted (comma member excluded), 2 with `;`.
@@ -108,8 +104,7 @@ describe("runReportSemicolons (sample/semicolons-mixed)", () => {
 
         await runReportSemicolons(project, {
             stream: {write: (l) => lines.push(l)},
-            absIncludes: ["/sample/*.ts"],
-            absExcludes: [],
+            paths: ["/sample/*.ts"],
         })
 
         const out = lines.join("")

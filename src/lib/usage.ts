@@ -6,16 +6,16 @@ import {reportNames} from "../report/report-names.ts"
 
 export function usage(): string {
     return [
-        "Usage: ts-survey <command> [arguments] [options]",
+        "Usage: ts-survey <command> [options] [files...]",
         "",
         "Commands:",
         "  help                        Show this help (also: no args, -h, --help)",
-        "  report [names...]           Survey the codebase; print Markdown reports",
+        "  report [reports...]         Survey the codebase; print Markdown reports",
         "  reformat                    Apply the reports' recommendations to disk",
         "",
         "report (read; the primary mode):",
         "  report                      Run every report and print the survey Markdown",
-        "  report <names...>           Emit Markdown for the named reports (space-separated)",
+        "  report --<report>...        Restrict to the named reports (e.g. --semicolons --indent)",
         `                              Known reports: ${reportNames.join(", ")}`,
         "  --output <name>             Suppress Markdown and emit the named output instead",
         `                              Known outputs: ${formatNames.join(", ")}`,
@@ -33,8 +33,8 @@ export function usage(): string {
         "  -p, --project <path>        Path to a tsconfig.json or a directory",
         "                              that contains one. Defaults to `-p .`.",
         "",
-        "File scope (applies to report and reformat):",
-        "  --include <glob>            Restrict to files matching the glob",
-        "  --exclude <glob>            Skip files matching the glob",
+        "Files (applies to report and reformat):",
+        "  [files...]                  Restrict to the given files; globs are allowed,",
+        "                              resolved against the tsconfig dir. Default: all.",
     ].join("\n")
 }
