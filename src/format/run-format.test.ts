@@ -46,6 +46,6 @@ describe("selectFormat", () => {
 
     it("throws on an unknown format name", () => {
         const {writer} = makeStdout()
-        assert.throws(() => selectFormat("typo-format", writer), /unknown format: typo-format/)
+        assert.throws(() => selectFormat("typo-format", writer), /unknown --output: typo-format/)
     })
 })

@@ -31,7 +31,7 @@ export function selectFormat(name: string | null, stdout: Writer): FormatDispatc
         return {reportStream: stdout, finalize: () => {}}
     }
     if (!(formatNames as readonly string[]).includes(name)) {
-        throw new Error(`unknown format: ${name} (known: ${formatNames.join(", ")})`)
+        throw new Error(`unknown --output: ${name} (known: ${formatNames.join(", ")})`)
     }
     if (name === "prettier") {
         return {
