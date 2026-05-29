@@ -40,6 +40,26 @@ describe("runMove (in-memory, dry-run)", () => {
         assert.equal(c.getFullText(), "import {x} from \"./sub/a\"\nconst _ = x\n")
     })
 
+    it("preserves whatever extension each importer wrote (.ts / .js / none in one file)", async () => {
+        // NodeNext-style resolver — `./a.js` is a valid way to refer to a.ts.
+        const project = new Project({
+            useInMemoryFileSystem: true,
+            compilerOptions: {
+                module: ts.ModuleKind.NodeNext,
+                moduleResolution: ts.ModuleResolutionKind.NodeNext,
+                allowImportingTsExtensions: true,
+            } as any,
+        })
+        project.createSourceFile("/src/a.ts", "export const x = 1\n")
+        const b = project.createSourceFile("/src/b.ts",
+            ["import {x as x1} from \"./a.ts\"", "import {x as x2} from \"./a.js\"", "import {x as x3} from \"./a\"", "const _ = x1 + x2 + x3", ""].join("\n"),
+        )
+        await runMove(project, {sources: ["/src/a.ts"], dest: "/src/sub/", dryRun: true})
+        // Each row keeps its own era's extension; nothing is migrated.
+        assert.equal(b.getFullText(),
+            ["import {x as x1} from \"./sub/a.ts\"", "import {x as x2} from \"./sub/a.js\"", "import {x as x3} from \"./sub/a\"", "const _ = x1 + x2 + x3", ""].join("\n"))
+    })
+
     it("rewrites the moved file's own outgoing relative imports too", async () => {
         const project = newProject()
         project.createSourceFile("/src/sibling.ts", "export const y = 2\n")

@@ -21,10 +21,30 @@ import {displayPath} from "../lib/source-files.ts"
 
 // One captured module specifier whose target is moving. Held by AST node
 // reference so it stays valid across sf.move() and can be patched in place.
+// `originalExt` is the literal extension on the source-time specifier
+// (".ts", ".js", ".mjs", ...) or "" for no extension — whatever the user
+// wrote stays. ts-morph drops the extension during move and we put back
+// exactly what was there originally.
 type SpecRecord =
-    | {kind: "import"; node: ImportDeclaration; hadTsExt: boolean}
-    | {kind: "export"; node: ExportDeclaration; hadTsExt: boolean}
-    | {kind: "dynamic"; node: StringLiteral; hadTsExt: boolean}
+    | {kind: "import"; node: ImportDeclaration; originalExt: string}
+    | {kind: "export"; node: ExportDeclaration; originalExt: string}
+    | {kind: "dynamic"; node: StringLiteral; originalExt: string}
+
+// File extensions TypeScript's module resolution recognizes for source
+// files. We restore whichever of these the user wrote — `.js` etc. is
+// just as much a "TS-resolvable" specifier in NodeNext / bundler.
+const KNOWN_EXT = /\.(ts|tsx|js|jsx|mjs|cjs|mts|cts)$/
+
+function extensionOf(specifier: string): string {
+    const m = specifier.match(KNOWN_EXT)
+    return m ? m[0] : ""
+}
+
+// Strip any known extension from the specifier and append `ext` (empty
+// string for no extension). Idempotent when called with the current ext.
+function withExtension(specifier: string, ext: string): string {
+    return specifier.replace(KNOWN_EXT, "") + ext
+}
 
 export const runMove: typeof declared.runMove = async (project, opts) => {
     const {sources, dest, dryRun} = opts
@@ -42,9 +62,10 @@ export const runMove: typeof declared.runMove = async (project, opts) => {
         project.getSourceFileOrThrow(from).move(to)
     }
 
-    // Restore `.ts` extensions where they were dropped. Symmetric for the
-    // rare flip case (had no `.ts`, now has one).
-    for (const r of records) restoreTsExtension(r)
+    // Restore each specifier's original extension. ts-morph drops the
+    // extension during move; this puts back exactly what the user wrote
+    // (`.ts`, `.js`, `.mjs`, none, …) — no migration across styles.
+    for (const r of records) restoreOriginalExtension(r)
 
     // Touched = every file whose contents changed: the moved files plus
     // any importer that held a recorded specifier.
@@ -150,7 +171,7 @@ function snapshotSpecifiers(project: Project, movingPaths: Set<string>): SpecRec
             const target = decl.getModuleSpecifierSourceFile()
             if (!target) continue
             if (!isMoving && !movingPaths.has(target.getFilePath())) continue
-            records.push({kind: "import", node: decl, hadTsExt: decl.getModuleSpecifierValue().endsWith(".ts")})
+            records.push({kind: "import", node: decl, originalExt: extensionOf(decl.getModuleSpecifierValue())})
         }
         for (const decl of sf.getExportDeclarations()) {
             const specifier = decl.getModuleSpecifierValue()
@@ -158,7 +179,7 @@ function snapshotSpecifiers(project: Project, movingPaths: Set<string>): SpecRec
             const target = decl.getModuleSpecifierSourceFile()
             if (!target) continue
             if (!isMoving && !movingPaths.has(target.getFilePath())) continue
-            records.push({kind: "export", node: decl, hadTsExt: specifier.endsWith(".ts")})
+            records.push({kind: "export", node: decl, originalExt: extensionOf(specifier)})
         }
         for (const call of sf.getDescendantsOfKind(ts.SyntaxKind.CallExpression)) {
             if (call.getExpression().getKindName() !== "ImportKeyword") continue
@@ -167,33 +188,42 @@ function snapshotSpecifiers(project: Project, movingPaths: Set<string>): SpecRec
             const target = resolveDynamicTarget(sf, arg.getLiteralValue(), project)
             if (!target) continue
             if (!isMoving && !movingPaths.has(target.getFilePath())) continue
-            records.push({kind: "dynamic", node: arg, hadTsExt: arg.getLiteralValue().endsWith(".ts")})
+            records.push({kind: "dynamic", node: arg, originalExt: extensionOf(arg.getLiteralValue())})
         }
     }
 
     return records
 }
 
-function restoreTsExtension(r: SpecRecord): void {
+function restoreOriginalExtension(r: SpecRecord): void {
     if (r.kind === "import") {
         const spec = r.node.getModuleSpecifierValue()
-        if (r.hadTsExt && !spec.endsWith(".ts")) r.node.setModuleSpecifier(spec + ".ts")
+        const next = withExtension(spec, r.originalExt)
+        if (next !== spec) r.node.setModuleSpecifier(next)
     } else if (r.kind === "export") {
         const spec = r.node.getModuleSpecifierValue()
         if (spec === undefined) return
-        if (r.hadTsExt && !spec.endsWith(".ts")) r.node.setModuleSpecifier(spec + ".ts")
+        const next = withExtension(spec, r.originalExt)
+        if (next !== spec) r.node.setModuleSpecifier(next)
     } else {
         const val = r.node.getLiteralValue()
-        if (r.hadTsExt && !val.endsWith(".ts")) r.node.setLiteralValue(val + ".ts")
+        const next = withExtension(val, r.originalExt)
+        if (next !== val) r.node.setLiteralValue(next)
     }
 }
 
-// Resolve a dynamic import literal to a project SourceFile, trying both
-// the literal as-given and with `.ts` appended (the project may write the
-// extension or not).
+// Resolve a dynamic import literal to a project SourceFile. The literal
+// may include `.ts`, `.js`, `.mjs`, etc. (TypeScript's bundler/NodeNext
+// resolution treats `./x.js` as pointing at `x.ts` when the latter is the
+// real source); we try the literal as-given first, then rewrite any
+// known extension to `.ts` to find the source file.
 function resolveDynamicTarget(from: SourceFile, specifier: string, project: Project): SourceFile | undefined {
     if (!specifier.startsWith(".") && !path.isAbsolute(specifier)) return undefined
     const baseDir = from.getDirectoryPath()
     const absolute = path.isAbsolute(specifier) ? specifier : path.resolve(baseDir, specifier)
-    return project.getSourceFile(absolute) ?? project.getSourceFile(absolute + ".ts")
+    return (
+        project.getSourceFile(absolute) ??
+        project.getSourceFile(withExtension(absolute, ".ts")) ??
+        (extensionOf(absolute) === "" ? project.getSourceFile(absolute + ".ts") : undefined)
+    )
 }
