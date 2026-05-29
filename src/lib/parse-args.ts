@@ -4,6 +4,7 @@
 //   ts-survey help
 //   ts-survey report [--<report>...] [files...] [--output <name>] [-p tsconfig]
 //   ts-survey reformat [--indent N|tab ...] [files...] [-p tsconfig] [--dry-run]
+//   ts-survey ls [--no-exports] [--no-importers] [--unused-exports] [files...]
 // Any non-dash argument after the subcommand is a file path (globs allowed),
 // forwarded to ts-morph. Report-name validation stays in runReports.
 
@@ -20,7 +21,14 @@ export interface ApplyOverrides {
     bracketSpacing?: "on" | "off"
 }
 
-type Command = "report" | "reformat"
+type Command = "report" | "reformat" | "ls"
+
+// `ls` filter flags; OR-combined when more than one is set.
+interface LsFilters {
+    noExports: boolean
+    noImporters: boolean
+    unusedExports: boolean
+}
 
 interface ParsedArgs {
     command: Command
@@ -37,6 +45,8 @@ interface ParsedArgs {
     dryRun: boolean
     // Positional file arguments, resolved to absolute (globs allowed).
     paths: string[]
+    // ls-only: which cleanup-candidate filters were requested.
+    lsFilters?: LsFilters
 }
 
 interface HelpRequested {
@@ -54,12 +64,46 @@ export function parseArgs(argv: string[]): ParseArgsResult | undefined {
     if (command === undefined || command === "help") return {help: true}
     if (command === "report") return parseReport(rest)
     if (command === "reformat") return parseReformat(rest)
+    if (command === "ls") return parseLs(rest)
     if (command.startsWith("-")) {
-        console.error("expected a subcommand: report, reformat, or help")
+        console.error("expected a subcommand: report, reformat, ls, or help")
         return undefined
     }
-    console.error(`unknown command: ${command} (expected: report, reformat, help)`)
+    console.error(`unknown command: ${command} (expected: report, reformat, ls, help)`)
     return undefined
+}
+
+// `ls`: cleanup-candidate filters plus positional files. Each flag is a
+// boolean; multiple are OR-combined downstream.
+function parseLs(rest: string[]): ParseArgsResult | undefined {
+    const files: string[] = []
+    let tsconfigPath: string | null = null
+    let noExports = false
+    let noImporters = false
+    let unusedExports = false
+
+    for (let i = 0; i < rest.length; i++) {
+        const a = rest[i]
+        if (a === "--no-exports") {
+            noExports = true
+        } else if (a === "--no-importers") {
+            noImporters = true
+        } else if (a === "--unused-exports") {
+            unusedExports = true
+        } else if (a === "-p" || a === "--project") {
+            const v = takeProject(rest, ++i, a, tsconfigPath)
+            if (v === undefined) return undefined
+            tsconfigPath = v
+        } else if (a.startsWith("-")) {
+            console.error(`unknown option: ${a}`)
+            return undefined
+        } else {
+            files.push(a)
+        }
+    }
+
+    const {absTsconfig, paths} = resolvePaths(tsconfigPath, files)
+    return {command: "ls", reportNames: [], output: null, applyOverrides: {}, surveyDefault: false, tsconfigPath: absTsconfig, dryRun: false, paths, lsFilters: {noExports, noImporters, unusedExports}}
 }
 
 // `report`: collect report-name selectors (`--<report>`), the optional

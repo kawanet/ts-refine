@@ -1,13 +1,14 @@
 #!/usr/bin/env node
 
-// argv → Project → one report pass, then either runReformat (the
-// `reformat` command, write) or Markdown + output finalizer (the `report`
-// command, read). parseArgs routes the subcommand and keeps them separate.
+// argv → Project, then dispatch the subcommand: `ls` lists files, `report`
+// prints Markdown (+ optional output finalizer), `reformat` writes the
+// recommendations to disk. parseArgs routes and keeps the paths separate.
 
 import type {TsSurveyReportName} from "@kawanet/ts-survey"
 
 import {selectFormat} from "./format/run-format.ts"
-import {initProject, runReformat, runReports} from "./index.ts"
+import {initProject, runLs, runReformat, runReports} from "./index.ts"
+import {filterLsEntries, writeLsTable} from "./ls/format-ls.ts"
 import {writePrettierMarkdown} from "./lib/format-prettier.ts"
 import {writeReformatMarkdown} from "./lib/format-ts-survey.ts"
 import {parseArgs} from "./lib/parse-args.ts"
@@ -31,25 +32,33 @@ const fileOpts = {paths: opts.paths}
 // Swallow the Markdown stream in reformat mode; runReformat consumes it.
 const NULL_SINK = {write: () => {}}
 
-const isReformat = opts.command === "reformat"
+// Report-name validation lives in runReports so typos surface as a named
+// error there. Cast at the boundary (unused by the `ls` command).
+const reportNames = opts.reportNames as TsSurveyReportName[]
 
 // Library throws (missing tsconfig, unknown report name) become clean
 // CLI errors rather than unhandled rejections.
 try {
     const project = initProject(opts.tsconfigPath)
 
-    const format = isReformat ? {reportStream: NULL_SINK, finalize: () => {}} : selectFormat(opts.output, process.stdout)
-
-    // Report-name validation lives in runReports so typos surface as a
-    // named error there. Cast at the boundary.
-    const reportNames = opts.reportNames as TsSurveyReportName[]
-    const report = await runReports(project, {...fileOpts, reportNames, stream: format.reportStream})
-
-    if (isReformat) {
+    if (opts.command === "ls") {
+        const entries = await runLs(project, fileOpts)
+        writeLsTable(filterLsEntries(entries, opts.lsFilters!), process.stdout)
+    } else if (opts.command === "reformat") {
+        const report = await runReports(project, {...fileOpts, reportNames, stream: NULL_SINK})
         await runReformat(project, {...fileOpts, dryRun: opts.dryRun, report, ...opts.applyOverrides})
     } else {
-        // Survey-default appends `## recommendation` + `### .prettierrc`.
-        // Named reports and `--output` paths skip both intentionally.
+        const format = selectFormat(opts.output, process.stdout)
+        // The default survey leads with the ls cleanup-candidate listing,
+        // then the report tables, then `## recommendation` + `### .prettierrc`.
+        // Named reports and `--output` paths skip these survey-only blocks.
+        if (opts.surveyDefault) {
+            const entries = await runLs(project, fileOpts)
+            const candidates = filterLsEntries(entries, {noExports: true, noImporters: true, unusedExports: true})
+            process.stdout.write("### ls --no-exports --no-importers --unused-exports\n\n")
+            writeLsTable(candidates, process.stdout)
+        }
+        const report = await runReports(project, {...fileOpts, reportNames, stream: format.reportStream})
         if (opts.surveyDefault) {
             writeReformatMarkdown(report, process.stdout)
             writePrettierMarkdown(report, process.stdout)
