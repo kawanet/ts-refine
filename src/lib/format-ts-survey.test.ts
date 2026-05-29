@@ -24,9 +24,14 @@ describe("writeTsSurveyCommand", () => {
         assert.equal(out, "ts-survey --apply \\\n  --indent 4\n")
     })
 
-    it("maps memberSeparators.separator → --member-separator V", () => {
+    it("maps indent.width=tab → --indent tab", () => {
+        const out = capture((s) => writeTsSurveyCommand({indent: {width: "tab"}}, s))
+        assert.equal(out, "ts-survey --apply \\\n  --indent tab\n")
+    })
+
+    it("omits memberSeparators (report-only; --apply does not consume it)", () => {
         const out = capture((s) => writeTsSurveyCommand({memberSeparators: {separator: "none"}}, s))
-        assert.equal(out, "ts-survey --apply \\\n  --member-separator none\n")
+        assert.equal(out, "ts-survey --apply\n")
     })
 
     it("maps newLine.newLine → --new-line V", () => {
@@ -39,7 +44,7 @@ describe("writeTsSurveyCommand", () => {
         assert.equal(out, "ts-survey --apply \\\n  --bracket-spacing on\n")
     })
 
-    it("combines all recommendations in a fixed order", () => {
+    it("combines all recommendations in a fixed order, omitting member-separators", () => {
         const out = capture((s) =>
             writeTsSurveyCommand(
                 // Input keys are intentionally reversed; the output order is fixed.
@@ -47,7 +52,7 @@ describe("writeTsSurveyCommand", () => {
                 s,
             ),
         )
-        assert.equal(out, "ts-survey --apply \\\n  --semicolons off --indent 4 --member-separator none --new-line lf --bracket-spacing on\n")
+        assert.equal(out, "ts-survey --apply \\\n  --semicolons off --indent 4 --new-line lf --bracket-spacing on\n")
     })
 
     it("emits a bare `ts-survey --apply` when nothing was recommended", () => {

@@ -68,8 +68,13 @@ export async function runReportBracketSpacing(project: Project, {stream, absIncl
     stream.write("| --- | --- | --- | --- |\n")
     for (const k of DISPLAY_ORDER) {
         const b = buckets.get(k)
-        if (!b) continue
-        stream.write(`| ${STYLE_LABEL[k]} | ${b.lines} | ${b.files} | ${b.topPath} |\n`)
+        // Both styles always get a row (0 when absent) so the two-way
+        // comparison is always visible at a glance.
+        if (b) {
+            stream.write(`| ${STYLE_LABEL[k]} | ${b.lines} | ${b.files} | ${b.topPath} |\n`)
+        } else {
+            stream.write(`| ${STYLE_LABEL[k]} | 0 | 0 ||\n`)
+        }
     }
     stream.write(`| total | ${totalLines} | ${perFile.length} | |\n`)
     stream.write("\n")

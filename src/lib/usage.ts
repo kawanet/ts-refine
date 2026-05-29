@@ -17,7 +17,7 @@ export function usage(): string {
         "",
         "Apply (write; applies the reports' recommendations to disk):",
         "  --apply                     Apply the recommended settings to every file",
-        "  --indent <N>                Override indent width (implies --apply)",
+        "  --indent <N|tab>            Override indent width or use tabs (implies --apply)",
         "  --semicolons on|off         Override semicolon insertion (implies --apply)",
         "  --new-line lf|crlf          Override end-of-line (implies --apply)",
         "  --bracket-spacing on|off    Override inner-brace spacing (implies --apply)",

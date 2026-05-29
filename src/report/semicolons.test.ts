@@ -80,6 +80,27 @@ describe("runReportSemicolons (sample/semicolons-mixed)", () => {
         assert.deepEqual(ret, {})
     })
 
+    it("counts interface/type members the LS rewrites and skips comma-separated ones", async () => {
+        // Two `;` members + one none member are in the LS rewrite domain (3
+        // counted); the comma member is excluded. No statements at all, so the
+        // file is entirely member-driven: 2/3 carry `;` → bucket 51-89%.
+        const project = new Project({useInMemoryFileSystem: true})
+        project.createSourceFile(
+            "/sample/iface.ts",
+            ["interface A {", "  a: string;", "  b: number;", "  c: boolean", "  d(): void,", "}"].join("\n"),
+        )
+        const lines: string[] = []
+        const ret = await runReportSemicolons(project, {
+            stream: {write: (l) => lines.push(l)},
+            absIncludes: ["/sample/*.ts"],
+            absExcludes: [],
+        })
+        const out = lines.join("")
+        // 3 members counted (comma member excluded), 2 with `;`.
+        assert.match(out, /\| total \| 3 \| 1 \| \|/)
+        assert.deepEqual(ret, {semicolons: "on"})
+    })
+
     it("does not count grammar-required do-while semicolons", async () => {
         const project = new Project({useInMemoryFileSystem: true})
         project.createSourceFile("/sample/do-while.ts", ["let x = 0", "do {", "  x++", "} while (x < 2);"].join("\n"))

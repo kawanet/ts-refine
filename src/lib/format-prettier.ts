@@ -7,12 +7,12 @@
 //   semicolons.semicolons === "on"          → semi: true
 //   semicolons.semicolons === "off"         → semi: false
 //   indent.width === <number>               → tabWidth: <number>, useTabs: false
-//   memberSeparators.separator === "semi"   → semi: true   (only when semicolons is silent)
-//   memberSeparators.separator === "comma"  → semi: false, trailingComma: "all"
-//   memberSeparators.separator === "none"   → semi: false, trailingComma: "none"
+//   indent.width === "tab"                  → useTabs: true
 //   newLine.newLine === <lf|crlf|cr>        → endOfLine: <lf|crlf|cr>
 //   bracketSpacing.bracketSpacing === "on"  → bracketSpacing: true
 //   bracketSpacing.bracketSpacing === "off" → bracketSpacing: false
+// member-separators has no Prettier mapping (comma members are
+// unreachable; semi/none is already covered by semi), so it is omitted.
 // Reports that didn't recommend anything contribute no fields, so an
 // empty TsSurveyReport renders as `{}`.
 
@@ -30,29 +30,11 @@ function buildPrettierOptions(report: TsSurveyReport): PrettierOptions {
     const opts: PrettierOptions = {}
     if (report.semicolons?.semicolons === "on") opts.semi = true
     else if (report.semicolons?.semicolons === "off") opts.semi = false
-    if (typeof report.indent?.width === "number") {
+    if (report.indent?.width === "tab") {
+        opts.useTabs = true
+    } else if (typeof report.indent?.width === "number") {
         opts.tabWidth = report.indent.width
         opts.useTabs = false
-    }
-    // member-separators mapping:
-    // - `semi` governs both statements and members in Prettier, so when
-    //   the two reports both speak it goes to the one with the larger
-    //   statement population (semicolons). The member-separator
-    //   recommendation only contributes `semi` when semicolons is silent.
-    // - `trailingComma` is only meaningful once `semi: false` is committed
-    //   (Prettier separates members with `;` when `semi: true`), so it's
-    //   gated on that flag.
-    // - For the inherently contradictory `semi:true × member=none/comma`
-    //   shape we leave `trailingComma` off rather than emit a config
-    //   Prettier would interpret as `;` everywhere regardless.
-    const ms = report.memberSeparators?.separator
-    if (opts.semi === undefined) {
-        if (ms === "semi") opts.semi = true
-        else if (ms === "comma" || ms === "none") opts.semi = false
-    }
-    if (opts.semi === false) {
-        if (ms === "comma") opts.trailingComma = "all"
-        else if (ms === "none") opts.trailingComma = "none"
     }
     if (report.newLine?.newLine) opts.endOfLine = report.newLine.newLine
     if (report.bracketSpacing?.bracketSpacing === "on") opts.bracketSpacing = true

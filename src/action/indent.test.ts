@@ -31,6 +31,13 @@ describe("runApply --indent (dry-run, in-memory)", () => {
         assert.match(sf.getFullText(), /\n {4}return 1\n/)
     })
 
+    it("converts space indent to a tab when indent=tab", async () => {
+        const project = new Project({useInMemoryFileSystem: true})
+        const sf = project.createSourceFile("tab.ts", ["function f() {", "    return 1", "}", ""].join("\n"))
+        await runApply(project, {dryRun: true, absIncludes: [], absExcludes: [], indent: "tab", organizeImports: "off", report: {}})
+        assert.match(sf.getFullText(), /\n\treturn 1\n/)
+    })
+
     it("does not rewrite indent inside a template literal", async () => {
         const project = new Project({useInMemoryFileSystem: true})
         const sf = project.createSourceFile("c.ts", ["function f() {", "  const s = `", "    indented inside template", "    other inside template", "  `", "  return s", "}", ""].join("\n"))

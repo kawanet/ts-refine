@@ -75,6 +75,10 @@ describe("runReportMemberSeparators (sample/members-mixed)", () => {
         // No members remain after the `}`-trailing skip; the file should
         // not be counted.
         assert.match(out, /\| total \| 0 \| 0 \| \|/)
+        // `\n` and `;` keep a 0-row; `,` is omitted when absent.
+        assert.match(out, /\| `\\n` \| 0 \| 0 \|\|/)
+        assert.match(out, /\| `;` \| 0 \| 0 \|\|/)
+        assert.equal(/\| `,` \|/.test(out), false)
     })
 
     it("counts class properties whose initializer ends with an object literal", async () => {

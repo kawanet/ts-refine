@@ -44,37 +44,15 @@ describe("writePrettierConfig", () => {
         assert.match(out, /\n {4}"semi":/)
     })
 
-    it("maps memberSeparators.separator=semi → semi: true (when semicolons is silent)", () => {
-        const json = JSON.parse(capture({memberSeparators: {separator: "semi"}}))
-        assert.equal(json.semi, true)
-        // Members are separated by `;` under semi:true, so trailingComma adds nothing.
-        assert.equal(json.trailingComma, undefined)
+    it("maps indent.width=tab → useTabs: true without tabWidth", () => {
+        const json = JSON.parse(capture({indent: {width: "tab"}}))
+        assert.equal(json.useTabs, true)
+        assert.equal(json.tabWidth, undefined)
     })
 
-    it("maps memberSeparators.separator=comma → semi: false + trailingComma: 'all'", () => {
+    it("ignores memberSeparators (comma members are unreachable in Prettier)", () => {
         const json = JSON.parse(capture({memberSeparators: {separator: "comma"}}))
-        assert.equal(json.semi, false)
-        assert.equal(json.trailingComma, "all")
-    })
-
-    it("maps memberSeparators.separator=none → semi: false + trailingComma: 'none'", () => {
-        const json = JSON.parse(capture({memberSeparators: {separator: "none"}}))
-        assert.equal(json.semi, false)
-        assert.equal(json.trailingComma, "none")
-    })
-
-    it("combines semicolons=off with member=none into semi:false + trailingComma:'none'", () => {
-        const json = JSON.parse(capture({semicolons: {semicolons: "off"}, memberSeparators: {separator: "none"}}))
-        assert.equal(json.semi, false)
-        assert.equal(json.trailingComma, "none")
-    })
-
-    it("lets semicolons win the semi flag when the two reports disagree", () => {
-        // semicolons:on × member=none is contradictory. Keep semi:true (the
-        // stronger signal) and drop trailingComma rather than emit a self-conflict.
-        const json = JSON.parse(capture({semicolons: {semicolons: "on"}, memberSeparators: {separator: "none"}}))
-        assert.equal(json.semi, true)
-        assert.equal(json.trailingComma, undefined)
+        assert.deepEqual(json, {})
     })
 
     it("maps newLine.newLine=lf → endOfLine: 'lf'", () => {

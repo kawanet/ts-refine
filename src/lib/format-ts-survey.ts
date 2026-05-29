@@ -8,13 +8,12 @@ import type {RunReportsOpts, TsSurveyReport} from "@kawanet/ts-survey"
 type Writer = RunReportsOpts["stream"]
 
 // Fixed emission order so the output is byte-identical regardless of
-// upstream property order. member-separators is printed for the human
-// record even though `--apply` does not consume it.
+// upstream property order. Only flags `--apply` actually consumes are
+// emitted; member-separators is report-only and intentionally omitted.
 function buildTsSurveyFlags(report: TsSurveyReport): string[] {
     const flags: string[] = []
     if (report.semicolons?.semicolons) flags.push(`--semicolons ${report.semicolons.semicolons}`)
-    if (typeof report.indent?.width === "number") flags.push(`--indent ${report.indent.width}`)
-    if (report.memberSeparators?.separator) flags.push(`--member-separator ${report.memberSeparators.separator}`)
+    if (report.indent?.width !== undefined) flags.push(`--indent ${report.indent.width}`)
     if (report.newLine?.newLine) flags.push(`--new-line ${report.newLine.newLine}`)
     if (report.bracketSpacing?.bracketSpacing) flags.push(`--bracket-spacing ${report.bracketSpacing.bracketSpacing}`)
     return flags

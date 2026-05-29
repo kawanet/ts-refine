@@ -17,14 +17,14 @@ function quiet<T>(fn: () => T): T {
 }
 
 describe("parseArgs", () => {
-    it("recognises --apply as a write-mode trigger and feeds every registered report", () => {
+    it("recognises --apply and feeds the recommendation-bearing reports only", () => {
         const r = parseArgs(["--apply", "-p", SAMPLE_TSCONFIG])
         assert.ok(r && !("help" in r))
         assert.equal(r.apply, true)
         assert.deepEqual(r.applyOverrides, {})
-        // --apply consumes the full recommendation set; every report runs.
-        assert.ok(r.reportNames.includes("unused-exports"))
         assert.ok(r.reportNames.includes("semicolons"))
+        // Markdown-only extras (unused-exports) are skipped under --apply.
+        assert.equal(r.reportNames.includes("unused-exports"), false)
     })
 
     it("accepts comma-separated --report names with de-duplication", () => {
@@ -105,12 +105,17 @@ describe("parseArgs", () => {
         assert.equal(r.apply, false)
     })
 
-    it("clears surveyDefault under --apply but still runs every report", () => {
+    it("runs every recommendation-bearing report under --apply, skipping the Markdown-only extras", () => {
         const r = parseArgs(["--apply"])
         assert.ok(r && !("help" in r))
         // surveyDefault gates the recommendation Markdown blocks only.
         assert.equal(r.surveyDefault, false)
-        assert.ok(r.reportNames.includes("unused-exports"))
+        // Recommendation-bearing reports are still active.
+        assert.ok(r.reportNames.includes("semicolons"))
+        assert.ok(r.reportNames.includes("bracket-spacing"))
+        // unused-exports is Markdown-only and perturbs LS state for runApply,
+        // so it sits in the extras registry and is skipped here.
+        assert.equal(r.reportNames.includes("unused-exports"), false)
     })
 
     it("treats explicit --report or --format as opting out of the survey-default flag", () => {
@@ -161,6 +166,13 @@ describe("parseArgs", () => {
     it("rejects --indent with a non-positive integer", () => {
         const r = quiet(() => parseArgs(["--indent", "0", "-p", SAMPLE_TSCONFIG]))
         assert.equal(r, undefined)
+    })
+
+    it("accepts --indent tab for tab indentation (implies --apply)", () => {
+        const r = parseArgs(["--indent", "tab", "-p", SAMPLE_TSCONFIG])
+        assert.ok(r && !("help" in r))
+        assert.equal(r.apply, true)
+        assert.equal(r.applyOverrides.indent, "tab")
     })
 
     it("accepts --new-line lf and --new-line crlf", () => {

@@ -40,7 +40,8 @@ describe("selectFormat", () => {
         f.finalize({semicolons: {semicolons: "off"}, indent: {width: 4}, memberSeparators: {separator: "none"}})
         // Two-line form: `ts-survey \` continuation, then the flags
         // indented by two spaces so `grep '^ +--'` picks them up.
-        assert.equal(out(), "ts-survey --apply \\\n  --semicolons off --indent 4 --member-separator none\n")
+        // member-separators is report-only, so it never reaches the command.
+        assert.equal(out(), "ts-survey --apply \\\n  --semicolons off --indent 4\n")
     })
 
     it("throws on an unknown format name", () => {

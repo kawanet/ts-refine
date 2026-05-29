@@ -24,6 +24,19 @@ describe("mergeRecommendations", () => {
         assert.equal(r.formatSettings.convertTabsToSpaces, undefined)
     })
 
+    it("maps indent.width=tab → convertTabsToSpaces:false without indentSize", () => {
+        const r = mergeRecommendations({indent: {width: "tab"}}, {})
+        assert.equal(r.formatSettings.convertTabsToSpaces, false)
+        assert.equal(r.formatSettings.indentSize, undefined)
+        assert.equal(r.formatSettings.tabSize, undefined)
+    })
+
+    it("lets --indent tab override win over a numeric report width", () => {
+        const r = mergeRecommendations({indent: {width: 2}}, {indent: "tab"})
+        assert.equal(r.formatSettings.convertTabsToSpaces, false)
+        assert.equal(r.formatSettings.indentSize, undefined)
+    })
+
     it("maps semicolons=on → SemicolonPreference.Insert", () => {
         const r = mergeRecommendations({semicolons: {semicolons: "on"}}, {})
         assert.equal(r.formatSettings.semicolons, ts.SemicolonPreference.Insert)

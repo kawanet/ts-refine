@@ -1,12 +1,13 @@
-// --report semicolons: per-file trailing-`;` ratio across ASI-eligible
-// statements, bucketed into a compact fixed layout. Helps decide which
-// direction minimizes churn when standardizing on insert or remove.
+// --report semicolons: per-file trailing-`;` ratio across the nodes the
+// LS SemicolonPreference rewrites — ASI-eligible statements plus
+// interface/type-literal members (comma-separated members excluded).
+// Helps decide which direction minimizes churn when standardizing.
 
 import type {RunSemicolonsOpts} from "@kawanet/ts-survey"
 import type {Project} from "ts-morph"
 
 import {displayPath, selectSourceFiles} from "../lib/source-files.ts"
-import {isSemiEligibleStatement} from "../lib/statement-kinds.ts"
+import {isSemiEligibleStatement, isTypeMember} from "../lib/statement-kinds.ts"
 import type {ReportOpts} from "./types.ts"
 
 // Fixed 7-row layout: 0% / 100% / exact-50% match by equality, "1-10%" and
@@ -25,9 +26,13 @@ export async function runReportSemicolons(project: Project, {stream, absIncludes
         let total = 0
         let withSemi = 0
         sf.forEachDescendant((node) => {
-            if (!isSemiEligibleStatement(node)) return
+            const member = isTypeMember(node)
+            if (!member && !isSemiEligibleStatement(node)) return
+            const text = node.getText()
+            // Comma-separated members are outside the LS rewrite domain.
+            if (member && text.endsWith(",")) return
             total++
-            if (node.getText().endsWith(";")) withSemi++
+            if (text.endsWith(";")) withSemi++
         })
         if (total === 0) continue
         perFile.push({

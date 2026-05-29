@@ -19,8 +19,10 @@ export interface RunSemicolonsOpts {
     semicolons: "on" | "off"
 }
 
+// "tab" recommends tab indentation (LS convertTabsToSpaces:false /
+// Prettier useTabs); a number recommends that many spaces.
 export interface RunIndentOpts {
-    width: number
+    width: number | "tab"
 }
 
 export interface RunMemberSeparatorsOpts {
@@ -66,7 +68,7 @@ export interface RunApplyOpts extends TsSurveyOpts {
     dryRun: boolean
     report: TsSurveyReport
     organizeImports?: "on" | "off"
-    indent?: number
+    indent?: number | "tab"
     semicolons?: "on" | "off"
     // LS `newLineCharacter` only accepts \n / \r\n; a `cr` recommendation
     // is logged but not applied.

@@ -5,6 +5,7 @@ import {Project} from "ts-morph"
 import {runReportIndent} from "./indent.ts"
 
 const SAMPLE_TSCONFIG = path.resolve(import.meta.dirname, "../../sample/indents-mixed/tsconfig.json")
+const TAB_TSCONFIG = path.resolve(import.meta.dirname, "../../sample/tab-indent/tsconfig.json")
 
 describe("runReportIndent (sample/indents-mixed)", () => {
     it("groups files by primary leading width and returns the file-count majority", async () => {
@@ -51,6 +52,8 @@ describe("runReportIndent (sample/indents-mixed)", () => {
             absExcludes: [],
         })
         assert.deepEqual(ret, {width: 4})
+        // No tab-indented file, but the tab row is still emitted at 0.
+        assert.match(lines.join(""), /\| tab \| 0 \| 0 \|\|/)
     })
 
     it("returns an empty partial when files AND transition counts tie", async () => {
@@ -64,5 +67,20 @@ describe("runReportIndent (sample/indents-mixed)", () => {
             absExcludes: [],
         })
         assert.deepEqual(ret, {})
+    })
+})
+
+describe("runReportIndent (sample/tab-indent)", () => {
+    it("recommends width=tab when all files use tab indentation", async () => {
+        // Tab is actionable (LS convertTabsToSpaces:false / Prettier
+        // useTabs), so the recommendation returns {width: "tab"} and the
+        // formatters emit `--indent tab` / `useTabs: true`.
+        const project = new Project({tsConfigFilePath: TAB_TSCONFIG})
+        const lines: string[] = []
+        const ret = await runReportIndent(project, {stream: {write: (l) => lines.push(l)}, absIncludes: [], absExcludes: []})
+
+        const out = lines.join("")
+        assert.match(out, /\| tab \| \d+ \| 3 \| /)
+        assert.deepEqual(ret, {width: "tab"})
     })
 })

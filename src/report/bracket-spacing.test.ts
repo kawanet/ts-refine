@@ -33,9 +33,13 @@ describe("runReportBracketSpacing (sample/braces-mixed)", () => {
         )
         const lines: string[] = []
         const ret = await runReportBracketSpacing(project, {stream: {write: (l) => lines.push(l)}, absIncludes: [], absExcludes: []})
+        const out = lines.join("")
         // None of the three forms speak to the bracketSpacing convention,
         // so the file should not appear in any bucket.
-        assert.match(lines.join(""), /\| total \| 0 \| 0 \| \|/)
+        assert.match(out, /\| total \| 0 \| 0 \| \|/)
+        // Both styles still get a 0-row so the comparison stays visible.
+        assert.match(out, /\| `\{ x \}` \| 0 \| 0 \|\|/)
+        assert.match(out, /\| `\{x\}` \| 0 \| 0 \|\|/)
         assert.deepEqual(ret, {})
     })
 

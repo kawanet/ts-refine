@@ -22,9 +22,12 @@ type MutableFormatSettings = {-readonly [K in keyof FormatCodeSettings]: FormatC
 export function mergeRecommendations(report: TsSurveyReport, overrides: ApplyOverrides): ResolvedSettings {
     const formatSettings: MutableFormatSettings = {}
 
-    // convertTabsToSpaces is pinned: the recommender speaks spaces only.
+    // "tab" turns convertTabsToSpaces off (LS then indents with tabs);
+    // a number pins space indentation at that width.
     const indent = overrides.indent ?? report.indent?.width
-    if (typeof indent === "number") {
+    if (indent === "tab") {
+        formatSettings.convertTabsToSpaces = false
+    } else if (typeof indent === "number") {
         formatSettings.indentSize = indent
         formatSettings.tabSize = indent
         formatSettings.convertTabsToSpaces = true
