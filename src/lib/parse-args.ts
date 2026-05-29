@@ -1,5 +1,5 @@
 // argv → ParsedArgs. Subcommand grammar:
-//   ts-survey [help | report [names...] | format] [--options]
+//   ts-survey [help | report [names...] | reformat] [--options]
 // The first non-dash token is the subcommand; remaining non-dash tokens
 // are collected as positionals (report names today, file args later), so
 // the same parser shape serves the planned ls / mv / inspect commands.
@@ -17,12 +17,12 @@ export interface ApplyOverrides {
     bracketSpacing?: "on" | "off"
 }
 
-type Command = "report" | "format"
+type Command = "report" | "reformat"
 
 interface ParsedArgs {
     command: Command
     // For report: the requested names (positionals) or the full registry.
-    // For format: the recommendation-bearing reports runApply consumes.
+    // For reformat: the recommendation-bearing reports runReformat consumes.
     reportNames: string[]
     // report-only: suppress Markdown and emit the named output instead.
     output: string | null
@@ -186,19 +186,19 @@ function resolveArgs(raw: RawArgs): ParseArgsResult | undefined {
         return {help: true}
     }
     if (command === "help") return {help: true}
-    if (command !== "report" && command !== "format") {
-        console.error(`unknown command: ${command} (expected: report, format, help)`)
+    if (command !== "report" && command !== "reformat") {
+        console.error(`unknown command: ${command} (expected: report, reformat, help)`)
         return undefined
     }
 
     // Mode-specific option checks so a misplaced flag fails loudly.
     if (command === "report") {
         if (Object.keys(overrides).length > 0) {
-            console.error("apply overrides (--indent, --semicolons, etc.) are only valid with `format`")
+            console.error("apply overrides (--indent, --semicolons, etc.) are only valid with `reformat`")
             return undefined
         }
         if (dryRun) {
-            console.error("--dry-run is only valid with `format`")
+            console.error("--dry-run is only valid with `reformat`")
             return undefined
         }
     } else {
@@ -207,17 +207,17 @@ function resolveArgs(raw: RawArgs): ParseArgsResult | undefined {
             return undefined
         }
         if (positionals.length > 0) {
-            console.error(`format takes no positional arguments; got: ${positionals.join(" ")}`)
+            console.error(`reformat takes no positional arguments; got: ${positionals.join(" ")}`)
             return undefined
         }
     }
 
     // report names: positionals (de-duplicated in order) or the full
-    // registry. format always runs the recommendation-bearing set.
+    // registry. reformat always runs the recommendation-bearing set.
     // Name validation stays in runReports (runtime), not here.
     let reportNames: string[]
     let surveyDefault = false
-    if (command === "format") {
+    if (command === "reformat") {
         reportNames = [...applyReportNames]
     } else if (positionals.length > 0) {
         reportNames = []

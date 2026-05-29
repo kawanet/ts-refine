@@ -18,6 +18,7 @@ describe("cli", () => {
             assert.equal(r.status, 0, `args: ${args.join(" ")}`)
             assert.match(r.stdout, /Usage: ts-survey <command>/)
             assert.match(r.stdout, /report \[names\.\.\.\]/)
+            assert.match(r.stdout, /^  reformat /m)
             assert.match(r.stdout, /--output <name>/)
             assert.match(r.stdout, /--organize-imports on\|off/)
         }
@@ -35,6 +36,12 @@ describe("cli", () => {
         // Output is JSON, not Markdown.
         assert.doesNotMatch(r.stdout, /^### /m)
         assert.match(r.stdout, /^\{/)
+    })
+
+    it("applies via the reformat subcommand (dry-run)", () => {
+        const r = run(["reformat", "--dry-run", "-p", SAMPLE])
+        assert.equal(r.status, 0)
+        assert.match(r.stderr, /apply: would change/)
     })
 
     it("exits non-zero on an unknown command", () => {

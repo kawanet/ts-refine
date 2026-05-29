@@ -4,7 +4,7 @@
 import type * as declared from "@kawanet/ts-survey"
 import {Project} from "ts-morph"
 
-export {runApply} from "./action/run-apply.ts"
+export {runReformat} from "./action/run-apply.ts"
 export {runReports} from "./report/run-reports.ts"
 
 // Lets callers avoid a direct ts-morph dependency for the common case.

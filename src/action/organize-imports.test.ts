@@ -1,4 +1,4 @@
-// organize-imports coverage retargeted at runApply. The {A} style test
+// organize-imports coverage retargeted at runReformat. The {A} style test
 // pins the outcome via `--bracket-spacing off`; the old action
 // hard-coded it.
 
@@ -7,12 +7,12 @@ import path from "node:path"
 import {describe, it} from "node:test"
 import {Project} from "ts-morph"
 
-import {runApply} from "./run-apply.ts"
+import {runReformat} from "./run-apply.ts"
 
 const SAMPLE_TSCONFIG = path.resolve(import.meta.dirname, "../../sample/basic/tsconfig.json")
 const INDEX = path.resolve(import.meta.dirname, "../../sample/basic/src/index.ts")
 
-describe("runApply (organize-imports path, dry-run, sample/basic)", () => {
+describe("runReformat (organize-imports path, dry-run, sample/basic)", () => {
     it("alphabetises imports in-memory without touching disk", async () => {
         const project = new Project({tsConfigFilePath: SAMPLE_TSCONFIG})
 
@@ -21,7 +21,7 @@ describe("runApply (organize-imports path, dry-run, sample/basic)", () => {
         const before = project.getSourceFile(INDEX)!.getFullText()
         assert.ok(before.indexOf("./used.js") < before.indexOf("./partial.js"), "fixture should start with ./used.js before ./partial.js")
 
-        await runApply(project, {dryRun: true, absIncludes: [], absExcludes: [], report: {}})
+        await runReformat(project, {dryRun: true, absIncludes: [], absExcludes: [], report: {}})
 
         const after = project.getSourceFile(INDEX)!.getFullText()
         const pPos = after.indexOf("./partial.js")
@@ -32,9 +32,9 @@ describe("runApply (organize-imports path, dry-run, sample/basic)", () => {
 
     it("uses braces without surrounding spaces (`{A}` style) when bracket-spacing off is in effect", async () => {
         const project = new Project({tsConfigFilePath: SAMPLE_TSCONFIG})
-        // Old action hard-coded brace-spacing off; runApply drives it via
+        // Old action hard-coded brace-spacing off; runReformat drives it via
         // the merged settings, so pin the override here.
-        await runApply(project, {dryRun: true, absIncludes: [], absExcludes: [], report: {}, bracketSpacing: "off"})
+        await runReformat(project, {dryRun: true, absIncludes: [], absExcludes: [], report: {}, bracketSpacing: "off"})
 
         const text = project.getSourceFile(INDEX)!.getFullText()
         // `{ usedConst,` with a leading space would indicate brace-spacing on.

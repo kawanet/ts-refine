@@ -5,7 +5,7 @@
 //   TsSurveyReport ─reportToFormatOptions─┐
 //                                          ├─ mergeFormatOptions ─ resolveSettings ─▶ ResolvedSettings
 //   ApplyOverrides ─overridesToFormatOptions┘
-// and buildTsSurveyFlags renders the same FormatOptions back to argv.
+// and buildReformatFlags renders the same FormatOptions back to argv.
 
 import type {TsSurveyReport} from "@kawanet/ts-survey"
 import type {FormatCodeSettings} from "ts-morph"
@@ -23,8 +23,8 @@ export interface FormatOptions {
     bracketSpacing?: "on" | "off"
 }
 
-// LS settings + runApply-only concerns (organize gate, newline post-pass).
-// Local-ish shape — runApply reads it; the CR diagnostic is computed at
+// LS settings + runReformat-only concerns (organize gate, newline post-pass).
+// Local-ish shape — runReformat reads it; the CR diagnostic is computed at
 // the apply entry from the report, not carried here.
 export interface ResolvedSettings {
     formatSettings: FormatCodeSettings
@@ -70,7 +70,7 @@ export function mergeFormatOptions(base: FormatOptions, override: FormatOptions)
     }
 }
 
-// FormatOptions → the settings runApply hands to ts-morph.
+// FormatOptions → the settings runReformat hands to ts-morph.
 export function resolveSettings(options: FormatOptions): ResolvedSettings {
     const formatSettings: MutableFormatSettings = {}
 

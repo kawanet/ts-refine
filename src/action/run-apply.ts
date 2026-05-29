@@ -1,4 +1,4 @@
-// `format` command: resolve report + overrides → LS formatter + organizeImports.
+// `reformat` command: resolve report + overrides → LS formatter + organizeImports.
 // Order is formatText → organizeImports; the same FormatCodeSettings
 // feeds both so the rebuilt import block matches the file.
 
@@ -8,7 +8,7 @@ import fs from "node:fs/promises"
 import {mergeFormatOptions, normalizeNewLines, overridesToFormatOptions, reportToFormatOptions, resolveSettings} from "../lib/format-options.ts"
 import {selectSourceFiles} from "../lib/source-files.ts"
 
-export const runApply: typeof declared.runApply = async (project, opts) => {
+export const runReformat: typeof declared.runReformat = async (project, opts) => {
     const {dryRun, absIncludes, absExcludes, report, ...overrides} = opts
     // Report recommendation is the base; CLI overrides win per field.
     const options = mergeFormatOptions(reportToFormatOptions(report), overridesToFormatOptions(overrides))

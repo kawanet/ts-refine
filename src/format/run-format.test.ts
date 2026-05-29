@@ -32,16 +32,16 @@ describe("selectFormat", () => {
         assert.equal(json.useTabs, false)
     })
 
-    it("swaps the report stream for a sink and writes the ts-survey command on finalize", () => {
+    it("swaps the report stream for a sink and writes the reformat command on finalize", () => {
         const {writer, out} = makeStdout()
-        const f = selectFormat("ts-survey", writer)
+        const f = selectFormat("reformat", writer)
         f.reportStream.write("### dropped\n")
         assert.equal(out(), "")
         f.finalize({semicolons: {semicolons: "off"}, indent: {width: 4}, memberSeparators: {separator: "none"}})
         // Two-line form: `ts-survey \` continuation, then the flags
         // indented by two spaces so `grep '^ +--'` picks them up.
         // member-separators is report-only, so it never reaches the command.
-        assert.equal(out(), "ts-survey format \\\n  --semicolons off --indent 4\n")
+        assert.equal(out(), "ts-survey reformat \\\n  --semicolons off --indent 4\n")
     })
 
     it("throws on an unknown format name", () => {

@@ -62,9 +62,9 @@ export interface TsSurveyReport {
     bracketSpacing?: Partial<RunBracketSpacingOpts>
 }
 
-// Input to `runApply`. `report` provides defaults; the top-level
+// Input to `runReformat`. `report` provides defaults; the top-level
 // overrides win per field. `organizeImports` defaults to "on".
-export interface RunApplyOpts extends TsSurveyOpts {
+export interface RunReformatOpts extends TsSurveyOpts {
     dryRun: boolean
     report: TsSurveyReport
     organizeImports?: "on" | "off"
@@ -80,4 +80,4 @@ export declare function initProject(tsconfigPath: string): Project
 
 export declare function runReports(project: Project, opts: RunReportsOpts): Promise<TsSurveyReport>
 
-export declare function runApply(project: Project, opts: RunApplyOpts): Promise<void>
+export declare function runReformat(project: Project, opts: RunReformatOpts): Promise<void>

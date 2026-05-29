@@ -1,11 +1,11 @@
-// Semicolons-action coverage retargeted at runApply({semicolons}).
+// Semicolons-action coverage retargeted at runReformat({semicolons}).
 // hasAsiHazardAfter tests are retired with the detector function itself.
 
 import {strict as assert} from "node:assert"
 import path from "node:path"
 import {describe, it} from "node:test"
 import {Project} from "ts-morph"
-import {runApply} from "./run-apply.ts"
+import {runReformat} from "./run-apply.ts"
 
 const SAMPLE_TSCONFIG = path.resolve(import.meta.dirname, "../../sample/semicolons-mixed/tsconfig.json")
 
@@ -32,10 +32,10 @@ function semiLineCount(text: string) {
 // on semicolon handling.
 const SEMI_OFF = {dryRun: true, absIncludes: [] as string[], absExcludes: [] as string[], organizeImports: "off" as const}
 
-describe("runApply --semicolons off (dry-run, sample/semicolons-mixed)", () => {
+describe("runReformat --semicolons off (dry-run, sample/semicolons-mixed)", () => {
     it("strips every trailing `;` from ASI-eligible statements in-memory", async () => {
         const project = new Project({tsConfigFilePath: SAMPLE_TSCONFIG})
-        await runApply(project, {...SEMI_OFF, report: {}, semicolons: "off"})
+        await runReformat(project, {...SEMI_OFF, report: {}, semicolons: "off"})
 
         // all-semi.ts and mixed.ts must end up with no trailing `;` on const lines.
         for (const suffix of ["/all-semi.ts", "/mixed.ts"]) {
@@ -52,10 +52,10 @@ describe("runApply --semicolons off (dry-run, sample/semicolons-mixed)", () => {
     })
 })
 
-describe("runApply --semicolons on (dry-run, sample/semicolons-mixed)", () => {
+describe("runReformat --semicolons on (dry-run, sample/semicolons-mixed)", () => {
     it("appends `;` to every ASI-eligible statement lacking one", async () => {
         const project = new Project({tsConfigFilePath: SAMPLE_TSCONFIG})
-        await runApply(project, {...SEMI_OFF, report: {}, semicolons: "on"})
+        await runReformat(project, {...SEMI_OFF, report: {}, semicolons: "on"})
 
         // no-semi.ts and mixed.ts must converge on full-`;` on const lines.
         for (const suffix of ["/no-semi.ts", "/mixed.ts"]) {
@@ -72,7 +72,7 @@ describe("runApply --semicolons on (dry-run, sample/semicolons-mixed)", () => {
     })
 })
 
-describe("runApply --semicolons off handles nested ASI-eligible statements", () => {
+describe("runReformat --semicolons off handles nested ASI-eligible statements", () => {
     it("strips `;` from describe/it/assert blocks without overflowing offsets", async () => {
         // Original regression motivation: a parent-before-child visitor
         // with naive reverse iteration over-shifted the file. The LS
@@ -81,7 +81,7 @@ describe("runApply --semicolons off handles nested ASI-eligible statements", () 
         const project = new Project({useInMemoryFileSystem: true})
         const sf = project.createSourceFile("nest.ts", ["describe('outer', () => {", "  it('inner', () => {", "    const x = 1;", "    inner(x);", "  });", "});"].join("\n"))
 
-        await runApply(project, {...SEMI_OFF, report: {}, semicolons: "off"})
+        await runReformat(project, {...SEMI_OFF, report: {}, semicolons: "off"})
 
         const text = sf.getFullText()
         assert.equal(text.includes("const x = 1;"), false, "inner const lost its ;")
@@ -92,7 +92,7 @@ describe("runApply --semicolons off handles nested ASI-eligible statements", () 
     })
 })
 
-describe("runApply --semicolons off keeps `;` at ASI-hazard sites", () => {
+describe("runReformat --semicolons off keeps `;` at ASI-hazard sites", () => {
     it("retains `;` before a method-chain continuation on the next line", async () => {
         // The LS rule isSemicolonDeletionContext is the original source the
         // self-implemented detector was modeled on; this test pins that the
@@ -108,7 +108,7 @@ describe("runApply --semicolons off keeps `;` at ASI-hazard sites", () => {
             ].join("\n"),
         )
 
-        await runApply(project, {...SEMI_OFF, report: {}, semicolons: "off"})
+        await runReformat(project, {...SEMI_OFF, report: {}, semicolons: "off"})
 
         const text = sf.getFullText()
         // The hazardous line must keep its `;` to avoid fusing into `1.toString()`.
@@ -120,14 +120,14 @@ describe("runApply --semicolons off keeps `;` at ASI-hazard sites", () => {
     })
 })
 
-describe("runApply --semicolons off and do-while statements", () => {
+describe("runReformat --semicolons off and do-while statements", () => {
     it("removes the trailing `;` after `} while (...)` (LS divergence from the old hand-rolled action)", async () => {
         // The LS deletion-context rule does not exempt do-while; the
         // retired hand-rolled filter did. Pinned as the LS outcome.
         const project = new Project({useInMemoryFileSystem: true})
         const sf = project.createSourceFile("do-while.ts", ["let x = 0;", "do {", "  x++", "} while (x < 2);", "const y = x;"].join("\n"))
 
-        await runApply(project, {...SEMI_OFF, report: {}, semicolons: "off"})
+        await runReformat(project, {...SEMI_OFF, report: {}, semicolons: "off"})
 
         const text = sf.getFullText()
         // Old action: `} while (x < 2);` retained. LS: `;` stripped.

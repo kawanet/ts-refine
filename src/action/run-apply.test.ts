@@ -2,7 +2,7 @@ import {strict as assert} from "node:assert"
 import {describe, it} from "node:test"
 import {Project} from "ts-morph"
 
-import {runApply} from "./run-apply.ts"
+import {runReformat} from "./run-apply.ts"
 
 // Silences the "updated:" / summary writes for clean test output.
 function quiet<T>(fn: () => Promise<T>): Promise<T> {
@@ -16,12 +16,12 @@ function quiet<T>(fn: () => Promise<T>): Promise<T> {
     })
 }
 
-describe("runApply", () => {
+describe("runReformat", () => {
     it("applies the indent recommendation when no override is given", async () => {
         const project = new Project({useInMemoryFileSystem: true})
         const sf = project.createSourceFile("a.ts", "function f() {\n  return 1\n}\n")
         await quiet(() =>
-            runApply(project, {
+            runReformat(project, {
                 dryRun: true,
                 absIncludes: [],
                 absExcludes: [],
@@ -36,7 +36,7 @@ describe("runApply", () => {
         const project = new Project({useInMemoryFileSystem: true})
         const sf = project.createSourceFile("a.ts", "function f() {\n  return 1\n}\n")
         await quiet(() =>
-            runApply(project, {
+            runReformat(project, {
                 dryRun: true,
                 absIncludes: [],
                 absExcludes: [],
@@ -51,7 +51,7 @@ describe("runApply", () => {
         const project = new Project({useInMemoryFileSystem: true})
         const sf = project.createSourceFile("a.ts", "const a = 1\nconst b = 2\n")
         await quiet(() =>
-            runApply(project, {
+            runReformat(project, {
                 dryRun: true,
                 absIncludes: [],
                 absExcludes: [],
@@ -65,7 +65,7 @@ describe("runApply", () => {
         const project = new Project({useInMemoryFileSystem: true})
         const sf = project.createSourceFile("a.ts", "const a = 1;\nconst b = 2;\n")
         await quiet(() =>
-            runApply(project, {
+            runReformat(project, {
                 dryRun: true,
                 absIncludes: [],
                 absExcludes: [],
@@ -80,7 +80,7 @@ describe("runApply", () => {
         project.createSourceFile("dep.ts", "export const used = 1\nexport const unused = 2\n")
         const sf = project.createSourceFile("a.ts", "import {unused, used} from './dep.ts'\nconst x = used\n")
         await quiet(() =>
-            runApply(project, {
+            runReformat(project, {
                 dryRun: true,
                 absIncludes: [],
                 absExcludes: [],
@@ -99,7 +99,7 @@ describe("runApply", () => {
         project.createSourceFile("dep.ts", "export const used = 1\nexport const unused = 2\n")
         const sf = project.createSourceFile("a.ts", "import {unused, used} from './dep.ts'\nconst x = used\n")
         await quiet(() =>
-            runApply(project, {
+            runReformat(project, {
                 dryRun: true,
                 absIncludes: [],
                 absExcludes: [],
@@ -122,7 +122,7 @@ describe("runApply", () => {
         }
         console.log = () => {}
         try {
-            await runApply(project, {
+            await runReformat(project, {
                 dryRun: true,
                 absIncludes: [],
                 absExcludes: [],
@@ -140,7 +140,7 @@ describe("runApply", () => {
         const before = "interface I { x:number }\n"
         const sf = project.createSourceFile("a.d.ts", before)
         await quiet(() =>
-            runApply(project, {
+            runReformat(project, {
                 dryRun: true,
                 absIncludes: [],
                 absExcludes: [],
@@ -155,7 +155,7 @@ describe("runApply", () => {
         const project = new Project({useInMemoryFileSystem: true})
         const sf = project.createSourceFile("a.ts", "const a = 1\n")
         await quiet(() =>
-            runApply(project, {
+            runReformat(project, {
                 dryRun: true,
                 absIncludes: [],
                 absExcludes: [],

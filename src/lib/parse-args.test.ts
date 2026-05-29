@@ -17,13 +17,13 @@ function quiet<T>(fn: () => T): T {
 }
 
 describe("parseArgs", () => {
-    it("treats `format` as the write mode and feeds the recommendation-bearing reports only", () => {
-        const r = parseArgs(["format", "-p", SAMPLE_TSCONFIG])
+    it("treats `reformat` as the write mode and feeds the recommendation-bearing reports only", () => {
+        const r = parseArgs(["reformat", "-p", SAMPLE_TSCONFIG])
         assert.ok(r && !("help" in r))
-        assert.equal(r.command, "format")
+        assert.equal(r.command, "reformat")
         assert.deepEqual(r.applyOverrides, {})
         assert.ok(r.reportNames.includes("semicolons"))
-        // Markdown-only extras (unused-exports) are skipped under `format`.
+        // Markdown-only extras (unused-exports) are skipped under `reformat`.
         assert.equal(r.reportNames.includes("unused-exports"), false)
     })
 
@@ -47,15 +47,15 @@ describe("parseArgs", () => {
     })
 
     it("accepts report names alongside --output", () => {
-        const r = parseArgs(["report", "semicolons", "--output", "ts-survey", "-p", SAMPLE_TSCONFIG])
+        const r = parseArgs(["report", "semicolons", "--output", "reformat", "-p", SAMPLE_TSCONFIG])
         assert.ok(r && !("help" in r))
         assert.deepEqual(r.reportNames, ["semicolons"])
-        assert.equal(r.output, "ts-survey")
+        assert.equal(r.output, "reformat")
         assert.equal(r.surveyDefault, false)
     })
 
     it("resolves include/exclude globs against the tsconfig directory", () => {
-        const r = parseArgs(["format", "-p", SAMPLE_TSCONFIG, "--include", "src/**", "--exclude", "**/*.cli.ts"])
+        const r = parseArgs(["reformat", "-p", SAMPLE_TSCONFIG, "--include", "src/**", "--exclude", "**/*.cli.ts"])
         assert.ok(r && !("help" in r))
         const dir = path.dirname(SAMPLE_TSCONFIG)
         assert.equal(r.absIncludes[0], path.join(dir, "src/**"))
@@ -63,7 +63,7 @@ describe("parseArgs", () => {
     })
 
     it("defaults tsconfigPath to ./tsconfig.json when none is given", () => {
-        const r = parseArgs(["format"])
+        const r = parseArgs(["reformat"])
         assert.ok(r && !("help" in r))
         assert.equal(r.tsconfigPath, path.resolve("tsconfig.json"))
     })
@@ -102,7 +102,7 @@ describe("parseArgs", () => {
 
     it("treats -h / --help as help even after a subcommand", () => {
         assert.deepEqual(parseArgs(["report", "--help"]), {help: true})
-        assert.deepEqual(parseArgs(["format", "-h"]), {help: true})
+        assert.deepEqual(parseArgs(["reformat", "-h"]), {help: true})
     })
 
     it("runs every registered report under a bare `report` (survey default)", () => {
@@ -115,14 +115,14 @@ describe("parseArgs", () => {
         assert.equal(r.surveyDefault, true)
     })
 
-    it("runs every recommendation-bearing report under `format`, skipping the Markdown-only extras", () => {
-        const r = parseArgs(["format"])
+    it("runs every recommendation-bearing report under `reformat`, skipping the Markdown-only extras", () => {
+        const r = parseArgs(["reformat"])
         assert.ok(r && !("help" in r))
         // surveyDefault gates the recommendation Markdown blocks only.
         assert.equal(r.surveyDefault, false)
         assert.ok(r.reportNames.includes("semicolons"))
         assert.ok(r.reportNames.includes("bracket-spacing"))
-        // unused-exports is Markdown-only and perturbs LS state for runApply,
+        // unused-exports is Markdown-only and perturbs LS state for runReformat,
         // so it sits in the extras registry and is skipped here.
         assert.equal(r.reportNames.includes("unused-exports"), false)
     })
@@ -152,72 +152,72 @@ describe("parseArgs", () => {
     })
 
     it("rejects --semicolons with an invalid value", () => {
-        const r = quiet(() => parseArgs(["format", "--semicolons", "yes", "-p", SAMPLE_TSCONFIG]))
+        const r = quiet(() => parseArgs(["reformat", "--semicolons", "yes", "-p", SAMPLE_TSCONFIG]))
         assert.equal(r, undefined)
     })
 
-    it("accepts --semicolons on|off under format", () => {
-        const on = parseArgs(["format", "--semicolons", "on", "-p", SAMPLE_TSCONFIG])
+    it("accepts --semicolons on|off under reformat", () => {
+        const on = parseArgs(["reformat", "--semicolons", "on", "-p", SAMPLE_TSCONFIG])
         assert.ok(on && !("help" in on))
-        assert.equal(on.command, "format")
+        assert.equal(on.command, "reformat")
         assert.equal(on.applyOverrides.semicolons, "on")
-        const off = parseArgs(["format", "--semicolons", "off", "-p", SAMPLE_TSCONFIG])
+        const off = parseArgs(["reformat", "--semicolons", "off", "-p", SAMPLE_TSCONFIG])
         assert.ok(off && !("help" in off))
         assert.equal(off.applyOverrides.semicolons, "off")
     })
 
-    it("accepts --indent N under format", () => {
-        const r = parseArgs(["format", "--indent", "4", "-p", SAMPLE_TSCONFIG])
+    it("accepts --indent N under reformat", () => {
+        const r = parseArgs(["reformat", "--indent", "4", "-p", SAMPLE_TSCONFIG])
         assert.ok(r && !("help" in r))
-        assert.equal(r.command, "format")
+        assert.equal(r.command, "reformat")
         assert.equal(r.applyOverrides.indent, 4)
     })
 
     it("rejects --indent with a non-positive integer", () => {
-        const r = quiet(() => parseArgs(["format", "--indent", "0", "-p", SAMPLE_TSCONFIG]))
+        const r = quiet(() => parseArgs(["reformat", "--indent", "0", "-p", SAMPLE_TSCONFIG]))
         assert.equal(r, undefined)
     })
 
-    it("accepts --indent tab for tab indentation under format", () => {
-        const r = parseArgs(["format", "--indent", "tab", "-p", SAMPLE_TSCONFIG])
+    it("accepts --indent tab for tab indentation under reformat", () => {
+        const r = parseArgs(["reformat", "--indent", "tab", "-p", SAMPLE_TSCONFIG])
         assert.ok(r && !("help" in r))
         assert.equal(r.applyOverrides.indent, "tab")
     })
 
     it("accepts --new-line lf and --new-line crlf", () => {
-        const r1 = parseArgs(["format", "--new-line", "lf", "-p", SAMPLE_TSCONFIG])
+        const r1 = parseArgs(["reformat", "--new-line", "lf", "-p", SAMPLE_TSCONFIG])
         assert.ok(r1 && !("help" in r1))
         assert.equal(r1.applyOverrides.newLine, "lf")
-        const r2 = parseArgs(["format", "--new-line", "crlf", "-p", SAMPLE_TSCONFIG])
+        const r2 = parseArgs(["reformat", "--new-line", "crlf", "-p", SAMPLE_TSCONFIG])
         assert.ok(r2 && !("help" in r2))
         assert.equal(r2.applyOverrides.newLine, "crlf")
     })
 
     it("rejects --new-line cr (LS formatter cannot emit CR-only)", () => {
-        const r = quiet(() => parseArgs(["format", "--new-line", "cr", "-p", SAMPLE_TSCONFIG]))
+        const r = quiet(() => parseArgs(["reformat", "--new-line", "cr", "-p", SAMPLE_TSCONFIG]))
         assert.equal(r, undefined)
     })
 
     it("accepts --bracket-spacing on|off", () => {
-        const r = parseArgs(["format", "--bracket-spacing", "off", "-p", SAMPLE_TSCONFIG])
+        const r = parseArgs(["reformat", "--bracket-spacing", "off", "-p", SAMPLE_TSCONFIG])
         assert.ok(r && !("help" in r))
         assert.equal(r.applyOverrides.bracketSpacing, "off")
     })
 
-    it("accepts --organize-imports on|off under format", () => {
-        const r = parseArgs(["format", "--organize-imports", "off", "-p", SAMPLE_TSCONFIG])
+    it("accepts --organize-imports on|off under reformat", () => {
+        const r = parseArgs(["reformat", "--organize-imports", "off", "-p", SAMPLE_TSCONFIG])
         assert.ok(r && !("help" in r))
-        assert.equal(r.command, "format")
+        assert.equal(r.command, "reformat")
         assert.equal(r.applyOverrides.organizeImports, "off")
     })
 
     it("rejects bare --organize-imports without an on|off argument", () => {
-        const r = quiet(() => parseArgs(["format", "--organize-imports", "-p", SAMPLE_TSCONFIG]))
+        const r = quiet(() => parseArgs(["reformat", "--organize-imports", "-p", SAMPLE_TSCONFIG]))
         assert.equal(r, undefined)
     })
 
-    it("accepts --dry-run under format", () => {
-        const r = parseArgs(["format", "--dry-run", "-p", SAMPLE_TSCONFIG])
+    it("accepts --dry-run under reformat", () => {
+        const r = parseArgs(["reformat", "--dry-run", "-p", SAMPLE_TSCONFIG])
         assert.ok(r && !("help" in r))
         assert.equal(r.dryRun, true)
     })
@@ -232,13 +232,13 @@ describe("parseArgs", () => {
         assert.equal(r, undefined)
     })
 
-    it("rejects --output under format", () => {
-        const r = quiet(() => parseArgs(["format", "--output", "prettier", "-p", SAMPLE_TSCONFIG]))
+    it("rejects --output under reformat", () => {
+        const r = quiet(() => parseArgs(["reformat", "--output", "prettier", "-p", SAMPLE_TSCONFIG]))
         assert.equal(r, undefined)
     })
 
-    it("rejects positional arguments under format", () => {
-        const r = quiet(() => parseArgs(["format", "extra.ts", "-p", SAMPLE_TSCONFIG]))
+    it("rejects positional arguments under reformat", () => {
+        const r = quiet(() => parseArgs(["reformat", "extra.ts", "-p", SAMPLE_TSCONFIG]))
         assert.equal(r, undefined)
     })
 })

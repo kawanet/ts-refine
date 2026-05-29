@@ -12,12 +12,12 @@
 import type {RunReportsOpts, TsSurveyReport} from "@kawanet/ts-survey"
 
 import {writePrettierConfig} from "../lib/format-prettier.ts"
-import {writeTsSurveyCommand} from "../lib/format-ts-survey.ts"
+import {writeReformatCommand} from "../lib/format-ts-survey.ts"
 
 // Local alias for readability — not exported.
 type Writer = RunReportsOpts["stream"]
 
-export const formatNames = ["prettier", "ts-survey"] as const
+export const formatNames = ["prettier", "reformat"] as const
 
 interface FormatDispatch {
     reportStream: Writer
@@ -39,10 +39,10 @@ export function selectFormat(name: string | null, stdout: Writer): FormatDispatc
             finalize: (report) => writePrettierConfig(report, stdout),
         }
     }
-    if (name === "ts-survey") {
+    if (name === "reformat") {
         return {
             reportStream: NULL_SINK,
-            finalize: (report) => writeTsSurveyCommand(report, stdout),
+            finalize: (report) => writeReformatCommand(report, stdout),
         }
     }
     // formatNames is exhaustive — this guards future entries that forget to add a branch.

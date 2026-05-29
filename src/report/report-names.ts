@@ -1,4 +1,4 @@
-// applyReportNames are the format command's default report set;
+// applyReportNames are the reformat command's default report set;
 // extraReportNames are Markdown-only and skipped there. Concat order is
 // extras-first to match the pre-split survey layout.
 
