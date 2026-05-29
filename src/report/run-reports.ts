@@ -18,7 +18,7 @@ import {runReportSemicolons} from "./semicolons.ts"
 import {runReportUnusedExports} from "./unused-exports.ts"
 
 export const runReports: typeof declared.runReports = async (project, opts) => {
-    const {stream, reportNames: requested, absIncludes, absExcludes} = opts
+    const {stream, reportNames: requested, absIncludes} = opts
 
     // Validate every requested name up-front so a typo fails before any
     // report runs. `reportNames` is the source of truth for what exists.
@@ -29,7 +29,7 @@ export const runReports: typeof declared.runReports = async (project, opts) => {
     }
 
     const report: declared.TsSurveyReport = {}
-    const reportOpts: ReportOpts = {stream, absIncludes, absExcludes}
+    const reportOpts: ReportOpts = {stream, absIncludes}
 
     if (requested.includes("unused-exports")) {
         await runReportUnusedExports(project, reportOpts)

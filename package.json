@@ -10,7 +10,6 @@
     "url": "https://github.com/kawanet/ts-survey/issues"
   },
   "dependencies": {
-    "minimatch": "^10.2.5",
     "ts-morph": "^28.0.0"
   },
   "devDependencies": {

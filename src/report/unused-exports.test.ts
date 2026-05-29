@@ -10,7 +10,7 @@ describe("runReportUnusedExports (sample/basic)", () => {
     it("flags deleted-and-unexported declarations and skips externally-used ones", async () => {
         const project = new Project({tsConfigFilePath: SAMPLE_TSCONFIG})
         const lines: string[] = []
-        await runReportUnusedExports(project, {stream: {write: (l) => lines.push(l)}, absIncludes: [], absExcludes: []})
+        await runReportUnusedExports(project, {stream: {write: (l) => lines.push(l)}, absIncludes: []})
 
         const out = lines.join("")
         assert.match(out, /^### unused-exports\n/)

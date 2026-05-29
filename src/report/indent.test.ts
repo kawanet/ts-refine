@@ -11,7 +11,7 @@ describe("runReportIndent (sample/indents-mixed)", () => {
     it("groups files by primary leading width and returns the file-count majority", async () => {
         const project = new Project({tsConfigFilePath: SAMPLE_TSCONFIG})
         const lines: string[] = []
-        const ret = await runReportIndent(project, {stream: {write: (l) => lines.push(l)}, absIncludes: [], absExcludes: []})
+        const ret = await runReportIndent(project, {stream: {write: (l) => lines.push(l)}, absIncludes: []})
 
         const out = lines.join("")
         assert.match(out, /^### indent\n/)
@@ -49,7 +49,6 @@ describe("runReportIndent (sample/indents-mixed)", () => {
         const ret = await runReportIndent(project, {
             stream: {write: (l) => lines.push(l)},
             absIncludes: ["/sample/*.ts"],
-            absExcludes: [],
         })
         assert.deepEqual(ret, {width: 4})
         // No tab-indented file, but the tab row is still emitted at 0.
@@ -64,7 +63,6 @@ describe("runReportIndent (sample/indents-mixed)", () => {
         const ret = await runReportIndent(project, {
             stream: {write: (l) => lines.push(l)},
             absIncludes: ["/sample/*.ts"],
-            absExcludes: [],
         })
         assert.deepEqual(ret, {})
     })
@@ -77,7 +75,7 @@ describe("runReportIndent (sample/tab-indent)", () => {
         // formatters emit `--indent tab` / `useTabs: true`.
         const project = new Project({tsConfigFilePath: TAB_TSCONFIG})
         const lines: string[] = []
-        const ret = await runReportIndent(project, {stream: {write: (l) => lines.push(l)}, absIncludes: [], absExcludes: []})
+        const ret = await runReportIndent(project, {stream: {write: (l) => lines.push(l)}, absIncludes: []})
 
         const out = lines.join("")
         assert.match(out, /\| tab \| \d+ \| 3 \| /)

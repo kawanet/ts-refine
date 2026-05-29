@@ -15,8 +15,8 @@ MJS_CONFIG := ./rollup-mjs.config.ts
 # update here.
 NAMED_EXPORTS := $(shell sed -nE 's/^export declare function ([a-zA-Z_$$]+).*/\1/p' $(TYPES))
 
-# Bundle should contain only this package's own src/ — ts-morph and minimatch
-# are externalized. A noticeably larger output means an accidental bundling
+# Bundle should contain only this package's own src/ — ts-morph is
+# externalized. A noticeably larger output means an accidental bundling
 # of a transitive dep; fail the build so it cannot slip in.
 MAX_BYTES := 42000
 

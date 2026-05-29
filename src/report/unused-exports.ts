@@ -9,9 +9,9 @@ import {Node} from "ts-morph"
 import {displayPath, selectSourceFiles} from "../lib/source-files.ts"
 import type {ReportOpts} from "./types.ts"
 
-export async function runReportUnusedExports(project: Project, {stream, absIncludes, absExcludes}: ReportOpts): Promise<void> {
+export async function runReportUnusedExports(project: Project, {stream, absIncludes}: ReportOpts): Promise<void> {
     // Skip .d.ts: type declaration files are external-consumption surfaces by definition.
-    const sourceFiles = selectSourceFiles(project, {absIncludes, absExcludes}).filter((sf) => !sf.getFilePath().endsWith(".d.ts"))
+    const sourceFiles = selectSourceFiles(project, {absIncludes}).filter((sf) => !sf.getFilePath().endsWith(".d.ts"))
 
     const findings: {file: string; line: number; name: string; kind: string; suggestion: string}[] = []
     let totalExports = 0

@@ -9,7 +9,7 @@ import {mergeFormatOptions, normalizeNewLines, overridesToFormatOptions, reportT
 import {selectSourceFiles} from "../lib/source-files.ts"
 
 export const runReformat: typeof declared.runReformat = async (project, opts) => {
-    const {dryRun, absIncludes, absExcludes, report, ...overrides} = opts
+    const {dryRun, absIncludes, report, ...overrides} = opts
     // Report recommendation is the base; CLI overrides win per field.
     const options = mergeFormatOptions(reportToFormatOptions(report), overridesToFormatOptions(overrides))
     const resolved = resolveSettings(options)
@@ -21,7 +21,7 @@ export const runReformat: typeof declared.runReformat = async (project, opts) =>
     }
 
     // .d.ts excluded — same scope every report uses for measurement.
-    const sourceFiles = selectSourceFiles(project, {absIncludes, absExcludes}).filter((sf) => !sf.getFilePath().endsWith(".d.ts"))
+    const sourceFiles = selectSourceFiles(project, {absIncludes}).filter((sf) => !sf.getFilePath().endsWith(".d.ts"))
 
     let changedCount = 0
     let totalCount = 0

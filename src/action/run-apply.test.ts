@@ -24,7 +24,6 @@ describe("runReformat", () => {
             runReformat(project, {
                 dryRun: true,
                 absIncludes: [],
-                absExcludes: [],
                 report: {indent: {width: 4}},
             }),
         )
@@ -39,7 +38,6 @@ describe("runReformat", () => {
             runReformat(project, {
                 dryRun: true,
                 absIncludes: [],
-                absExcludes: [],
                 report: {indent: {width: 4}},
                 indent: 2,
             }),
@@ -54,7 +52,6 @@ describe("runReformat", () => {
             runReformat(project, {
                 dryRun: true,
                 absIncludes: [],
-                absExcludes: [],
                 report: {semicolons: {semicolons: "on"}},
             }),
         )
@@ -68,7 +65,6 @@ describe("runReformat", () => {
             runReformat(project, {
                 dryRun: true,
                 absIncludes: [],
-                absExcludes: [],
                 report: {semicolons: {semicolons: "off"}},
             }),
         )
@@ -83,7 +79,6 @@ describe("runReformat", () => {
             runReformat(project, {
                 dryRun: true,
                 absIncludes: [],
-                absExcludes: [],
                 report: {},
             }),
         )
@@ -102,7 +97,6 @@ describe("runReformat", () => {
             runReformat(project, {
                 dryRun: true,
                 absIncludes: [],
-                absExcludes: [],
                 report: {},
                 organizeImports: "off",
             }),
@@ -125,7 +119,6 @@ describe("runReformat", () => {
             await runReformat(project, {
                 dryRun: true,
                 absIncludes: [],
-                absExcludes: [],
                 report: {newLine: {newLine: "cr"}},
             })
         } finally {
@@ -143,7 +136,6 @@ describe("runReformat", () => {
             runReformat(project, {
                 dryRun: true,
                 absIncludes: [],
-                absExcludes: [],
                 report: {bracketSpacing: {bracketSpacing: "on"}},
             }),
         )
@@ -158,7 +150,6 @@ describe("runReformat", () => {
             runReformat(project, {
                 dryRun: true,
                 absIncludes: [],
-                absExcludes: [],
                 report: {semicolons: {semicolons: "on"}},
             }),
         )

@@ -30,7 +30,7 @@ function semiLineCount(text: string) {
 // organize-imports is unrelated to these fixtures and would dirty the
 // in-memory text comparison; turn it off so the assertions stay focused
 // on semicolon handling.
-const SEMI_OFF = {dryRun: true, absIncludes: [] as string[], absExcludes: [] as string[], organizeImports: "off" as const}
+const SEMI_OFF = {dryRun: true, absIncludes: [] as string[], organizeImports: "off" as const}
 
 describe("runReformat --semicolons off (dry-run, sample/semicolons-mixed)", () => {
     it("strips every trailing `;` from ASI-eligible statements in-memory", async () => {

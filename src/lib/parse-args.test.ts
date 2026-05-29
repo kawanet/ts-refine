@@ -4,6 +4,7 @@ import {describe, it} from "node:test"
 import {parseArgs} from "./parse-args.ts"
 
 const SAMPLE_TSCONFIG = path.resolve(import.meta.dirname, "../../sample/basic/tsconfig.json")
+const SAMPLE_DIR = path.dirname(SAMPLE_TSCONFIG)
 
 // Silences the expected stderr writes so the test output stays clean.
 function quiet<T>(fn: () => T): T {
@@ -27,15 +28,15 @@ describe("parseArgs", () => {
         assert.equal(r.reportNames.includes("unused-exports"), false)
     })
 
-    it("collects space-separated report names with de-duplication", () => {
-        const r = parseArgs(["report", "unused-exports", "semicolons", "unused-exports", "-p", SAMPLE_TSCONFIG])
+    it("collects report-name selector flags with de-duplication", () => {
+        const r = parseArgs(["report", "--unused-exports", "--semicolons", "--unused-exports", "-p", SAMPLE_TSCONFIG])
         assert.ok(r && !("help" in r))
         assert.equal(r.command, "report")
         assert.deepEqual(r.reportNames, ["unused-exports", "semicolons"])
     })
 
-    it("passes unknown report names through without rejecting (runReports validates)", () => {
-        const r = parseArgs(["report", "typo-name", "-p", SAMPLE_TSCONFIG])
+    it("passes unknown report selectors through without rejecting (runReports validates)", () => {
+        const r = parseArgs(["report", "--typo-name", "-p", SAMPLE_TSCONFIG])
         assert.ok(r && !("help" in r))
         assert.deepEqual(r.reportNames, ["typo-name"])
     })
@@ -46,20 +47,24 @@ describe("parseArgs", () => {
         assert.equal(r.output, "typo-format")
     })
 
-    it("accepts report names alongside --output", () => {
-        const r = parseArgs(["report", "semicolons", "--output", "reformat", "-p", SAMPLE_TSCONFIG])
+    it("accepts report selectors alongside --output", () => {
+        const r = parseArgs(["report", "--semicolons", "--output", "reformat", "-p", SAMPLE_TSCONFIG])
         assert.ok(r && !("help" in r))
         assert.deepEqual(r.reportNames, ["semicolons"])
         assert.equal(r.output, "reformat")
         assert.equal(r.surveyDefault, false)
     })
 
-    it("resolves include/exclude globs against the tsconfig directory", () => {
-        const r = parseArgs(["reformat", "-p", SAMPLE_TSCONFIG, "--include", "src/**", "--exclude", "**/*.cli.ts"])
+    it("resolves positional file globs against the tsconfig directory", () => {
+        const r = parseArgs(["report", "-p", SAMPLE_TSCONFIG, "src/**", "extra.ts"])
         assert.ok(r && !("help" in r))
-        const dir = path.dirname(SAMPLE_TSCONFIG)
-        assert.equal(r.absIncludes[0], path.join(dir, "src/**"))
-        assert.equal(r.absExcludes[0], path.join(dir, "**/*.cli.ts"))
+        assert.deepEqual(r.absIncludes, [path.join(SAMPLE_DIR, "src/**"), path.join(SAMPLE_DIR, "extra.ts")])
+    })
+
+    it("accepts positional files under reformat", () => {
+        const r = parseArgs(["reformat", "-p", SAMPLE_TSCONFIG, "a.ts", "b.ts"])
+        assert.ok(r && !("help" in r))
+        assert.deepEqual(r.absIncludes, [path.join(SAMPLE_DIR, "a.ts"), path.join(SAMPLE_DIR, "b.ts")])
     })
 
     it("defaults tsconfigPath to ./tsconfig.json when none is given", () => {
@@ -81,10 +86,9 @@ describe("parseArgs", () => {
     })
 
     it("treats a non-.json -p value as a directory and appends tsconfig.json", () => {
-        const dir = path.dirname(SAMPLE_TSCONFIG)
-        const r = parseArgs(["report", "-p", dir])
+        const r = parseArgs(["report", "-p", SAMPLE_DIR])
         assert.ok(r && !("help" in r))
-        assert.equal(r.tsconfigPath, path.join(dir, "tsconfig.json"))
+        assert.equal(r.tsconfigPath, path.join(SAMPLE_DIR, "tsconfig.json"))
     })
 
     it("treats `-p .` the same as omitting the path", () => {
@@ -127,8 +131,8 @@ describe("parseArgs", () => {
         assert.equal(r.reportNames.includes("unused-exports"), false)
     })
 
-    it("opts out of the survey-default flag when names or --output are given", () => {
-        const r1 = parseArgs(["report", "unused-exports", "-p", SAMPLE_TSCONFIG])
+    it("opts out of the survey-default flag when selectors or --output are given", () => {
+        const r1 = parseArgs(["report", "--unused-exports", "-p", SAMPLE_TSCONFIG])
         assert.ok(r1 && !("help" in r1))
         assert.equal(r1.surveyDefault, false)
         const r2 = parseArgs(["report", "--output", "prettier", "-p", SAMPLE_TSCONFIG])
@@ -141,8 +145,13 @@ describe("parseArgs", () => {
         assert.equal(r, undefined)
     })
 
-    it("returns undefined on an unknown option", () => {
-        const r = quiet(() => parseArgs(["report", "--definitely-not-a-flag", "-p", SAMPLE_TSCONFIG]))
+    it("returns undefined on an unknown reformat option", () => {
+        const r = quiet(() => parseArgs(["reformat", "--definitely-not-a-flag", "-p", SAMPLE_TSCONFIG]))
+        assert.equal(r, undefined)
+    })
+
+    it("returns undefined on a stray single-dash option under report", () => {
+        const r = quiet(() => parseArgs(["report", "-z", "-p", SAMPLE_TSCONFIG]))
         assert.equal(r, undefined)
     })
 
@@ -222,23 +231,8 @@ describe("parseArgs", () => {
         assert.equal(r.dryRun, true)
     })
 
-    it("rejects apply overrides under report", () => {
-        const r = quiet(() => parseArgs(["report", "--indent", "4", "-p", SAMPLE_TSCONFIG]))
-        assert.equal(r, undefined)
-    })
-
-    it("rejects --dry-run under report", () => {
-        const r = quiet(() => parseArgs(["report", "--dry-run", "-p", SAMPLE_TSCONFIG]))
-        assert.equal(r, undefined)
-    })
-
-    it("rejects --output under reformat", () => {
+    it("treats --output as an unknown option under reformat", () => {
         const r = quiet(() => parseArgs(["reformat", "--output", "prettier", "-p", SAMPLE_TSCONFIG]))
-        assert.equal(r, undefined)
-    })
-
-    it("rejects positional arguments under reformat", () => {
-        const r = quiet(() => parseArgs(["reformat", "extra.ts", "-p", SAMPLE_TSCONFIG]))
         assert.equal(r, undefined)
     })
 })
