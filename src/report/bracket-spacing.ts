@@ -1,9 +1,7 @@
-// report bracket-spacing: classify object literals and destructuring
-// patterns by whether the inner content is padded with a space inside
-// the braces (`{ a: 1 }` vs `{a: 1}`). Picks the per-file primary, then
-// the file-count majority. Maps to FormatCodeSettings'
-// insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces and Prettier's
-// `bracketSpacing`.
+// report bracket-spacing: classify brace pairs by inner padding
+// (`{ a }` vs `{a}`). Scope mirrors what FormatCodeSettings'
+// insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces rewrites —
+// object literals, destructuring, and import/export named bindings.
 
 import type {Project} from "ts-morph"
 import {Node} from "ts-morph"
@@ -32,7 +30,7 @@ export async function runReportBracketSpacing(project: Project, {stream, paths}:
     for (const sf of sourceFiles) {
         const counts = new Map<Style, number>()
         sf.forEachDescendant((node) => {
-            if (!Node.isObjectLiteralExpression(node) && !Node.isObjectBindingPattern(node)) return
+            if (!isBraceCarrier(node)) return
             const style = classifyBraces(node.getText())
             if (style === null) return
             counts.set(style, (counts.get(style) ?? 0) + 1)
@@ -79,6 +77,12 @@ export async function runReportBracketSpacing(project: Project, {stream, paths}:
     stream.write("\n")
     console.error(`report bracket-spacing: ${perFile.length} files counted / ${sourceFiles.length} files total`)
     return recommend !== undefined ? {bracketSpacing: recommend} : {}
+}
+
+// The four node kinds whose getText() begins/ends with the braces the
+// LS formatter would re-space — kept identical to format's scope.
+function isBraceCarrier(node: Node): boolean {
+    return Node.isObjectLiteralExpression(node) || Node.isObjectBindingPattern(node) || Node.isNamedImports(node) || Node.isNamedExports(node)
 }
 
 // Returns the inner-padding style for a brace pair, or null if the node

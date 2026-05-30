@@ -27,10 +27,7 @@ describe("runReportBracketSpacing (sample/braces-mixed)", () => {
 
     it("skips empty `{}`, whitespace-only `{ }`, and multi-line forms", async () => {
         const project = new Project({useInMemoryFileSystem: true})
-        project.createSourceFile(
-            "x.ts",
-            ["export const a = {}", "export const b = { }", "export const c = {", "    p: 1,", "}"].join("\n"),
-        )
+        project.createSourceFile("x.ts", ["export const a = {}", "export const b = { }", "export const c = {", "    p: 1,", "}"].join("\n"))
         const lines: string[] = []
         const ret = await runReportBracketSpacing(project, {stream: {write: (l) => lines.push(l)}, paths: []})
         const out = lines.join("")
@@ -85,5 +82,21 @@ describe("runReportBracketSpacing (sample/braces-mixed)", () => {
         // `{a: 1; b: 2}` is a TypeLiteralNode and out of scope.
         assert.match(lines.join(""), /\| `\{ x \}` \| 1 \| 1 \| /)
         assert.deepEqual(ret, {bracketSpacing: "on"})
+    })
+
+    it("counts named bindings of import / export declarations", async () => {
+        const project = new Project({useInMemoryFileSystem: true})
+        // Pure re-export modules carry no object literal or destructure, but
+        // the LS formatter still re-spaces `import {x}` / `export {x}` — so
+        // the report must see them or its recommendation would skip the file.
+        project.createSourceFile("tight.ts", ['import {a} from "./x.ts"', 'export {b} from "./y.ts"', ""].join("\n"))
+        project.createSourceFile("spaced.ts", ['import { a } from "./x.ts"', 'export { b } from "./y.ts"', ""].join("\n"))
+        const lines: string[] = []
+        const ret = await runReportBracketSpacing(project, {stream: {write: (l) => lines.push(l)}, paths: []})
+        const out = lines.join("")
+        assert.match(out, /\| `\{ x \}` \| 2 \| 1 \| /)
+        assert.match(out, /\| `\{x\}` \| 2 \| 1 \| /)
+        assert.match(out, /\| total \| 4 \| 2 \| \|/)
+        assert.deepEqual(ret, {})
     })
 })
