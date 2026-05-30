@@ -37,13 +37,13 @@ npx ts-refine list
 npx ts-refine report
 
 # apply the surveyed style and organize imports
-npx ts-refine format
+npx ts-refine format --dry-run
 
 # move a file; every import of it is rewritten
-npx ts-refine move fileA.ts fileB.ts
+npx ts-refine move fileA.ts fileB.ts --dry-run
 
 # rename an export across the whole project
-npx ts-refine rename --from funcA --to funcB
+npx ts-refine rename --from funcA --to funcB --dry-run
 ```
 
 ## Commands
