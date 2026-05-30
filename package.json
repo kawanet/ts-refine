@@ -1,6 +1,6 @@
 {
   "name": "ts-refine",
-  "description": "Zero-config TypeScript refactoring that follows your codebase's own conventions: move files, organize imports, and format.",
+  "description": "Zero-config TypeScript refactoring that follows your codebase's own conventions: move files, rename symbols, organize imports, and format.",
   "version": "0.0.0",
   "author": "Kawanet",
   "bin": {
