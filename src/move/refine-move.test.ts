@@ -4,13 +4,13 @@ import os from "node:os"
 import path from "node:path"
 import {after, before, describe, it} from "node:test"
 import {Project, ts} from "ts-morph"
-import type {TsRefineReport} from "ts-refine"
+import type {TSR} from "ts-refine"
 import {refineMove} from "./refine-move.ts"
 
 // organizeImports after a move follows the surveyed style; these reports
 // pin the bracket-spacing so the expected import text is deterministic.
-const NO_SPACE: TsRefineReport = {bracketSpacing: {bracketSpacing: "off"}}
-const SPACED: TsRefineReport = {bracketSpacing: {bracketSpacing: "on"}}
+const NO_SPACE: TSR.ReportResult = {bracketSpacing: {bracketSpacing: "off"}}
+const SPACED: TSR.ReportResult = {bracketSpacing: {bracketSpacing: "on"}}
 
 function newProject(): Project {
     return new Project({

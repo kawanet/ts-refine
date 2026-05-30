@@ -7,7 +7,7 @@
 // console.error / the runners' own console output, which already target the
 // process's stderr/stdout.
 
-import type {InspectorName, TsRefineReportName} from "ts-refine"
+import type {TSR} from "ts-refine"
 import {initProject, refineFormat, refineInspect, refineList, refineMove, refineRename, refineReport} from "../index.ts"
 import {writeInspectFile} from "./format-inspect.ts"
 import {filterListEntries, writeListTable} from "./format-list.ts"
@@ -40,7 +40,7 @@ export const refineCLI: refineCLI = async (args, stream) => {
     // Swallow the Markdown stream in the write modes; the runner consumes it.
     const NULL_SINK = {write: () => {}}
     // Report-name validation lives in refineReport so typos surface there.
-    const reportNames = opts.reportNames as TsRefineReportName[]
+    const reportNames = opts.reportNames as TSR.ReportName[]
 
     // Library throws (missing tsconfig, unknown report name) become a clean
     // non-zero status rather than an unhandled rejection.
@@ -52,7 +52,7 @@ export const refineCLI: refineCLI = async (args, stream) => {
             const entries = await refineList(project, fileOpts)
             writeListTable(filterListEntries(entries, opts.listFilters!), stream)
         } else if (opts.command === "inspect") {
-            const inspectorNames = opts.inspectorNames! as InspectorName[]
+            const inspectorNames = opts.inspectorNames! as TSR.InspectorName[]
             const files = await refineInspect(project, {...fileOpts, inspectorNames})
             for (const file of files) writeInspectFile(file, stream)
         } else if (opts.command === "move") {

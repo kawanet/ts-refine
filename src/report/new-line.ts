@@ -3,7 +3,7 @@
 // and Prettier's `endOfLine`.
 
 import type {Project} from "ts-morph"
-import type {RefineNewLineOpts} from "ts-refine"
+import type {TSR} from "ts-refine"
 import {displayPath, selectSourceFiles} from "../lib/source-files.ts"
 import {pickRecommendByFiles} from "../recommend/pick-recommend.ts"
 import type {ReportOpts} from "./types.ts"
@@ -20,7 +20,7 @@ const NL_LABEL: Record<NewLine, string> = {
 
 type Bucket = {lines: number; files: number; topPath: string; topLines: number}
 
-export async function runReportNewLine(project: Project, {stream, paths}: ReportOpts): Promise<Partial<RefineNewLineOpts>> {
+export async function runReportNewLine(project: Project, {stream, paths}: ReportOpts): Promise<Partial<TSR.NewLineOpts>> {
     const sourceFiles = selectSourceFiles(project, {paths}).filter((sf) => !sf.getFilePath().endsWith(".d.ts"))
 
     type PerFile = {path: string; counts: Map<NewLine, number>; primary: NewLine}

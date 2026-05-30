@@ -5,13 +5,13 @@
 import {strict as assert} from "node:assert"
 import {describe, it} from "node:test"
 import {Project} from "ts-morph"
-import type {RefineFormatOpts, TsRefineReport} from "ts-refine"
+import type {TSR} from "ts-refine"
 import {refineFormat} from "./refine-format.ts"
 
-// Builds RefineFormatOpts with the indent override pinned and unrelated
+// Builds FormatOpts with the indent override pinned and unrelated
 // passes (organize-imports) silenced so the test exercises only the
 // indent dimension.
-function opts(width: number): Omit<RefineFormatOpts, "report"> & {report: TsRefineReport} {
+function opts(width: number): Omit<TSR.FormatOpts, "report"> & {report: TSR.ReportResult} {
     return {dryRun: true, paths: [], indent: width, organizeImports: "off", report: {}}
 }
 

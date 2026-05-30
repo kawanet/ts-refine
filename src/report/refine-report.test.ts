@@ -2,7 +2,7 @@ import {strict as assert} from "node:assert"
 import path from "node:path"
 import {describe, it} from "node:test"
 import {Project} from "ts-morph"
-import type {TsRefineReportName} from "ts-refine"
+import type {TSR} from "ts-refine"
 import {refineReport} from "./refine-report.ts"
 
 const SAMPLE_TSCONFIG = path.resolve(import.meta.dirname, "../../sample/basic/tsconfig.json")
@@ -17,7 +17,7 @@ describe("refineReport", () => {
                     // Intentional typo. The typed surface narrows to known
                     // names, so the cast lets the test reach the runtime
                     // validation that the production CLI also relies on.
-                    reportNames: ["typo-name" as unknown as TsRefineReportName],
+                    reportNames: ["typo-name" as unknown as TSR.ReportName],
                     stream: {write: (l) => lines.push(l)},
                     paths: [],
                 }),

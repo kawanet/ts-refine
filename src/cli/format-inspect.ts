@@ -2,19 +2,19 @@
 // inspector sections that ran. The caller decides the stream; this writes
 // just one file's block (the CLI calls it per InspectFile entry).
 
-import type {InspectExport, InspectFile, InspectImporter, RefineReportOpts} from "ts-refine"
+import type {TSR} from "ts-refine"
 
 // Local alias for readability — not exported.
-type Writer = RefineReportOpts["stream"]
+type Writer = TSR.ReportOpts["stream"]
 
-export function writeInspectFile(file: InspectFile, stream: Writer): void {
+export function writeInspectFile(file: TSR.InspectFile, stream: Writer): void {
     stream.write(`## ${file.file}\n`)
     stream.write("\n")
     if (file.exports !== undefined) writeExports(file.exports, stream)
     if (file.importers !== undefined) writeImporters(file.importers, stream)
 }
 
-function writeExports(rows: InspectExport[], stream: Writer): void {
+function writeExports(rows: TSR.InspectExport[], stream: Writer): void {
     stream.write("### exports\n")
     stream.write("\n")
     if (rows.length === 0) {
@@ -32,7 +32,7 @@ function writeExports(rows: InspectExport[], stream: Writer): void {
     stream.write("\n")
 }
 
-function writeImporters(rows: InspectImporter[], stream: Writer): void {
+function writeImporters(rows: TSR.InspectImporter[], stream: Writer): void {
     stream.write("### importers\n")
     stream.write("\n")
     if (rows.length === 0) {

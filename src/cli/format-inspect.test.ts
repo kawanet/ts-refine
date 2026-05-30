@@ -1,9 +1,9 @@
 import {strict as assert} from "node:assert"
 import {describe, it} from "node:test"
-import type {InspectFile} from "ts-refine"
+import type {TSR} from "ts-refine"
 import {writeInspectFile} from "./format-inspect.ts"
 
-function capture(file: InspectFile): string {
+function capture(file: TSR.InspectFile): string {
     let out = ""
     writeInspectFile(file, {write: (s) => (out += s)})
     return out

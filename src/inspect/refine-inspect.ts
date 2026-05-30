@@ -12,6 +12,7 @@
 import path from "node:path"
 import {Node, ts, type ImportDeclaration, type SourceFile} from "ts-morph"
 import type * as declared from "ts-refine"
+import type {TSR} from "ts-refine"
 import {displayPath, selectSourceFiles} from "../lib/source-files.ts"
 import {inspectorNames} from "./inspector-names.ts"
 
@@ -33,9 +34,9 @@ export const refineInspect: typeof declared.refineInspect = async (project, opts
         ? project.getSourceFiles().filter((sf) => !sf.getFilePath().endsWith(".d.ts"))
         : []
 
-    const results: declared.InspectFile[] = []
+    const results: TSR.InspectFile[] = []
     for (const sf of targets) {
-        const entry: declared.InspectFile = {file: displayPath(sf.getFilePath())}
+        const entry: TSR.InspectFile = {file: displayPath(sf.getFilePath())}
         if (requested.includes("exports")) entry.exports = gatherExports(sf)
         if (requested.includes("importers")) entry.importers = gatherImporters(sf, allFiles)
         results.push(entry)
@@ -49,8 +50,8 @@ export const refineInspect: typeof declared.refineInspect = async (project, opts
 // Per-file: one row per other source file that brings symbols / a
 // side-effect / a re-export / a dynamic import from this one. `kinds` and
 // `names` collapse multiple statements in the same importer into one row.
-function gatherImporters(target: SourceFile, allFiles: SourceFile[]): declared.InspectImporter[] {
-    const out: declared.InspectImporter[] = []
+function gatherImporters(target: SourceFile, allFiles: SourceFile[]): TSR.InspectImporter[] {
+    const out: TSR.InspectImporter[] = []
 
     for (const sf of allFiles) {
         if (sf === target) continue
@@ -137,8 +138,8 @@ function resolveModuleSpecifier(from: SourceFile, specifier: string): SourceFile
 // (re-export passthrough is skipped to avoid double counting). `importers`
 // counts distinct external source files using this export; `example` is
 // the alphabetically first such file, or null when unused.
-function gatherExports(sf: SourceFile): declared.InspectExport[] {
-    const out: declared.InspectExport[] = []
+function gatherExports(sf: SourceFile): TSR.InspectExport[] {
+    const out: TSR.InspectExport[] = []
 
     for (const [name, decls] of sf.getExportedDeclarations()) {
         for (const decl of decls) {

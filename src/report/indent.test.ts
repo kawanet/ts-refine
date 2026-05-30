@@ -28,8 +28,7 @@ describe("runReportIndent (sample/indents-mixed)", () => {
         // accidentally satisfy this check.
         assert.equal(/^\| 8 \|/m.test(out), false)
         assert.match(out, /\| total \| 17 \| 4 \| \|/)
-        // Recommendation is no longer inlined in the Markdown; it comes back
-        // as the return value (RefineIndentOpts.width).
+        // Recommendation is no longer inlined in the Markdown.
         assert.equal(/^recommendation:/m.test(out), false)
         // Bucket 4 has 2 files; buckets 2 and tab have 1 each, so width=4 wins.
         assert.deepEqual(ret, {width: 4})

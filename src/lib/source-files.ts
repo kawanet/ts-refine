@@ -4,9 +4,9 @@
 
 import path from "node:path"
 import type {Project, SourceFile} from "ts-morph"
-import type {RefineReportOpts} from "ts-refine"
+import type {TSR} from "ts-refine"
 
-export function selectSourceFiles(project: Project, {paths}: Pick<RefineReportOpts, "paths">): SourceFile[] {
+export function selectSourceFiles(project: Project, {paths}: Pick<TSR.ReportOpts, "paths">): SourceFile[] {
     return paths.length > 0 ? project.getSourceFiles(paths) : project.getSourceFiles()
 }
 

@@ -1,9 +1,9 @@
 import {strict as assert} from "node:assert"
 import {describe, it} from "node:test"
-import type {RefineReportOpts} from "ts-refine"
+import type {TSR} from "ts-refine"
 import {selectOutput} from "./select-output.ts"
 
-type Writer = RefineReportOpts["stream"]
+type Writer = TSR.ReportOpts["stream"]
 
 function makeStdout(): {writer: Writer; out: () => string} {
     let out = ""

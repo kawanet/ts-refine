@@ -1,9 +1,9 @@
 import {strict as assert} from "node:assert"
 import {describe, it} from "node:test"
-import type {ListEntry} from "ts-refine"
+import type {TSR} from "ts-refine"
 import {filterListEntries, writeListTable} from "./format-list.ts"
 
-const ENTRIES: ListEntry[] = [
+const ENTRIES: TSR.ListEntry[] = [
     {file: "entry.ts", exports: 0, unused: 0, importers: 0},
     {file: "lib.ts", exports: 3, unused: 0, importers: 2},
     {file: "stale.ts", exports: 2, unused: 1, importers: 1},

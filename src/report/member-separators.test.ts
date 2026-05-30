@@ -41,8 +41,7 @@ describe("runReportMemberSeparators (sample/members-mixed)", () => {
         const lines: string[] = []
         const ret = await runReportMemberSeparators(project, {stream: {write: (l) => lines.push(l)}, paths: []})
         const out = lines.join("")
-        // Recommendation is no longer inlined in the Markdown; it comes back
-        // as the return value (RefineMemberSeparatorsOpts.separator).
+        // Recommendation is no longer inlined in the Markdown.
         assert.equal(/^recommendation:/m.test(out), false)
         assert.deepEqual(ret, {separator: "semi"})
     })

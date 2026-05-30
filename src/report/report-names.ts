@@ -3,9 +3,9 @@
 // runs the same set. Kept as a `reportNames` export so future split-out
 // (Markdown-only vs apply-bearing) is a one-line change here.
 
-import type {TsRefineReportName} from "ts-refine"
+import type {TSR} from "ts-refine"
 
-export const reportNames: readonly TsRefineReportName[] = [
+export const reportNames: readonly TSR.ReportName[] = [
     "semicolons",
     "indent",
     "member-separators",
@@ -14,4 +14,4 @@ export const reportNames: readonly TsRefineReportName[] = [
 ] as const
 
 // format's default report set is currently the full registry.
-export const applyReportNames: readonly TsRefineReportName[] = reportNames
+export const applyReportNames: readonly TSR.ReportName[] = reportNames

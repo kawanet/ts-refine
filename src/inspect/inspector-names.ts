@@ -2,6 +2,6 @@
 // src/inspect/refine-inspect.ts (dispatch). Kept separate so parse-args can
 // import the list without dragging in ts-morph.
 
-import type {InspectorName} from "ts-refine"
+import type {TSR} from "ts-refine"
 
-export const inspectorNames: readonly InspectorName[] = ["exports", "importers"] as const
+export const inspectorNames: readonly TSR.InspectorName[] = ["exports", "importers"] as const

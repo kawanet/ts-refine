@@ -22,9 +22,7 @@ describe("runReportSemicolons (sample/semicolons-mixed)", () => {
         assert.match(out, /\| total \| \d+ \| 3 \| \|/)
         // Empty file should not appear anywhere.
         assert.equal(/empty\.ts/.test(out), false)
-        // Recommendation is no longer inlined in the Markdown; it comes back
-        // as the return value (Partial<RefineSemicolonsOpts>). A tied fixture
-        // returns an empty partial.
+        // Recommendation is no longer inlined in the Markdown.
         assert.equal(/^recommendation:/m.test(out), false)
         if (Object.keys(ret).length > 0) assert.ok(ret.semicolons === "on" || ret.semicolons === "off")
     })

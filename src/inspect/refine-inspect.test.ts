@@ -2,7 +2,7 @@ import {strict as assert} from "node:assert"
 import path from "node:path"
 import {describe, it} from "node:test"
 import {Project} from "ts-morph"
-import type {InspectorName} from "ts-refine"
+import type {TSR} from "ts-refine"
 import {refineInspect} from "./refine-inspect.ts"
 
 const SAMPLE_TSCONFIG = path.resolve(import.meta.dirname, "../../sample/basic/tsconfig.json")
@@ -45,7 +45,7 @@ describe("refineInspect", () => {
     it("rejects an unknown inspector name", async () => {
         const project = new Project({tsConfigFilePath: SAMPLE_TSCONFIG})
         await assert.rejects(
-            () => refineInspect(project, {paths: [], inspectorNames: ["typo" as unknown as InspectorName]}),
+            () => refineInspect(project, {paths: [], inspectorNames: ["typo" as unknown as TSR.InspectorName]}),
             /unknown inspector name: typo/,
         )
     })
