@@ -41,7 +41,7 @@ smoke: $(MJS_DST)
 
 test: all smoke
 	cd .. && ./node_modules/.bin/tsc --noEmit
-	cd .. && node --test
+	cd .. && node --test 'src/**/*.test.ts'
 
 clean:
 	/bin/rm -fr $(ALL)
