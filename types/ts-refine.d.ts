@@ -64,7 +64,7 @@ export interface TsSurveyReport {
 
 // Input to `runReformat`. `report` provides defaults; the top-level
 // overrides win per field. `organizeImports` defaults to "on".
-export interface RunReformatOpts extends TsSurveyOpts {
+export interface RunFormatOpts extends TsSurveyOpts {
     dryRun: boolean
     report: TsSurveyReport
     organizeImports?: "on" | "off"
@@ -169,7 +169,7 @@ export declare function initProject(tsconfigPath: string): Project
 
 export declare function runReports(project: Project, opts: RunReportsOpts): Promise<TsSurveyReport>
 
-export declare function runReformat(project: Project, opts: RunReformatOpts): Promise<void>
+export declare function runReformat(project: Project, opts: RunFormatOpts): Promise<void>
 
 export declare function runList(project: Project, opts: RunListOpts): Promise<ListEntry[]>
 
