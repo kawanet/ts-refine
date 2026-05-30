@@ -8,7 +8,7 @@ import fs from "node:fs/promises"
 import {mergeFormatOptions, normalizeNewLines, overridesToFormatOptions, reportToFormatOptions, resolveSettings} from "../recommend/format-options.ts"
 import {selectSourceFiles} from "../lib/source-files.ts"
 
-export const runReformat: typeof declared.runReformat = async (project, opts) => {
+export const runFormat: typeof declared.runFormat = async (project, opts) => {
     const {dryRun, paths, report, ...overrides} = opts
     // Report recommendation is the base; CLI overrides win per field.
     const options = mergeFormatOptions(reportToFormatOptions(report), overridesToFormatOptions(overrides))

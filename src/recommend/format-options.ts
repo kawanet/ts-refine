@@ -23,8 +23,8 @@ export interface FormatOptions {
     bracketSpacing?: "on" | "off"
 }
 
-// LS settings + runReformat-only concerns (organize gate, newline post-pass).
-// Local-ish shape — runReformat reads it; the CR diagnostic is computed at
+// LS settings + runFormat-only concerns (organize gate, newline post-pass).
+// Local-ish shape — runFormat reads it; the CR diagnostic is computed at
 // the apply entry from the report, not carried here.
 export interface ResolvedSettings {
     formatSettings: FormatCodeSettings
@@ -70,7 +70,7 @@ export function mergeFormatOptions(base: FormatOptions, override: FormatOptions)
     }
 }
 
-// FormatOptions → the settings runReformat hands to ts-morph.
+// FormatOptions → the settings runFormat hands to ts-morph.
 export function resolveSettings(options: FormatOptions): ResolvedSettings {
     const formatSettings: MutableFormatSettings = {}
 

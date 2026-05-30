@@ -1,5 +1,5 @@
 // Reuses the original indent-action coverage against the unified
-// runReformat entry point. Each it block exercises `runReformat({indent: N})`
+// runFormat entry point. Each it block exercises `runFormat({indent: N})`
 // instead of the retired `runIndent`; the assertions are preserved.
 
 import {strict as assert} from "node:assert"
@@ -7,7 +7,7 @@ import {describe, it} from "node:test"
 import {Project} from "ts-morph"
 
 import type {RunFormatOpts, TsSurveyReport} from "ts-refine"
-import {runReformat} from "./run-format.ts"
+import {runFormat} from "./run-format.ts"
 
 // Builds RunReformatOpts with the indent override pinned and unrelated
 // passes (organize-imports) silenced so the test exercises only the
@@ -16,32 +16,32 @@ function opts(width: number): Omit<RunFormatOpts, "report"> & {report: TsSurveyR
     return {dryRun: true, paths: [], indent: width, organizeImports: "off", report: {}}
 }
 
-describe("runReformat --indent (dry-run, in-memory)", () => {
+describe("runFormat --indent (dry-run, in-memory)", () => {
     it("expands 2-space indent to 4-space", async () => {
         const project = new Project({useInMemoryFileSystem: true})
         const sf = project.createSourceFile("a.ts", ["function f() {", "  return 1", "}", ""].join("\n"))
-        await runReformat(project, opts(4))
+        await runFormat(project, opts(4))
         assert.match(sf.getFullText(), /\n {4}return 1\n/)
     })
 
     it("expands a single leading tab to width spaces", async () => {
         const project = new Project({useInMemoryFileSystem: true})
         const sf = project.createSourceFile("b.ts", ["function f() {", "\treturn 1", "}", ""].join("\n"))
-        await runReformat(project, opts(4))
+        await runFormat(project, opts(4))
         assert.match(sf.getFullText(), /\n {4}return 1\n/)
     })
 
     it("converts space indent to a tab when indent=tab", async () => {
         const project = new Project({useInMemoryFileSystem: true})
         const sf = project.createSourceFile("tab.ts", ["function f() {", "    return 1", "}", ""].join("\n"))
-        await runReformat(project, {dryRun: true, paths: [], indent: "tab", organizeImports: "off", report: {}})
+        await runFormat(project, {dryRun: true, paths: [], indent: "tab", organizeImports: "off", report: {}})
         assert.match(sf.getFullText(), /\n\treturn 1\n/)
     })
 
     it("does not rewrite indent inside a template literal", async () => {
         const project = new Project({useInMemoryFileSystem: true})
         const sf = project.createSourceFile("c.ts", ["function f() {", "  const s = `", "    indented inside template", "    other inside template", "  `", "  return s", "}", ""].join("\n"))
-        await runReformat(project, opts(4))
+        await runFormat(project, opts(4))
         const lines = sf.getFullText().split("\n")
         // Code lines (outside template) are rewritten to 4-space.
         assert.equal(lines[0], "function f() {")
@@ -58,7 +58,7 @@ describe("runReformat --indent (dry-run, in-memory)", () => {
     it("leaves JSDoc continuation lines (` * ...`) alone", async () => {
         const project = new Project({useInMemoryFileSystem: true})
         const sf = project.createSourceFile("d.ts", ["/**", " * docs", " */", "function f() {", "  return 1", "}", ""].join("\n"))
-        await runReformat(project, opts(4))
+        await runFormat(project, opts(4))
         const text = sf.getFullText()
         assert.match(text, /\n \* docs\n/)
         assert.match(text, /\n {4}return 1\n/)
@@ -68,7 +68,7 @@ describe("runReformat --indent (dry-run, in-memory)", () => {
         const project = new Project({useInMemoryFileSystem: true})
         const sf = project.createSourceFile("e.ts", ["function f() {", "    return 1", "}", ""].join("\n"))
         const before = sf.getFullText()
-        await runReformat(project, opts(4))
+        await runFormat(project, opts(4))
         assert.equal(sf.getFullText(), before)
     })
 
@@ -78,7 +78,7 @@ describe("runReformat --indent (dry-run, in-memory)", () => {
         // step). Hand-rolled alignment such as the 5-space `     2` below
         // is not preserved; Prettier matches.
         const sf = project.createSourceFile("f.ts", ["function f() {", "  const x = 1 +", "     2", "}", ""].join("\n"))
-        await runReformat(project, opts(4))
+        await runFormat(project, opts(4))
         const lines = sf.getFullText().split("\n")
         assert.equal(lines[1], "    const x = 1 +")
         // Two indent levels: one for the function body, one for the

@@ -2,7 +2,7 @@ import {strict as assert} from "node:assert"
 import {describe, it} from "node:test"
 import {Project} from "ts-morph"
 
-import {runReformat} from "./run-format.ts"
+import {runFormat} from "./run-format.ts"
 
 // Silences the "updated:" / summary writes for clean test output.
 function quiet<T>(fn: () => Promise<T>): Promise<T> {
@@ -16,12 +16,12 @@ function quiet<T>(fn: () => Promise<T>): Promise<T> {
     })
 }
 
-describe("runReformat", () => {
+describe("runFormat", () => {
     it("applies the indent recommendation when no override is given", async () => {
         const project = new Project({useInMemoryFileSystem: true})
         const sf = project.createSourceFile("a.ts", "function f() {\n  return 1\n}\n")
         await quiet(() =>
-            runReformat(project, {
+            runFormat(project, {
                 dryRun: true,
                 paths: [],
                 report: {indent: {width: 4}},
@@ -35,7 +35,7 @@ describe("runReformat", () => {
         const project = new Project({useInMemoryFileSystem: true})
         const sf = project.createSourceFile("a.ts", "function f() {\n  return 1\n}\n")
         await quiet(() =>
-            runReformat(project, {
+            runFormat(project, {
                 dryRun: true,
                 paths: [],
                 report: {indent: {width: 4}},
@@ -49,7 +49,7 @@ describe("runReformat", () => {
         const project = new Project({useInMemoryFileSystem: true})
         const sf = project.createSourceFile("a.ts", "const a = 1\nconst b = 2\n")
         await quiet(() =>
-            runReformat(project, {
+            runFormat(project, {
                 dryRun: true,
                 paths: [],
                 report: {semicolons: {semicolons: "on"}},
@@ -62,7 +62,7 @@ describe("runReformat", () => {
         const project = new Project({useInMemoryFileSystem: true})
         const sf = project.createSourceFile("a.ts", "const a = 1;\nconst b = 2;\n")
         await quiet(() =>
-            runReformat(project, {
+            runFormat(project, {
                 dryRun: true,
                 paths: [],
                 report: {semicolons: {semicolons: "off"}},
@@ -76,7 +76,7 @@ describe("runReformat", () => {
         project.createSourceFile("dep.ts", "export const used = 1\nexport const unused = 2\n")
         const sf = project.createSourceFile("a.ts", "import {unused, used} from './dep.ts'\nconst x = used\n")
         await quiet(() =>
-            runReformat(project, {
+            runFormat(project, {
                 dryRun: true,
                 paths: [],
                 report: {},
@@ -94,7 +94,7 @@ describe("runReformat", () => {
         project.createSourceFile("dep.ts", "export const used = 1\nexport const unused = 2\n")
         const sf = project.createSourceFile("a.ts", "import {unused, used} from './dep.ts'\nconst x = used\n")
         await quiet(() =>
-            runReformat(project, {
+            runFormat(project, {
                 dryRun: true,
                 paths: [],
                 report: {},
@@ -116,7 +116,7 @@ describe("runReformat", () => {
         }
         console.log = () => {}
         try {
-            await runReformat(project, {
+            await runFormat(project, {
                 dryRun: true,
                 paths: [],
                 report: {newLine: {newLine: "cr"}},
@@ -133,7 +133,7 @@ describe("runReformat", () => {
         const before = "interface I { x:number }\n"
         const sf = project.createSourceFile("a.d.ts", before)
         await quiet(() =>
-            runReformat(project, {
+            runFormat(project, {
                 dryRun: true,
                 paths: [],
                 report: {bracketSpacing: {bracketSpacing: "on"}},
@@ -147,7 +147,7 @@ describe("runReformat", () => {
         const project = new Project({useInMemoryFileSystem: true})
         const sf = project.createSourceFile("a.ts", "const a = 1\n")
         await quiet(() =>
-            runReformat(project, {
+            runFormat(project, {
                 dryRun: true,
                 paths: [],
                 report: {semicolons: {semicolons: "on"}},

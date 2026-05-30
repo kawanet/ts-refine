@@ -8,7 +8,7 @@ import type {InspectorName, TsSurveyReportName} from "ts-refine"
 
 import {selectOutput} from "./recommend/select-output.ts"
 import {writeInspectFile} from "./inspect/format-inspect.ts"
-import {initProject, runInspect, runList, runMove, runReformat, runRename, runReports} from "./index.ts"
+import {initProject, runInspect, runList, runMove, runFormat, runRename, runReports} from "./index.ts"
 import {filterListEntries, writeListTable} from "./list/format-list.ts"
 import {writePrettierMarkdown} from "./recommend/output-prettier.ts"
 import {writeFormatMarkdown} from "./recommend/output-ts-refine.ts"
@@ -30,7 +30,7 @@ if ("help" in opts) {
 
 const fileOpts = {paths: opts.paths}
 
-// Swallow the Markdown stream in format mode; runReformat consumes it.
+// Swallow the Markdown stream in format mode; runFormat consumes it.
 const NULL_SINK = {write: () => {}}
 
 // Report-name validation lives in runReports so typos surface as a named
@@ -60,7 +60,7 @@ try {
         await runRename(project, {from: opts.from!, to: opts.to!, file: opts.renameFile ?? null, dryRun: opts.dryRun})
     } else if (opts.command === "format") {
         const report = await runReports(project, {...fileOpts, reportNames, stream: NULL_SINK})
-        await runReformat(project, {...fileOpts, dryRun: opts.dryRun, report, ...opts.applyOverrides})
+        await runFormat(project, {...fileOpts, dryRun: opts.dryRun, report, ...opts.applyOverrides})
     } else {
         const output = selectOutput(opts.output, process.stdout)
         // The default survey leads with the list cleanup-candidate listing,

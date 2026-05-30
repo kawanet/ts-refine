@@ -46,7 +46,7 @@ interface ListFilters {
 interface ParsedArgs {
     command: Command
     // For report: the requested selectors or the full registry.
-    // For format: the recommendation-bearing reports runReformat consumes.
+    // For format: the recommendation-bearing reports runFormat consumes.
     reportNames: string[]
     // inspect-only: the requested inspector selectors, or the full registry.
     inspectorNames?: string[]
