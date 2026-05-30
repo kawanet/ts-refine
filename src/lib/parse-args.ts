@@ -36,6 +36,11 @@ type Command = "report" | "format" | "list" | "inspect" | "move" | "rename"
 
 const COMMANDS: readonly Command[] = ["report", "format", "list", "inspect", "move", "rename"] as const
 
+// The accepted-subcommand list for error messages, derived from COMMANDS
+// (plus `help`) so adding a subcommand only touches the array above. The
+// exact separator / `or` wording isn't load-bearing.
+const SUBCOMMAND_LIST = [...COMMANDS, "help"].join(", ")
+
 // `list` filter flags; OR-combined when more than one is set.
 interface ListFilters {
     noExports: boolean
@@ -95,7 +100,7 @@ export function parseArgs(argv: string[]): ParseArgsResult | undefined {
     if (command === undefined) {
         // Bare invocation is help; globals with no subcommand is a usage error.
         if (globals.tsconfigPath !== null || globals.dryRun) {
-            console.error("expected a subcommand: report, format, list, inspect, move, rename, or help")
+            console.error(`expected a subcommand: ${SUBCOMMAND_LIST}`)
             return undefined
         }
         return {help: true}
@@ -103,9 +108,9 @@ export function parseArgs(argv: string[]): ParseArgsResult | undefined {
     if (command === "help") return {help: true}
     if (!(COMMANDS as readonly string[]).includes(command)) {
         if (command.startsWith("-")) {
-            console.error("expected a subcommand: report, format, list, inspect, move, rename, or help")
+            console.error(`expected a subcommand: ${SUBCOMMAND_LIST}`)
         } else {
-            console.error(`unknown command: ${command} (expected: report, format, list, inspect, move, rename, help)`)
+            console.error(`unknown command: ${command} (expected: ${SUBCOMMAND_LIST})`)
         }
         return undefined
     }
