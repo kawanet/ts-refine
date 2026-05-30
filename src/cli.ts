@@ -11,7 +11,7 @@ import {writeInspectFile} from "./inspect/format-inspect.ts"
 import {initProject, runInspect, runList, runMove, runReformat, runReports} from "./index.ts"
 import {filterListEntries, writeListTable} from "./list/format-list.ts"
 import {writePrettierMarkdown} from "./recommend/output-prettier.ts"
-import {writeReformatMarkdown} from "./recommend/output-reformat.ts"
+import {writeReformatMarkdown} from "./recommend/output-ts-refine.ts"
 import {parseArgs} from "./lib/parse-args.ts"
 import {usage} from "./lib/usage.ts"
 

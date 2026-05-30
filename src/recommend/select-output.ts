@@ -12,7 +12,7 @@
 import type {RunReportsOpts, TsSurveyReport} from "@kawanet/ts-survey"
 
 import {writePrettierConfig} from "./output-prettier.ts"
-import {writeReformatCommand} from "./output-reformat.ts"
+import {writeReformatCommand} from "./output-ts-refine.ts"
 
 // Local alias for readability — not exported.
 type Writer = RunReportsOpts["stream"]

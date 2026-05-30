@@ -7,7 +7,7 @@ import path from "node:path"
 import {describe, it} from "node:test"
 import {Project} from "ts-morph"
 
-import {runReformat} from "./run-reformat.ts"
+import {runReformat} from "./run-format.ts"
 
 const SAMPLE_TSCONFIG = path.resolve(import.meta.dirname, "../../sample/basic/tsconfig.json")
 const INDEX = path.resolve(import.meta.dirname, "../../sample/basic/src/index.ts")

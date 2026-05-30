@@ -4,7 +4,7 @@
 import type * as declared from "@kawanet/ts-survey"
 import {Project} from "ts-morph"
 
-export {runReformat} from "./reformat/run-reformat.ts"
+export {runReformat} from "./format/run-format.ts"
 export {runInspect} from "./inspect/run-inspect.ts"
 export {runList} from "./list/run-list.ts"
 export {runMove} from "./move/run-move.ts"

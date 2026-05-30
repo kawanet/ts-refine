@@ -1,6 +1,6 @@
 import {strict as assert} from "node:assert"
 import {describe, it} from "node:test"
-import {writeReformatCommand, writeReformatMarkdown} from "./output-reformat.ts"
+import {writeReformatCommand, writeReformatMarkdown} from "./output-ts-refine.ts"
 
 function capture(fn: (s: {write: (chunk: string) => void}) => void): string {
     let out = ""

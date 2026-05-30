@@ -2,7 +2,7 @@ import {strict as assert} from "node:assert"
 import {describe, it} from "node:test"
 import {Project} from "ts-morph"
 
-import {runReformat} from "./run-reformat.ts"
+import {runReformat} from "./run-format.ts"
 
 // Silences the "updated:" / summary writes for clean test output.
 function quiet<T>(fn: () => Promise<T>): Promise<T> {
