@@ -106,4 +106,39 @@ describe("refineRename", () => {
         // named specifiers to {mmm, zzz}.
         assert.equal(imp.getFullText(), "import {mmm, zzz} from \"./libs.ts\"\nconst _ = zzz + mmm\n")
     })
+
+    it("renames a namespace member and its qualified references", async () => {
+        const project = newProject()
+        const types = project.createSourceFile("/types.ts", "export declare namespace NS {\n    interface A {\n        x: number\n    }\n}\n")
+        const c = project.createSourceFile("/c.ts", "import type {NS} from \"./types.ts\"\nconst _: NS.A = {x: 1}\n")
+        await refineRename(project, {from: "NS.A", to: "NS.B", file: null, dryRun: true, report: NO_SPACE})
+        assert.match(types.getFullText(), /interface B {/)
+        assert.doesNotMatch(types.getFullText(), /interface A {/)
+        // The qualified reference follows the member rename.
+        assert.match(c.getFullText(), /const _: NS\.B =/)
+    })
+
+    it("refuses a cross-namespace rename", async () => {
+        const project = newProject()
+        project.createSourceFile("/types.ts", "export declare namespace NS {\n    interface A {}\n}\n")
+        await assert.rejects(refineRename(project, {from: "NS.A", to: "Other.A", file: null, dryRun: true, report: NO_SPACE}), /same namespace/)
+    })
+
+    it("refuses moving a namespace member to the top level", async () => {
+        const project = newProject()
+        project.createSourceFile("/types.ts", "export declare namespace NS {\n    interface A {}\n}\n")
+        await assert.rejects(refineRename(project, {from: "NS.A", to: "A", file: null, dryRun: true, report: NO_SPACE}), /same namespace/)
+    })
+
+    it("refuses when the target member name already exists in the namespace", async () => {
+        const project = newProject()
+        project.createSourceFile("/types.ts", "export declare namespace NS {\n    interface A {}\n    interface B {}\n}\n")
+        await assert.rejects(refineRename(project, {from: "NS.A", to: "NS.B", file: null, dryRun: true, report: NO_SPACE}), /already exists/)
+    })
+
+    it("errors when the namespace member is not found", async () => {
+        const project = newProject()
+        project.createSourceFile("/types.ts", "export declare namespace NS {\n    interface A {}\n}\n")
+        await assert.rejects(refineRename(project, {from: "NS.Nope", to: "NS.X", file: null, dryRun: true, report: NO_SPACE}), /no namespace member named/)
+    })
 })

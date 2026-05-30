@@ -56,6 +56,7 @@ export function usage(): string {
         "                              updating importers and usages (aliases kept).",
         "  rename <file> --from ...    Scope the lookup to the identifier that <file>",
         "                              exports (when the name is not unique).",
+        "  --from NS.a --to NS.b       Rename a namespace member (same namespace only).",
         "",
         "Global options (may appear before or after the command):",
         "  -p, --project <path>        Path to a tsconfig.json or a directory",
