@@ -120,7 +120,7 @@ export function parseArgs(argv: string[]): ParseArgsResult | undefined {
         case "report":
             return parseReport(sub, globals)
         case "format":
-            return parseReformat(sub, globals)
+            return parseFormat(sub, globals)
         case "list":
             return parseList(sub, globals)
         case "inspect":
@@ -317,7 +317,7 @@ function parseReport(sub: string[], globals: Globals): ParseArgsResult | undefin
 }
 
 // `format`: a fixed set of override options plus positional files.
-function parseReformat(sub: string[], globals: Globals): ParseArgsResult | undefined {
+function parseFormat(sub: string[], globals: Globals): ParseArgsResult | undefined {
     const overrides: ApplyOverrides = {}
     const files: string[] = []
 
