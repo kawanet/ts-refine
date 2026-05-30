@@ -60,7 +60,7 @@
     "build": "make -C builder",
     "fixpack": "fixpack",
     "format": "prettier --write 'src/**/*.ts'",
-    "prepare": "make -C builder test",
+    "prepack": "make -C builder test",
     "test": "make -C builder test"
   },
   "type": "module",

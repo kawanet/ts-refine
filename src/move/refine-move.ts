@@ -175,14 +175,19 @@ function planMoves(project: Project, sources: string[], dest: string): {from: st
     return plan
 }
 
-// Trailing `/` always means "directory" (UNIX convention). Otherwise
-// check the project's filesystem first — ts-morph's in-memory FS is
-// invisible to fs.statSync, so a public-API caller using an in-memory
-// project would otherwise see real directories misclassified as renames.
-// Fall back to the host filesystem for the common on-disk path.
+// Detect a directory destination in priority order: explicit trailing
+// slash, ts-morph's filesystem view, project source-file layout, then
+// host fs.statSync as the on-disk fallback.
 function isDirectoryDest(project: Project, dest: string): boolean {
     if (dest.endsWith("/") || dest.endsWith(path.sep)) return true
     if (project.getFileSystem().directoryExistsSync(dest)) return true
+    // ts-morph's in-memory FS does not register parent dirs until the
+    // child file is saved; infer dir-ness from the source-file layout
+    // so a fresh createSourceFile + refineMove flow still works.
+    const prefix = dest + "/"
+    for (const sf of project.getSourceFiles()) {
+        if (sf.getFilePath().startsWith(prefix)) return true
+    }
     try {
         return fs.statSync(dest).isDirectory()
     } catch {
