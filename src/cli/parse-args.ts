@@ -21,16 +21,8 @@
 import path from "node:path"
 
 import {inspectorNames as knownInspectorNames} from "../inspect/inspector-names.ts"
+import {FormatOptions} from "../recommend/format-options.ts"
 import {applyReportNames, reportNames as knownReportNames} from "../report/report-names.ts"
-
-// `newLine` is narrowed to lf|crlf because LS cannot emit CR-only.
-export interface ApplyOverrides {
-    organizeImports?: "on" | "off"
-    indent?: number | "tab"
-    semicolons?: "on" | "off"
-    newLine?: "lf" | "crlf"
-    bracketSpacing?: "on" | "off"
-}
 
 type Command = "report" | "format" | "list" | "inspect" | "move" | "rename"
 
@@ -57,7 +49,7 @@ interface ParsedArgs {
     inspectorNames?: string[]
     // report-only: suppress Markdown and emit the named output instead.
     output: string | null
-    applyOverrides: ApplyOverrides
+    applyOverrides: FormatOptions
     // True only for a bare `report` (no selectors, no --output); gates the
     // recommendation + .prettierrc blocks under the per-report Markdown.
     surveyDefault: boolean
@@ -325,7 +317,7 @@ function parseReport(sub: string[], globals: Globals): ParseArgsResult | undefin
 
 // `format`: a fixed set of override options plus positional files.
 function parseFormat(sub: string[], globals: Globals): ParseArgsResult | undefined {
-    const overrides: ApplyOverrides = {}
+    const overrides: FormatOptions = {}
     const files: string[] = []
 
     for (let i = 0; i < sub.length; i++) {

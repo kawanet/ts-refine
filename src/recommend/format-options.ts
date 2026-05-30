@@ -4,14 +4,12 @@
 // value — guaranteeing they agree. The pipeline is:
 //   TsRefineReport ─reportToFormatOptions─┐
 //                                          ├─ mergeFormatOptions ─ resolveSettings ─▶ ResolvedSettings
-//   ApplyOverrides ─overridesToFormatOptions┘
+//   FormatOptions ─overridesToFormatOptions┘
 // and buildFormatFlags renders the same FormatOptions back to argv.
 
 import type {FormatCodeSettings} from "ts-morph"
 import {ts} from "ts-morph"
 import type {TsRefineReport} from "ts-refine"
-
-import type {ApplyOverrides} from "../cli/parse-args.ts"
 
 // `newLine` is lf|crlf only: a `cr` recommendation is neither a runnable
 // ts-refine flag nor an LS setting, so it never enters FormatOptions.
@@ -49,7 +47,7 @@ export function reportToFormatOptions(report: TsRefineReport): FormatOptions {
 
 // CLI overrides → options. A typed seam keeping parseArgs decoupled from
 // the FormatOptions vocabulary; the shapes happen to line up today.
-export function overridesToFormatOptions(overrides: ApplyOverrides): FormatOptions {
+export function overridesToFormatOptions(overrides: FormatOptions): FormatOptions {
     return {
         organizeImports: overrides.organizeImports,
         indent: overrides.indent,
