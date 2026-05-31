@@ -1,7 +1,7 @@
 import {strict as assert} from "node:assert"
 import {describe, it} from "node:test"
 import type {CommonArgs} from "../parse-common-args.ts"
-import {parseRenameArgs} from "./rename-rename-args.ts"
+import {parseRenameArgs} from "./parse-rename-args.ts"
 
 function common(): CommonArgs {
     return {tsconfigPath: null, dryRun: false}
