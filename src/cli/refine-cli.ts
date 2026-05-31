@@ -42,8 +42,7 @@ function acceptedSubcommands(): string {
 
 // The whole CLI as a function: parse `args` (argv minus node/script),
 // dispatch the subcommand writing stdout-bound output to `stream`, and
-// resolve with 0 on success, or reject with an Error for the caller to
-// display; the malformed-global path still returns 1 after printing usage.
+// resolve with 0 on success, or reject with an Error for the caller to display.
 type refineCLI = (args: string[], stream: CLIStream) => Promise<number>
 
 export const refineCLI: refineCLI = async (args, stream) => {
@@ -55,11 +54,6 @@ export const refineCLI: refineCLI = async (args, stream) => {
     let command: string | undefined
     while (i < args.length) {
         const consumed = parseCommonArgs(common, args, i)
-        if (consumed < 0) {
-            // A global option was malformed; stderr already explains it.
-            console.error(usage())
-            return 1
-        }
         if (consumed === 0) {
             command = args[i]
             i++
