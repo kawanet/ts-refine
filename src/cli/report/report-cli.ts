@@ -9,7 +9,7 @@ import {resolvePaths} from "../resolve-paths.ts"
 import {writePrettierMarkdown} from "./emit-prettier.ts"
 import {writeFormatMarkdown} from "./emit-ts-refine.ts"
 import {parseReportArgs} from "./parse-report-args.ts"
-import {selectOutput} from "./select-output.ts"
+import {selectEmitter} from "./select-emitter.ts"
 
 export async function runReport(ctx: Context): Promise<number> {
     const {args: common, tokens, stream, log} = ctx
@@ -21,7 +21,7 @@ export async function runReport(ctx: Context): Promise<number> {
 
     // Report-name validation lives in refineReport so typos surface there.
     const reportNames = args.reportNames as TSR.ReportName[]
-    const output = selectOutput(args.emit, stream)
+    const emitter = selectEmitter(args.emit, stream)
 
     if (args.surveyDefault) {
         const entries = await refineList(project, {paths, log})
@@ -29,11 +29,11 @@ export async function runReport(ctx: Context): Promise<number> {
         stream.write("### list --no-exports --no-importers --unused-exports\n\n")
         writeListTable(candidates, stream)
     }
-    const report = await refineReport(project, {paths, reportNames, output: output.reportStream, log})
+    const report = await refineReport(project, {paths, reportNames, output: emitter.reportStream, log})
     if (args.surveyDefault) {
         writeFormatMarkdown(report, stream)
         writePrettierMarkdown(report, stream)
     }
-    output.finalize(report)
+    emitter.finalize(report)
     return 0
 }

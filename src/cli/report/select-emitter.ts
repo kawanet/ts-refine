@@ -15,14 +15,14 @@ import {writeFormatCommand} from "./emit-ts-refine.ts"
 
 export const emitNames = ["prettier", "ts-refine"] as const
 
-interface OutputDispatch {
+interface EmitterDispatch {
     reportStream: TSR.Writer
     finalize: (report: TSR.ReportResult) => void
 }
 
 const NULL_SINK: TSR.Writer = {write: () => {}}
 
-export function selectOutput(name: string | null, stdout: TSR.Writer): OutputDispatch {
+export function selectEmitter(name: string | null, stdout: TSR.Writer): EmitterDispatch {
     if (name === null) {
         return {reportStream: stdout, finalize: () => {}}
     }

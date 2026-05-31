@@ -1,7 +1,7 @@
 import {strict as assert} from "node:assert"
 import {describe, it} from "node:test"
 import type {TSR} from "ts-refine"
-import {selectOutput} from "./select-output.ts"
+import {selectEmitter} from "./select-emitter.ts"
 
 function makeStdout(): {writer: TSR.Writer; out: () => string} {
     let out = ""
@@ -11,7 +11,7 @@ function makeStdout(): {writer: TSR.Writer; out: () => string} {
 describe("selectOutput", () => {
     it("returns a no-op finalize and the stdout stream when no output is selected", () => {
         const {writer, out} = makeStdout()
-        const f = selectOutput(null, writer)
+        const f = selectEmitter(null, writer)
         assert.equal(f.reportStream, writer)
         f.finalize({semicolons: {semicolons: "off"}})
         assert.equal(out(), "")
@@ -19,7 +19,7 @@ describe("selectOutput", () => {
 
     it("swaps the report stream for a sink and writes prettier JSON on finalize", () => {
         const {writer, out} = makeStdout()
-        const f = selectOutput("prettier", writer)
+        const f = selectEmitter("prettier", writer)
         // Markdown body would have been written here — sink swallows it.
         f.reportStream.write("### dropped\n")
         assert.equal(out(), "")
@@ -32,7 +32,7 @@ describe("selectOutput", () => {
 
     it("swaps the report stream for a sink and writes the format command on finalize", () => {
         const {writer, out} = makeStdout()
-        const f = selectOutput("ts-refine", writer)
+        const f = selectEmitter("ts-refine", writer)
         f.reportStream.write("### dropped\n")
         assert.equal(out(), "")
         f.finalize({semicolons: {semicolons: "off"}, indent: {width: 4}, memberSeparators: {separator: "none"}})
@@ -44,6 +44,6 @@ describe("selectOutput", () => {
 
     it("throws on an unknown output name", () => {
         const {writer} = makeStdout()
-        assert.throws(() => selectOutput("typo-format", writer), /unknown --emit: typo-format/)
+        assert.throws(() => selectEmitter("typo-format", writer), /unknown --emit: typo-format/)
     })
 })
