@@ -155,10 +155,10 @@ npx ts-refine format --bracket-spacing off
 npx ts-refine format --organize-imports off
 ```
 
-Organizing imports sorts and combines declarations and drops unused ones. When
-the project enables `verbatimModuleSyntax` (or `isolatedModules`) it also adds
-`type` markers to imports/exports that are only used as types, splitting mixed
-declarations as needed. Projects without those flags see no type-only change.
+Organizing imports sorts and combines declarations and drops unused ones. Under
+`verbatimModuleSyntax` it also adds `type` markers to imports and exports that
+are only used as types; `isolatedModules` alone applies this to type-only
+re-exports only. Projects with neither flag see no type-only change.
 
 ## Inspect
 
