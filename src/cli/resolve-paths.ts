@@ -6,7 +6,7 @@
 
 import path from "node:path"
 
-export function resolvePaths(tsconfigPath: string | null, files: string[]): {absTsconfig: string; paths: string[]} {
+export function resolvePaths(tsconfigPath: string | undefined, files: string[]): {absTsconfig: string; paths: string[]} {
     const absTsconfig = resolveTsconfigPath(tsconfigPath ?? ".")
     const tsconfigDir = path.dirname(absTsconfig)
     const paths = files.map((g) => {

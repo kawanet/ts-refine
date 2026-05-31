@@ -16,7 +16,7 @@ import type {ReportOpts} from "./types.ts"
 
 type Bucket = {lines: number; files: number; topPath: string; topLines: number}
 
-export async function runReportIndent(project: Project, {stream, paths}: ReportOpts): Promise<Partial<TSR.IndentOpts>> {
+export async function runReportIndent(project: Project, {stream, paths, log}: ReportOpts): Promise<Partial<TSR.IndentOpts>> {
     const sourceFiles = selectSourceFiles(project, {paths}).filter((sf) => !sf.getFilePath().endsWith(".d.ts"))
 
     // Per-file: detect leading-width distribution, then collapse to one
@@ -76,7 +76,7 @@ export async function runReportIndent(project: Project, {stream, paths}: ReportO
     }
     stream.write(`| total | ${totalLines} | ${perFile.length} | |\n`)
     stream.write("\n")
-    console.error(`report indent: ${perFile.length} files counted / ${sourceFiles.length} files total`)
+    log.write(`report indent: ${perFile.length} files counted / ${sourceFiles.length} files total\n`)
     // The recommendation is rendered in the `## recommendation` section
     // at the end of the Markdown survey. Both a numeric width and a "tab"
     // majority are actionable (LS convertTabsToSpaces / Prettier useTabs),

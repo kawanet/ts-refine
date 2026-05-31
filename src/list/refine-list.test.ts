@@ -6,10 +6,12 @@ import {refineList} from "./refine-list.ts"
 
 const SAMPLE_TSCONFIG = path.resolve(import.meta.dirname, "../../sample/basic/tsconfig.json")
 
+const log = {write: () => {}}
+
 describe("refineList (sample/basic)", () => {
     it("reports per-file export / unused / importer counts", async () => {
         const project = new Project({tsConfigFilePath: SAMPLE_TSCONFIG})
-        const entries = await refineList(project, {paths: []})
+        const entries = await refineList(project, {log, paths: []})
 
         const got = Object.fromEntries(entries.map((e) => [path.basename(e.file), {exports: e.exports, unused: e.unused, importers: e.importers}]))
         assert.deepEqual(got, {
@@ -27,7 +29,7 @@ describe("refineList (sample/basic)", () => {
     it("scopes to the given file globs", async () => {
         const project = new Project({tsConfigFilePath: SAMPLE_TSCONFIG})
         const dir = path.dirname(SAMPLE_TSCONFIG)
-        const entries = await refineList(project, {paths: [path.join(dir, "src/used.ts")]})
+        const entries = await refineList(project, {log, paths: [path.join(dir, "src/used.ts")]})
         assert.deepEqual(
             entries.map((e) => path.basename(e.file)),
             ["used.ts"],

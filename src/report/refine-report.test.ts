@@ -7,6 +7,8 @@ import {refineReport} from "./refine-report.ts"
 
 const SAMPLE_TSCONFIG = path.resolve(import.meta.dirname, "../../sample/basic/tsconfig.json")
 
+const log = {write: () => {}}
+
 describe("refineReport", () => {
     it("throws on an unknown report name (validation moved out of parseArgs)", async () => {
         const project = new Project({tsConfigFilePath: SAMPLE_TSCONFIG})
@@ -14,6 +16,7 @@ describe("refineReport", () => {
         await assert.rejects(
             () =>
                 refineReport(project, {
+                    log,
                     // Intentional typo. The typed surface narrows to known
                     // names, so the cast lets the test reach the runtime
                     // validation that the production CLI also relies on.
@@ -29,6 +32,7 @@ describe("refineReport", () => {
         const project = new Project({tsConfigFilePath: SAMPLE_TSCONFIG})
         const lines: string[] = []
         await refineReport(project, {
+            log,
             // Input deliberately in reverse of registry order to confirm the
             // router re-orders. indent precedes semicolons in the registry.
             reportNames: ["semicolons", "indent"],

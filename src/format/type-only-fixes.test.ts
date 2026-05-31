@@ -21,11 +21,13 @@ function read(project: Project, tsconfig: string, rel: string): string {
     return project.getSourceFile(abs)!.getFullText()
 }
 
+const log = {write: () => {}}
+
 describe("applyTypeOnlyFixes via refineFormat (verbatimModuleSyntax on)", () => {
     it("fires all three fixes end-to-end without touching disk", async () => {
         const project = new Project({tsConfigFilePath: VERBATIM_TSCONFIG})
 
-        await refineFormat(project, {dryRun: true, paths: [], report: {}})
+        await refineFormat(project, {log, dryRun: true, paths: [], report: {}})
 
         // convertToTypeOnlyImport: Shape gets an inline `type` marker.
         const consume = read(project, VERBATIM_TSCONFIG, "src/consume.ts")
@@ -50,7 +52,7 @@ describe("applyTypeOnlyFixes via refineFormat (isolatedModules only)", () => {
     it("converts the export side but leaves imports (import fix needs verbatim)", async () => {
         const project = new Project({tsConfigFilePath: ISOLATED_TSCONFIG})
 
-        await refineFormat(project, {dryRun: true, paths: [], report: {}})
+        await refineFormat(project, {log, dryRun: true, paths: [], report: {}})
 
         // The gate lets isolatedModules through; convertToTypeOnlyExport fires.
         const reexport = read(project, ISOLATED_TSCONFIG, "src/reexport.ts")

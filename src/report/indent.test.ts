@@ -7,11 +7,13 @@ import {runReportIndent} from "./indent.ts"
 const SAMPLE_TSCONFIG = path.resolve(import.meta.dirname, "../../sample/indents-mixed/tsconfig.json")
 const TAB_TSCONFIG = path.resolve(import.meta.dirname, "../../sample/tab-indent/tsconfig.json")
 
+const log = {write: () => {}}
+
 describe("runReportIndent (sample/indents-mixed)", () => {
     it("groups files by primary leading width and returns the file-count majority", async () => {
         const project = new Project({tsConfigFilePath: SAMPLE_TSCONFIG})
         const lines: string[] = []
-        const ret = await runReportIndent(project, {stream: {write: (l) => lines.push(l)}, paths: []})
+        const ret = await runReportIndent(project, {log, stream: {write: (l) => lines.push(l)}, paths: []})
 
         const out = lines.join("")
         assert.match(out, /^### indent\n/)
@@ -42,10 +44,7 @@ describe("runReportIndent (sample/indents-mixed)", () => {
         project.createSourceFile("/sample/two.ts", "function f() {\n  return 1\n}\n")
         project.createSourceFile("/sample/four.ts", "function g() {\n    if (a) {\n        b()\n    }\n}\n")
         const lines: string[] = []
-        const ret = await runReportIndent(project, {
-            stream: {write: (l) => lines.push(l)},
-            paths: ["/sample/*.ts"],
-        })
+        const ret = await runReportIndent(project, {log, stream: {write: (l) => lines.push(l)}, paths: ["/sample/*.ts"]})
         assert.deepEqual(ret, {width: 4})
         // No tab-indented file, but the tab row is still emitted at 0.
         assert.match(lines.join(""), /\| tab \| 0 \| 0 \|\|/)
@@ -56,10 +55,7 @@ describe("runReportIndent (sample/indents-mixed)", () => {
         project.createSourceFile("/sample/two.ts", "function f() {\n  return 1\n}\n")
         project.createSourceFile("/sample/four.ts", "function g() {\n    return 1\n}\n")
         const lines: string[] = []
-        const ret = await runReportIndent(project, {
-            stream: {write: (l) => lines.push(l)},
-            paths: ["/sample/*.ts"],
-        })
+        const ret = await runReportIndent(project, {log, stream: {write: (l) => lines.push(l)}, paths: ["/sample/*.ts"]})
         assert.deepEqual(ret, {})
     })
 })
@@ -71,7 +67,7 @@ describe("runReportIndent (sample/tab-indent)", () => {
         // formatters emit `--indent tab` / `useTabs: true`.
         const project = new Project({tsConfigFilePath: TAB_TSCONFIG})
         const lines: string[] = []
-        const ret = await runReportIndent(project, {stream: {write: (l) => lines.push(l)}, paths: []})
+        const ret = await runReportIndent(project, {log, stream: {write: (l) => lines.push(l)}, paths: []})
 
         const out = lines.join("")
         assert.match(out, /\| tab \| \d+ \| 3 \| /)

@@ -46,7 +46,7 @@ function withExtension(specifier: string, ext: string): string {
 }
 
 export const refineMove: typeof declared.refineMove = async (project, opts) => {
-    const {sources, dest, dryRun, report} = opts
+    const {sources, dest, dryRun, report, log} = opts
 
     const plan = planMoves(project, sources, dest)
 
@@ -114,15 +114,15 @@ export const refineMove: typeof declared.refineMove = async (project, opts) => {
     // streams. A moved file's new path is in destPaths, so the second loop
     // reports only the importers.
     for (const {from, to} of plan) {
-        console.error(`${dryRun ? "would move" : "moved"}: ${displayPath(from)} -> ${displayPath(to)}`)
+        log.write(`${dryRun ? "would move" : "moved"}: ${displayPath(from)} -> ${displayPath(to)}\n`)
     }
     for (const sf of touchedFiles) {
         const p = sf.getFilePath()
-        if (!destPaths.has(p)) console.error(`${dryRun ? "would update" : "updated"}: ${displayPath(p)}`)
+        if (!destPaths.has(p)) log.write(`${dryRun ? "would update" : "updated"}: ${displayPath(p)}\n`)
     }
 
     const verb = dryRun ? "would move" : "moved"
-    console.error(`move: ${verb} ${plan.length} file${plan.length === 1 ? "" : "s"} (${touchedFiles.size} touched)`)
+    log.write(`move: ${verb} ${plan.length} file${plan.length === 1 ? "" : "s"} (${touchedFiles.size} touched)\n`)
 
     return {
         moves: plan.map(({from, to}) => ({from, to})),

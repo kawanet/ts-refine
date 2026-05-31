@@ -21,7 +21,7 @@ const STYLE_LABEL: Record<Style, string> = {
 
 type Bucket = {lines: number; files: number; topPath: string; topLines: number}
 
-export async function runReportBracketSpacing(project: Project, {stream, paths}: ReportOpts): Promise<Partial<TSR.BracketSpacingOpts>> {
+export async function runReportBracketSpacing(project: Project, {stream, paths, log}: ReportOpts): Promise<Partial<TSR.BracketSpacingOpts>> {
     const sourceFiles = selectSourceFiles(project, {paths}).filter((sf) => !sf.getFilePath().endsWith(".d.ts"))
 
     type PerFile = {path: string; counts: Map<Style, number>; primary: Style}
@@ -75,7 +75,7 @@ export async function runReportBracketSpacing(project: Project, {stream, paths}:
     }
     stream.write(`| total | ${totalLines} | ${perFile.length} | |\n`)
     stream.write("\n")
-    console.error(`report bracket-spacing: ${perFile.length} files counted / ${sourceFiles.length} files total`)
+    log.write(`report bracket-spacing: ${perFile.length} files counted / ${sourceFiles.length} files total\n`)
     return recommend !== undefined ? {bracketSpacing: recommend} : {}
 }
 

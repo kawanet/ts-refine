@@ -17,7 +17,7 @@ import {runReportSemicolons} from "./semicolons.ts"
 import type {ReportOpts} from "./types.ts"
 
 export const refineReport: typeof declared.refineReport = async (project, opts) => {
-    const {stream, reportNames: requested, paths} = opts
+    const {stream, reportNames: requested, paths, log} = opts
 
     // Validate every requested name up-front so a typo fails before any
     // report runs. `reportNames` is the source of truth for what exists.
@@ -28,7 +28,7 @@ export const refineReport: typeof declared.refineReport = async (project, opts) 
     }
 
     const report: TSR.ReportResult = {}
-    const reportOpts: ReportOpts = {stream, paths}
+    const reportOpts: ReportOpts = {stream, paths, log}
 
     if (requested.includes("semicolons")) {
         report.semicolons = await runReportSemicolons(project, reportOpts)

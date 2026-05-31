@@ -7,7 +7,7 @@
 
 import {refineCLI} from "./cli/refine-cli.ts"
 
-refineCLI(process.argv.slice(2), process.stdout)
+refineCLI({args: {}, tokens: process.argv.slice(2), stream: process.stdout, log: process.stderr})
     .catch((e) => {
         console.error(e instanceof Error ? e.message : String(e))
         return 1

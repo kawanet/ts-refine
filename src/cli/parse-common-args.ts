@@ -5,9 +5,9 @@
 // either side of the subcommand.
 
 export interface CommonArgs {
-    tsconfigPath: string | null
-    dryRun: boolean
-    help: boolean
+    tsconfigPath?: string
+    dryRun?: boolean
+    help?: boolean
 }
 
 // Consumes a global option at argv[index], writing it into `args`. Returns the
@@ -20,7 +20,7 @@ export function parseCommonArgs(args: CommonArgs, argv: string[], index: number)
         if (!v || v.startsWith("-")) {
             throw new Error(`${a} requires a path (e.g. ${a} tsconfig.json)`)
         }
-        if (args.tsconfigPath !== null) {
+        if (args.tsconfigPath != null) {
             throw new Error(`${a} cannot be combined with another tsconfig path`)
         }
         args.tsconfigPath = v

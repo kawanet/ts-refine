@@ -9,7 +9,7 @@ import {applyTypeOnlyFixes} from "../lib/type-only-fixes.ts"
 import {mergeFormatOptions, normalizeNewLines, overridesToFormatOptions, reportToFormatOptions, resolveSettings} from "../recommend/format-options.ts"
 
 export const refineFormat: typeof declared.refineFormat = async (project, opts) => {
-    const {dryRun, paths, report, ...overrides} = opts
+    const {dryRun, paths, report, log, ...overrides} = opts
     // Report recommendation is the base; CLI overrides win per field.
     const options = mergeFormatOptions(reportToFormatOptions(report), overridesToFormatOptions(overrides))
     const resolved = resolveSettings(options)
@@ -17,7 +17,7 @@ export const refineFormat: typeof declared.refineFormat = async (project, opts) 
     // `cr` is dropped from FormatOptions, so the diagnostic is sourced from
     // the report here: recommended but unapplied unless the user overrode it.
     if (overrides.newLine === undefined && report.newLine?.newLine === "cr") {
-        console.error("note: report recommends CR-only newlines; not applied (LS formatter supports LF/CRLF only)")
+        log.write("note: report recommends CR-only newlines; not applied (LS formatter supports LF/CRLF only)\n")
     }
 
     // .d.ts excluded — same scope every report uses for measurement.
@@ -59,15 +59,15 @@ export const refineFormat: typeof declared.refineFormat = async (project, opts) 
 
         touched.push(filePath)
         if (dryRun) {
-            console.error(`would update: ${filePath}`)
+            log.write(`would update: ${filePath}\n`)
         } else {
             await fs.writeFile(filePath, after)
-            console.error(`updated: ${filePath}`)
+            log.write(`updated: ${filePath}\n`)
         }
     }
 
     const verb = dryRun ? "would change" : "changed"
-    console.error(`apply: ${verb} ${touched.length} / ${totalCount} files`)
+    log.write(`apply: ${verb} ${touched.length} / ${totalCount} files\n`)
 
     return {touched}
 }

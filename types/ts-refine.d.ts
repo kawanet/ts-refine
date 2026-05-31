@@ -7,11 +7,15 @@ import type {Project} from "ts-morph"
 export {} // external module indicator
 
 export declare namespace TSR {
-    // Common base for every entry. Leaf Opts interfaces inherit it.
-    // paths holds the positional file arguments (absolute); empty means
-    // the whole project.
+    // A minimal output sink: anything with a line-oriented write. The report
+    // stream, the CLI's stdout, the diagnostics log, and NULL_SINK all satisfy it.
+    type Writer = {write: (line: string) => void}
+
+    // Common base for every entry: just the diagnostics sink. log receives
+    // progress and notes (the callers route it to stderr); pass a no-op Writer
+    // to discard them. Path-scoped commands add their own `paths`.
     interface CommonOpts {
-        paths: string[]
+        log: Writer
     }
 
     // Recommendation shapes. Not runtime inputs — they describe the value
@@ -43,11 +47,8 @@ export declare namespace TSR {
     // (runtime list) and src/report/refine-report.ts (dispatch).
     type ReportName = "semicolons" | "indent" | "member-separators" | "new-line" | "bracket-spacing"
 
-    // A minimal output sink: anything with a line-oriented write. refineReport
-    // streams its Markdown to one; the CLI's stdout and NULL_SINK both satisfy it.
-    type Writer = {write: (line: string) => void}
-
     interface ReportOpts extends CommonOpts {
+        paths: string[]
         stream: Writer
         reportNames: ReportName[]
     }
@@ -65,6 +66,7 @@ export declare namespace TSR {
     // Input to `refineFormat`. `report` provides defaults; the top-level
     // overrides win per field. `organizeImports` defaults to "on".
     interface FormatOpts extends CommonOpts {
+        paths: string[]
         dryRun: boolean
         report: ReportResult
         organizeImports?: "on" | "off"
@@ -93,7 +95,9 @@ export declare namespace TSR {
         importers: number
     }
 
-    interface ListOpts extends CommonOpts {}
+    interface ListOpts extends CommonOpts {
+        paths: string[]
+    }
 
     // Per-file inspect output. Each requested inspector populates its slot
     // (a missing key means the inspector did not run for this file).
@@ -130,6 +134,7 @@ export declare namespace TSR {
     type InspectorName = "exports" | "importers"
 
     interface InspectOpts extends CommonOpts {
+        paths: string[]
         inspectorNames: InspectorName[]
     }
 
@@ -138,7 +143,7 @@ export declare namespace TSR {
     // a destination file path (single-source rename). After moving, imports of
     // the files whose specifiers changed are re-sorted (organizeImports) using
     // `report` — the project-wide surveyed style — so they converge on it.
-    interface MoveOpts {
+    interface MoveOpts extends CommonOpts {
         sources: string[]
         dest: string
         dryRun: boolean
@@ -158,7 +163,7 @@ export declare namespace TSR {
     // (ns.member, Type.prop, ns.Type.prop) renames a member of a matching
     // container. `file` scopes the lookup; null requires a project-unique symbol.
     // Touched files' imports are then re-sorted (organizeImports) using `report`.
-    interface RenameOpts {
+    interface RenameOpts extends CommonOpts {
         from: string
         to: string
         file: string | null

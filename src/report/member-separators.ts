@@ -38,7 +38,7 @@ const SEP_FLAG_VALUE: Record<Separator, TSR.MemberSeparatorsOpts["separator"]> =
 
 type Bucket = {lines: number; files: number; topPath: string; topLines: number}
 
-export async function runReportMemberSeparators(project: Project, {stream, paths}: ReportOpts): Promise<Partial<TSR.MemberSeparatorsOpts>> {
+export async function runReportMemberSeparators(project: Project, {stream, paths, log}: ReportOpts): Promise<Partial<TSR.MemberSeparatorsOpts>> {
     const sourceFiles = selectSourceFiles(project, {paths}).filter((sf) => !sf.getFilePath().endsWith(".d.ts"))
 
     type PerFile = {path: string; counts: Map<Separator, number>; primary: Separator}
@@ -96,7 +96,7 @@ export async function runReportMemberSeparators(project: Project, {stream, paths
     }
     stream.write(`| total | ${totalLines} | ${perFile.length} | |\n`)
     stream.write("\n")
-    console.error(`report member-separators: ${perFile.length} files counted / ${sourceFiles.length} files total`)
+    log.write(`report member-separators: ${perFile.length} files counted / ${sourceFiles.length} files total\n`)
     // The recommendation is rendered in the trailing `## recommendation`
     // section, so all we return is the action params shape. An ambiguous
     // file-count majority (no strict winner) returns an empty partial.

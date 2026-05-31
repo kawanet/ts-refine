@@ -12,7 +12,7 @@ import type * as declared from "ts-refine"
 import type {TSR} from "ts-refine"
 import {displayPath, selectSourceFiles} from "../lib/source-files.ts"
 
-export const refineList: typeof declared.refineList = async (project, {paths}) => {
+export const refineList: typeof declared.refineList = async (project, {paths, log}) => {
     const sourceFiles = selectSourceFiles(project, {paths}).filter((sf) => !sf.getFilePath().endsWith(".d.ts"))
 
     const entries: TSR.ListEntry[] = []
@@ -47,6 +47,6 @@ export const refineList: typeof declared.refineList = async (project, {paths}) =
     }
 
     entries.sort((a, b) => a.file.localeCompare(b.file))
-    console.error(`list: ${entries.length} files`)
+    log.write(`list: ${entries.length} files\n`)
     return entries
 }

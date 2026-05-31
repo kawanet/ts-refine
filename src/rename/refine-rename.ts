@@ -30,7 +30,7 @@ interface Resolved {
 }
 
 export const refineRename: typeof declared.refineRename = async (project, opts) => {
-    const {from, to, file, dryRun, report} = opts
+    const {from, to, file, dryRun, report, log} = opts
 
     const fromT = parseTarget(from)
     const toT = parseTarget(to)
@@ -66,14 +66,14 @@ export const refineRename: typeof declared.refineRename = async (project, opts) 
 
     const touched = [...targetFiles]
     if (!dryRun) for (const sf of touched) await sf.save()
-    // Per-file progress on stderr (stdout is reserved for command results);
+    // Per-file progress on the log (stdout is reserved for command results);
     // the verb tracks dryRun.
     for (const sf of touched) {
-        console.error(`${dryRun ? "would update" : "updated"}: ${displayPath(sf.getFilePath())}`)
+        log.write(`${dryRun ? "would update" : "updated"}: ${displayPath(sf.getFilePath())}\n`)
     }
 
     const verb = dryRun ? "would rename" : "renamed"
-    console.error(`rename: ${verb} ${from} -> ${to} in ${touched.length} file${touched.length === 1 ? "" : "s"}`)
+    log.write(`rename: ${verb} ${from} -> ${to} in ${touched.length} file${touched.length === 1 ? "" : "s"}\n`)
 
     return {from, to, touched: touched.map((sf) => sf.getFilePath())}
 }

@@ -6,22 +6,20 @@ import {refineCLI} from "./refine-cli.ts"
 const SAMPLE = path.resolve(import.meta.dirname, "../../sample/basic/tsconfig.json")
 
 // Drive refineCLI in-process: collect what it writes to the stdout stream and
-// capture console.error (diagnostics + the runners' summary lines). A rejection
-// is surfaced the way a caller would: its message becomes stderr and the status
+// to the log sink (diagnostics + the runners' summary lines). A rejection is
+// surfaced the way a caller would: its message becomes stderr and the status
 // becomes 1.
 async function run(args: string[]): Promise<{status: number; stdout: string; stderr: string}> {
     const out: string[] = []
     const errs: string[] = []
-    const origErr = console.error
-    console.error = (...a: unknown[]) => void errs.push(a.map(String).join(" "))
+    const stream = {write: (s: string): void => void out.push(s)}
+    const log = {write: (s: string): void => void errs.push(s)}
     try {
-        const status = await refineCLI(args, {write: (s) => void out.push(String(s))})
-        return {status, stdout: out.join(""), stderr: errs.join("\n")}
+        const status = await refineCLI({args: {}, tokens: args, stream, log})
+        return {status, stdout: out.join(""), stderr: errs.join("")}
     } catch (e) {
         errs.push(e instanceof Error ? e.message : String(e))
-        return {status: 1, stdout: out.join(""), stderr: errs.join("\n")}
-    } finally {
-        console.error = origErr
+        return {status: 1, stdout: out.join(""), stderr: errs.join("")}
     }
 }
 

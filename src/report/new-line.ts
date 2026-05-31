@@ -20,7 +20,7 @@ const NL_LABEL: Record<NewLine, string> = {
 
 type Bucket = {lines: number; files: number; topPath: string; topLines: number}
 
-export async function runReportNewLine(project: Project, {stream, paths}: ReportOpts): Promise<Partial<TSR.NewLineOpts>> {
+export async function runReportNewLine(project: Project, {stream, paths, log}: ReportOpts): Promise<Partial<TSR.NewLineOpts>> {
     const sourceFiles = selectSourceFiles(project, {paths}).filter((sf) => !sf.getFilePath().endsWith(".d.ts"))
 
     type PerFile = {path: string; counts: Map<NewLine, number>; primary: NewLine}
@@ -63,7 +63,7 @@ export async function runReportNewLine(project: Project, {stream, paths}: Report
     }
     stream.write(`| total | ${totalLines} | ${perFile.length} | |\n`)
     stream.write("\n")
-    console.error(`report new-line: ${perFile.length} files counted / ${sourceFiles.length} files total`)
+    log.write(`report new-line: ${perFile.length} files counted / ${sourceFiles.length} files total\n`)
     return recommend !== undefined ? {newLine: recommend} : {}
 }
 

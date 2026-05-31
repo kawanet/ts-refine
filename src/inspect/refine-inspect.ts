@@ -17,7 +17,7 @@ import {displayPath, selectSourceFiles} from "../lib/source-files.ts"
 import {inspectorNames} from "./inspector-names.ts"
 
 export const refineInspect: typeof declared.refineInspect = async (project, opts) => {
-    const {paths, inspectorNames: requested} = opts
+    const {paths, inspectorNames: requested, log} = opts
 
     for (const name of requested) {
         if (!(inspectorNames as readonly string[]).includes(name)) {
@@ -41,7 +41,7 @@ export const refineInspect: typeof declared.refineInspect = async (project, opts
     }
 
     results.sort((a, b) => a.file.localeCompare(b.file))
-    console.error(`inspect: ${results.length} files`)
+    log.write(`inspect: ${results.length} files\n`)
     return results
 }
 
