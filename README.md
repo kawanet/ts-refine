@@ -155,6 +155,11 @@ npx ts-refine format --bracket-spacing off
 npx ts-refine format --organize-imports off
 ```
 
+Organizing imports sorts and combines declarations and drops unused ones. Under
+`verbatimModuleSyntax` it also adds `type` markers to imports and exports that
+are only used as types; `isolatedModules` alone applies this to type-only
+re-exports only. Projects with neither flag see no type-only change.
+
 ## Inspect
 
 `inspect` prints per-file analysis — what a file exports and who imports it.

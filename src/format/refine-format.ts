@@ -5,6 +5,7 @@
 import fs from "node:fs/promises"
 import type * as declared from "ts-refine"
 import {selectSourceFiles} from "../lib/source-files.ts"
+import {applyTypeOnlyFixes} from "../lib/type-only-fixes.ts"
 import {mergeFormatOptions, normalizeNewLines, overridesToFormatOptions, reportToFormatOptions, resolveSettings} from "../recommend/format-options.ts"
 
 export const refineFormat: typeof declared.refineFormat = async (project, opts) => {
@@ -34,6 +35,9 @@ export const refineFormat: typeof declared.refineFormat = async (project, opts) 
         // Same settings handed in so the rebuilt import block doesn't
         // drift from the just-formatted surrounding file.
         if (resolved.organizeImports) {
+            // Same bundle as remove-unused: type-only markers settle before
+            // the sort so organizeImports orders the rewritten block.
+            applyTypeOnlyFixes(sf, resolved.formatSettings)
             sf.organizeImports(resolved.formatSettings)
         }
 

@@ -6,9 +6,15 @@
 
 import type {SourceFile} from "ts-morph"
 import type {TSR} from "ts-refine"
+import {applyTypeOnlyFixes} from "../lib/type-only-fixes.ts"
 import {reportToFormatOptions, resolveSettings} from "./format-options.ts"
 
 export function organizeChangedImports(files: Iterable<SourceFile>, report: TSR.ReportResult): void {
     const {formatSettings} = resolveSettings(reportToFormatOptions(report))
-    for (const sf of files) sf.organizeImports(formatSettings)
+    for (const sf of files) {
+        // Mirror the `format` bundle so touched files get the same type
+        // markers settled before the re-sort.
+        applyTypeOnlyFixes(sf, formatSettings)
+        sf.organizeImports(formatSettings)
+    }
 }
