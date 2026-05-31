@@ -39,12 +39,3 @@ export function parseCommonArgs(args: CommonArgs, argv: string[], index: number)
     }
     return 0
 }
-
-// A subcommand combined with --help is unsupported until per-command help
-// exists, so the runner rejects it after parsing (the `<command> --help` and
-// `--help <command>` cases). When a command later grows its own help, replace
-// this call site with that command's usage instead.
-export function helpUnsupported(command: string): number {
-    console.error(`--help is not supported for the ${command} command`)
-    return 1
-}

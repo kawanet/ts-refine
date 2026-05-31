@@ -7,17 +7,6 @@ function common(): CommonArgs {
     return {tsconfigPath: null, dryRun: false, help: false}
 }
 
-// Silences the expected stderr writes so the test output stays clean.
-function quiet<T>(fn: () => T): T {
-    const orig = console.error
-    console.error = () => {}
-    try {
-        return fn()
-    } finally {
-        console.error = orig
-    }
-}
-
 describe("parseReport", () => {
     it("collects report-name selector flags with de-duplication", () => {
         const r = parseReportArgs(["--unused-exports", "--semicolons", "--unused-exports"], common())
@@ -68,16 +57,10 @@ describe("parseReport", () => {
     })
 
     it("rejects --dry-run as a read command", () => {
-        assert.equal(
-            quiet(() => parseReportArgs(["--dry-run"], common())),
-            undefined,
-        )
+        assert.throws(() => parseReportArgs(["--dry-run"], common()), /--dry-run is not valid/)
     })
 
-    it("returns undefined on a stray single-dash option", () => {
-        assert.equal(
-            quiet(() => parseReportArgs(["-z"], common())),
-            undefined,
-        )
+    it("throws on a stray single-dash option", () => {
+        assert.throws(() => parseReportArgs(["-z"], common()), /unknown option/)
     })
 })

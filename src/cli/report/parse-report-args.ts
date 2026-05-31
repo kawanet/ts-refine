@@ -30,8 +30,7 @@ export function parseReportArgs(sub: string[], common: CommonArgs): ReportArgs |
         if (a === "--output") {
             const v = sub[i + 1]
             if (!v || v.startsWith("-")) {
-                console.error("--output requires a value (e.g. --output prettier)")
-                return undefined
+                throw new Error("--output requires a value (e.g. --output prettier)")
             }
             output = v
             i += 2
@@ -46,8 +45,7 @@ export function parseReportArgs(sub: string[], common: CommonArgs): ReportArgs |
             if (!reportNames.includes(name)) reportNames.push(name)
             i++
         } else if (a.startsWith("-")) {
-            console.error(`unknown option: ${a}`)
-            return undefined
+            throw new Error(`unknown option: ${a}`)
         } else {
             paths.push(a)
             i++
@@ -56,8 +54,7 @@ export function parseReportArgs(sub: string[], common: CommonArgs): ReportArgs |
 
     // report is read-only; --dry-run is a write-command flag.
     if (common.dryRun) {
-        console.error("--dry-run is not valid for the report command")
-        return undefined
+        throw new Error("--dry-run is not valid for the report command")
     }
 
     const surveyDefault = reportNames.length === 0 && output === null

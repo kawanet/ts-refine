@@ -41,8 +41,7 @@ export function parseListArgs(sub: string[], common: CommonArgs): ListArgs | und
             if (consumed > 0) {
                 i += consumed
             } else if (a.startsWith("-")) {
-                console.error(`unknown option: ${a}`)
-                return undefined
+                throw new Error(`unknown option: ${a}`)
             } else {
                 paths.push(a)
                 i++
@@ -52,8 +51,7 @@ export function parseListArgs(sub: string[], common: CommonArgs): ListArgs | und
 
     // list is read-only; --dry-run is a write-command flag.
     if (common.dryRun) {
-        console.error("--dry-run is not valid for the list command")
-        return undefined
+        throw new Error("--dry-run is not valid for the list command")
     }
 
     return {paths, listFilters: {noExports, noImporters, unusedExports}}

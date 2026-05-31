@@ -7,17 +7,6 @@ function common(): CommonArgs {
     return {tsconfigPath: null, dryRun: false, help: false}
 }
 
-// Silences the expected stderr writes so the test output stays clean.
-function quiet<T>(fn: () => T): T {
-    const orig = console.error
-    console.error = () => {}
-    try {
-        return fn()
-    } finally {
-        console.error = orig
-    }
-}
-
 describe("parseRename", () => {
     it("parses --from / --to with no scope file", () => {
         const r = parseRenameArgs(["--from", "funcA", "--to", "funcB"], common())
@@ -40,16 +29,10 @@ describe("parseRename", () => {
     })
 
     it("errors when --to is missing", () => {
-        assert.equal(
-            quiet(() => parseRenameArgs(["--from", "funcA"], common())),
-            undefined,
-        )
+        assert.throws(() => parseRenameArgs(["--from", "funcA"], common()), /rename requires --from/)
     })
 
     it("errors when more than one file is given", () => {
-        assert.equal(
-            quiet(() => parseRenameArgs(["a.ts", "b.ts", "--from", "funcA", "--to", "funcB"], common())),
-            undefined,
-        )
+        assert.throws(() => parseRenameArgs(["a.ts", "b.ts", "--from", "funcA", "--to", "funcB"], common()), /rename accepts at most one file/)
     })
 })

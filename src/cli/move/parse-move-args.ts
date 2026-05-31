@@ -22,8 +22,7 @@ export function parseMoveArgs(sub: string[], common: CommonArgs): MoveArgs | und
         if (consumed > 0) {
             i += consumed
         } else if (a.startsWith("-")) {
-            console.error(`unknown option: ${a}`)
-            return undefined
+            throw new Error(`unknown option: ${a}`)
         } else {
             paths.push(a)
             i++
@@ -31,8 +30,7 @@ export function parseMoveArgs(sub: string[], common: CommonArgs): MoveArgs | und
     }
 
     if (paths.length < 2) {
-        console.error("move requires at least one source and a destination (e.g. move foo.ts dest/)")
-        return undefined
+        throw new Error("move requires at least one source and a destination (e.g. move foo.ts dest/)")
     }
 
     return {paths}

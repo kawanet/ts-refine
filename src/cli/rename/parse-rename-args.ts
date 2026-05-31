@@ -23,15 +23,13 @@ export function parseRenameArgs(sub: string[], common: CommonArgs): RenameArgs |
         if (a === "--from") {
             from = sub[i + 1]
             if (!from || from.startsWith("-")) {
-                console.error("--from requires an identifier (e.g. --from oldName)")
-                return undefined
+                throw new Error("--from requires an identifier (e.g. --from oldName)")
             }
             i += 2
         } else if (a === "--to") {
             to = sub[i + 1]
             if (!to || to.startsWith("-")) {
-                console.error("--to requires an identifier (e.g. --to newName)")
-                return undefined
+                throw new Error("--to requires an identifier (e.g. --to newName)")
             }
             i += 2
         } else {
@@ -40,8 +38,7 @@ export function parseRenameArgs(sub: string[], common: CommonArgs): RenameArgs |
             if (consumed > 0) {
                 i += consumed
             } else if (a.startsWith("-")) {
-                console.error(`unknown option: ${a}`)
-                return undefined
+                throw new Error(`unknown option: ${a}`)
             } else {
                 paths.push(a)
                 i++
@@ -50,12 +47,10 @@ export function parseRenameArgs(sub: string[], common: CommonArgs): RenameArgs |
     }
 
     if (from === undefined || to === undefined) {
-        console.error("rename requires --from <name> and --to <name>")
-        return undefined
+        throw new Error("rename requires --from <name> and --to <name>")
     }
     if (paths.length > 1) {
-        console.error("rename accepts at most one file to scope the lookup")
-        return undefined
+        throw new Error("rename accepts at most one file to scope the lookup")
     }
 
     return {paths, from, to}

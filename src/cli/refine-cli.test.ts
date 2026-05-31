@@ -5,22 +5,22 @@ import {refineCLI} from "./refine-cli.ts"
 
 const SAMPLE = path.resolve(import.meta.dirname, "../../sample/basic/tsconfig.json")
 
-// Drive refineCLI in-process: collect what it writes to the stdout stream,
-// capture console.error (diagnostics + the runners' summary lines), and
-// swallow the runners' per-file console.log progress so it doesn't leak into
-// the test output.
+// Drive refineCLI in-process: collect what it writes to the stdout stream and
+// capture console.error (diagnostics + the runners' summary lines). A rejection
+// is surfaced the way a caller would: its message becomes stderr and the status
+// becomes 1.
 async function run(args: string[]): Promise<{status: number; stdout: string; stderr: string}> {
     const out: string[] = []
     const errs: string[] = []
-    const origLog = console.log
     const origErr = console.error
-    console.log = () => {}
     console.error = (...a: unknown[]) => void errs.push(a.map(String).join(" "))
     try {
         const status = await refineCLI(args, {write: (s) => void out.push(String(s))})
         return {status, stdout: out.join(""), stderr: errs.join("\n")}
+    } catch (e) {
+        errs.push(e instanceof Error ? e.message : String(e))
+        return {status: 1, stdout: out.join(""), stderr: errs.join("\n")}
     } finally {
-        console.log = origLog
         console.error = origErr
     }
 }

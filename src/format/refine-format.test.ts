@@ -5,12 +5,9 @@ import {refineFormat} from "./refine-format.ts"
 
 // Silences the "updated:" / summary writes for clean test output.
 function quiet<T>(fn: () => Promise<T>): Promise<T> {
-    const origLog = console.log
     const origErr = console.error
-    console.log = () => {}
     console.error = () => {}
     return fn().finally(() => {
-        console.log = origLog
         console.error = origErr
     })
 }
@@ -109,11 +106,9 @@ describe("refineFormat", () => {
         project.createSourceFile("a.ts", "const a = 1\n")
         let stderr = ""
         const origErr = console.error
-        const origLog = console.log
         console.error = (s) => {
             stderr += String(s) + "\n"
         }
-        console.log = () => {}
         try {
             await refineFormat(project, {
                 dryRun: true,
@@ -122,7 +117,6 @@ describe("refineFormat", () => {
             })
         } finally {
             console.error = origErr
-            console.log = origLog
         }
         assert.match(stderr, /CR-only newlines; not applied/)
     })

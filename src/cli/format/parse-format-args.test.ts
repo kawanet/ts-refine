@@ -7,17 +7,6 @@ function common(): CommonArgs {
     return {tsconfigPath: null, dryRun: false, help: false}
 }
 
-// Silences the expected stderr writes so the test output stays clean.
-function quiet<T>(fn: () => T): T {
-    const orig = console.error
-    console.error = () => {}
-    try {
-        return fn()
-    } finally {
-        console.error = orig
-    }
-}
-
 describe("parseFormat", () => {
     it("parses an empty override set with no options", () => {
         const r = parseFormatArgs([], common())
@@ -32,18 +21,12 @@ describe("parseFormat", () => {
         assert.deepEqual(r.paths, ["a.ts", "b.ts"])
     })
 
-    it("returns undefined on an unknown option", () => {
-        assert.equal(
-            quiet(() => parseFormatArgs(["--definitely-not-a-flag"], common())),
-            undefined,
-        )
+    it("throws on an unknown option", () => {
+        assert.throws(() => parseFormatArgs(["--definitely-not-a-flag"], common()), /unknown option/)
     })
 
     it("rejects --semicolons with an invalid value", () => {
-        assert.equal(
-            quiet(() => parseFormatArgs(["--semicolons", "yes"], common())),
-            undefined,
-        )
+        assert.throws(() => parseFormatArgs(["--semicolons", "yes"], common()), /--semicolons expects/)
     })
 
     it("accepts --semicolons on|off", () => {
@@ -56,10 +39,7 @@ describe("parseFormat", () => {
     })
 
     it("rejects --indent with a non-positive integer", () => {
-        assert.equal(
-            quiet(() => parseFormatArgs(["--indent", "0"], common())),
-            undefined,
-        )
+        assert.throws(() => parseFormatArgs(["--indent", "0"], common()), /--indent expects/)
     })
 
     it("accepts --indent tab for tab indentation", () => {
@@ -72,10 +52,7 @@ describe("parseFormat", () => {
     })
 
     it("rejects --new-line cr (LS formatter cannot emit CR-only)", () => {
-        assert.equal(
-            quiet(() => parseFormatArgs(["--new-line", "cr"], common())),
-            undefined,
-        )
+        assert.throws(() => parseFormatArgs(["--new-line", "cr"], common()), /--new-line expects/)
     })
 
     it("accepts --bracket-spacing on|off", () => {
@@ -87,10 +64,7 @@ describe("parseFormat", () => {
     })
 
     it("rejects bare --organize-imports without an on|off argument", () => {
-        assert.equal(
-            quiet(() => parseFormatArgs(["--organize-imports"], common())),
-            undefined,
-        )
+        assert.throws(() => parseFormatArgs(["--organize-imports"], common()), /--organize-imports expects/)
     })
 
     it("consumes a trailing --dry-run into the common args", () => {
@@ -106,9 +80,6 @@ describe("parseFormat", () => {
     })
 
     it("treats --output as an unknown option", () => {
-        assert.equal(
-            quiet(() => parseFormatArgs(["--output", "prettier"], common())),
-            undefined,
-        )
+        assert.throws(() => parseFormatArgs(["--output", "prettier"], common()), /unknown option/)
     })
 })

@@ -7,17 +7,6 @@ function common(): CommonArgs {
     return {tsconfigPath: null, dryRun: false, help: false}
 }
 
-// Silences the expected stderr writes so the test output stays clean.
-function quiet<T>(fn: () => T): T {
-    const orig = console.error
-    console.error = () => {}
-    try {
-        return fn()
-    } finally {
-        console.error = orig
-    }
-}
-
 describe("parseMove", () => {
     it("keeps positionals raw as a flat list (resolve + split happen in the runner)", () => {
         const r = parseMoveArgs(["a.ts", "b.ts", "dest/"], common())
@@ -33,9 +22,6 @@ describe("parseMove", () => {
     })
 
     it("rejects fewer than two positionals", () => {
-        assert.equal(
-            quiet(() => parseMoveArgs(["only-one.ts"], common())),
-            undefined,
-        )
+        assert.throws(() => parseMoveArgs(["only-one.ts"], common()), /move requires/)
     })
 })

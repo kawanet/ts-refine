@@ -2,8 +2,9 @@
 // up to the subcommand, then hand the remaining tokens to the matching command
 // handler in COMMAND_TABLE. Each handler parses its own options (calling
 // parseCommonArgs for any trailing globals), opens the project, and runs.
-// refineCLI writes stdout-bound output to `stream`, resolves with the process
-// exit status, and never calls process.exit or rejects.
+// refineCLI writes stdout-bound output to `stream` and resolves with 0 on
+// success; on failure it rejects with an Error for the caller to display and
+// turn into a non-zero exit. It never calls process.exit.
 //
 // Diagnostics and per-command progress stay on console.error / the runners'
 // own console output, which already target the process's stderr/stdout.
@@ -41,7 +42,8 @@ function acceptedSubcommands(): string {
 
 // The whole CLI as a function: parse `args` (argv minus node/script),
 // dispatch the subcommand writing stdout-bound output to `stream`, and
-// resolve with the process exit status (0 ok, 1 on error). Never throws.
+// resolve with 0 on success, or reject with an Error for the caller to
+// display; the malformed-global path still returns 1 after printing usage.
 type refineCLI = (args: string[], stream: CLIStream) => Promise<number>
 
 export const refineCLI: refineCLI = async (args, stream) => {
@@ -69,7 +71,7 @@ export const refineCLI: refineCLI = async (args, stream) => {
     // The `help` command, a no-argument invocation, and --help with no
     // subcommand all print usage. Globals without a subcommand fall through to
     // "expected a subcommand"; a subcommand combined with --help is left to the
-    // handler, which currently rejects it (see helpUnsupported).
+    // handler, which currently throws to reject it.
     if (command === "help" || args.length === 0 || (command === undefined && common.help)) {
         stream.write(usage() + "\n")
         return 0
@@ -81,19 +83,12 @@ export const refineCLI: refineCLI = async (args, stream) => {
         // anything else — including a leading-dash token — is named back as an
         // unknown command so the offending token is visible.
         if (!command) {
-            console.error(`expected a subcommand: ${acceptedSubcommands()}`)
+            throw new Error(`expected a subcommand: ${acceptedSubcommands()}`)
         } else {
-            console.error(`unknown command: ${command} (expected: ${acceptedSubcommands()})`)
+            throw new Error(`unknown command: ${command} (expected: ${acceptedSubcommands()})`)
         }
-        return 1
     }
 
-    // Library throws (missing tsconfig, unknown report name) become a clean
-    // non-zero status rather than an unhandled rejection.
-    try {
-        return await handler(args.slice(i), common, stream)
-    } catch (e) {
-        console.error(e instanceof Error ? e.message : String(e))
-        return 1
-    }
+    // A throw here propagates to the caller, which displays it.
+    return await handler(args.slice(i), common, stream)
 }

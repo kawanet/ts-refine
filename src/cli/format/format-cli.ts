@@ -5,14 +5,14 @@
 import {initProject, refineFormat, refineReport, type TSR} from "../../index.ts"
 import {applyReportNames} from "../../report/report-names.ts"
 import {NULL_SINK} from "../cli-io.ts"
-import {type CommonArgs, helpUnsupported} from "../parse-common-args.ts"
+import type {CommonArgs} from "../parse-common-args.ts"
 import {resolvePaths} from "../resolve-paths.ts"
 import {parseFormatArgs} from "./parse-format-args.ts"
 
 export async function runFormat(sub: string[], common: CommonArgs): Promise<number> {
     const args = parseFormatArgs(sub, common)
     if (!args) return 1
-    if (common.help) return helpUnsupported("format")
+    if (common.help) throw new Error("--help is not supported for the format command")
     const {absTsconfig, paths} = resolvePaths(common.tsconfigPath, args.paths)
     const project = initProject({tsConfigFilePath: absTsconfig})
     const reportNames = applyReportNames as TSR.ReportName[]

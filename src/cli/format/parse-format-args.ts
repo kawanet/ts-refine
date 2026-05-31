@@ -20,24 +20,21 @@ export function parseFormatArgs(sub: string[], common: CommonArgs): FormatArgs |
         if (a === "--organize-imports") {
             const v = sub[i + 1]
             if (v !== "on" && v !== "off") {
-                console.error(`--organize-imports expects 'on' or 'off'; got: ${v ?? "(missing)"}`)
-                return undefined
+                throw new Error(`--organize-imports expects 'on' or 'off'; got: ${v ?? "(missing)"}`)
             }
             overrides.organizeImports = v
             i += 2
         } else if (a === "--semicolons") {
             const v = sub[i + 1]
             if (v !== "on" && v !== "off") {
-                console.error(`--semicolons expects 'on' or 'off'; got: ${v ?? "(missing)"}`)
-                return undefined
+                throw new Error(`--semicolons expects 'on' or 'off'; got: ${v ?? "(missing)"}`)
             }
             overrides.semicolons = v
             i += 2
         } else if (a === "--indent") {
             const v = sub[i + 1]
             if (!v || v.startsWith("-")) {
-                console.error("--indent requires a positive integer or 'tab' (e.g. --indent 4)")
-                return undefined
+                throw new Error("--indent requires a positive integer or 'tab' (e.g. --indent 4)")
             }
             // "tab" maps to tab indentation; otherwise a positive integer.
             if (v === "tab") {
@@ -45,8 +42,7 @@ export function parseFormatArgs(sub: string[], common: CommonArgs): FormatArgs |
             } else {
                 const n = Number(v)
                 if (!Number.isInteger(n) || n <= 0) {
-                    console.error(`--indent expects a positive integer or 'tab'; got: ${v}`)
-                    return undefined
+                    throw new Error(`--indent expects a positive integer or 'tab'; got: ${v}`)
                 }
                 overrides.indent = n
             }
@@ -55,16 +51,14 @@ export function parseFormatArgs(sub: string[], common: CommonArgs): FormatArgs |
             // `cr` rejected: LS formatter accepts \n / \r\n only.
             const v = sub[i + 1]
             if (v !== "lf" && v !== "crlf") {
-                console.error(`--new-line expects 'lf' or 'crlf'; got: ${v ?? "(missing)"}`)
-                return undefined
+                throw new Error(`--new-line expects 'lf' or 'crlf'; got: ${v ?? "(missing)"}`)
             }
             overrides.newLine = v
             i += 2
         } else if (a === "--bracket-spacing") {
             const v = sub[i + 1]
             if (v !== "on" && v !== "off") {
-                console.error(`--bracket-spacing expects 'on' or 'off'; got: ${v ?? "(missing)"}`)
-                return undefined
+                throw new Error(`--bracket-spacing expects 'on' or 'off'; got: ${v ?? "(missing)"}`)
             }
             overrides.bracketSpacing = v
             i += 2
@@ -74,8 +68,7 @@ export function parseFormatArgs(sub: string[], common: CommonArgs): FormatArgs |
             if (consumed > 0) {
                 i += consumed
             } else if (a.startsWith("-")) {
-                console.error(`unknown option: ${a}`)
-                return undefined
+                throw new Error(`unknown option: ${a}`)
             } else {
                 paths.push(a)
                 i++

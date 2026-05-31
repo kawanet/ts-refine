@@ -30,8 +30,7 @@ export function parseInspectArgs(sub: string[], common: CommonArgs): InspectArgs
             if (!inspectorNames.includes(name)) inspectorNames.push(name)
             i++
         } else if (a.startsWith("-")) {
-            console.error(`unknown option: ${a}`)
-            return undefined
+            throw new Error(`unknown option: ${a}`)
         } else {
             paths.push(a)
             i++
@@ -40,8 +39,7 @@ export function parseInspectArgs(sub: string[], common: CommonArgs): InspectArgs
 
     // inspect is read-only; --dry-run is a write-command flag.
     if (common.dryRun) {
-        console.error("--dry-run is not valid for the inspect command")
-        return undefined
+        throw new Error("--dry-run is not valid for the inspect command")
     }
 
     const effective = inspectorNames.length > 0 ? inspectorNames : [...knownInspectorNames]

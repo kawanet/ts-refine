@@ -7,17 +7,6 @@ function common(): CommonArgs {
     return {tsconfigPath: null, dryRun: false, help: false}
 }
 
-// Silences the expected stderr writes so the test output stays clean.
-function quiet<T>(fn: () => T): T {
-    const orig = console.error
-    console.error = () => {}
-    try {
-        return fn()
-    } finally {
-        console.error = orig
-    }
-}
-
 describe("parseInspect", () => {
     it("defaults to the full inspector registry", () => {
         const r = parseInspectArgs([], common())
@@ -44,9 +33,6 @@ describe("parseInspect", () => {
     })
 
     it("rejects --dry-run as a read command", () => {
-        assert.equal(
-            quiet(() => parseInspectArgs(["--dry-run"], common())),
-            undefined,
-        )
+        assert.throws(() => parseInspectArgs(["--dry-run"], common()), /--dry-run is not valid/)
     })
 })
