@@ -66,11 +66,11 @@ export const refineCLI: refineCLI = async (args, stream) => {
         i += consumed
     }
 
-    // Help with no subcommand, a bare invocation, and the `help` command all
-    // print usage. A subcommand combined with --help is left to the handler,
-    // which currently rejects it (see helpUnsupported).
-    const bare = command === undefined && common.tsconfigPath === null && !common.dryRun
-    if (command === "help" || (command === undefined && (common.help || bare))) {
+    // The `help` command, a no-argument invocation, and --help with no
+    // subcommand all print usage. Globals without a subcommand fall through to
+    // "expected a subcommand"; a subcommand combined with --help is left to the
+    // handler, which currently rejects it (see helpUnsupported).
+    if (command === "help" || args.length === 0 || (command === undefined && common.help)) {
         stream.write(usage() + "\n")
         return 0
     }
