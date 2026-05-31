@@ -1,19 +1,19 @@
 // `format`: a fixed set of override options plus positional files. Globals
 // (-p / --dry-run) that land among them are consumed into `common`.
 
-import type {FormatOptions} from "../../recommend/format-options.ts"
+import type {TSR} from "ts-refine"
 import {type CommonArgs, parseCommonArgs} from "../parse-common-args.ts"
 
 // Raw values only: the runner resolves `paths` into absolute paths and decides
 // what `check` implies (dry-run plus a non-zero exit when anything would change).
 export interface FormatArgs {
     paths: string[]
-    applyOverrides: FormatOptions
+    applyOverrides: TSR.FormatOptions
     check: boolean
 }
 
 export function parseFormatArgs(sub: string[], common: CommonArgs): FormatArgs | undefined {
-    const overrides: FormatOptions = {}
+    const overrides: TSR.FormatOptions = {}
     const paths: string[] = []
     let check = false
     let i = 0

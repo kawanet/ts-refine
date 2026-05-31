@@ -63,19 +63,24 @@ export declare namespace TSR {
         bracketSpacing?: Partial<BracketSpacingOpts>
     }
 
-    // Input to `refineFormat`. `report` provides defaults; the top-level
-    // overrides win per field. `organizeImports` defaults to "on".
-    interface FormatOpts extends CommonOpts {
-        paths: string[]
-        dryRun: boolean
-        report: ReportResult
+    // Per-field format intent: the actionable subset of a report recommendation
+    // and what the CLI overrides feed. `newLine` is lf|crlf only — a `cr`
+    // recommendation is neither a runnable flag nor an LS setting, so it never
+    // enters here. refineMove/refineRename take this directly to organize imports.
+    interface FormatOptions {
         organizeImports?: "on" | "off"
         indent?: number | "tab"
         semicolons?: "on" | "off"
-        // LS `newLineCharacter` only accepts \n / \r\n; a `cr` recommendation
-        // is logged but not applied.
         newLine?: "lf" | "crlf"
         bracketSpacing?: "on" | "off"
+    }
+
+    // Input to `refineFormat`. `report` provides defaults; the top-level
+    // FormatOptions overrides win per field. `organizeImports` defaults to "on".
+    interface FormatOpts extends CommonOpts, FormatOptions {
+        paths: string[]
+        dryRun: boolean
+        report: ReportResult
     }
 
     // refineFormat returns the in-project files whose text was rewritten, so a
@@ -142,12 +147,12 @@ export declare namespace TSR {
     // source files; `dest` is either an existing directory (multi-source) or
     // a destination file path (single-source rename). After moving, imports of
     // the files whose specifiers changed are re-sorted (organizeImports) using
-    // `report` — the project-wide surveyed style — so they converge on it.
+    // `format` — the project-wide surveyed style — so they converge on it.
     interface MoveOpts extends CommonOpts {
         sources: string[]
         dest: string
         dryRun: boolean
-        report: ReportResult
+        format: FormatOptions
     }
 
     // refineMove returns the planned moves (from → to) and the set of in-project
@@ -162,13 +167,13 @@ export declare namespace TSR {
     // Input to `refineRename`. Renames `from` to `to` in place; a dotted spec
     // (ns.member, Type.prop, ns.Type.prop) renames a member of a matching
     // container. `file` scopes the lookup; null requires a project-unique symbol.
-    // Touched files' imports are then re-sorted (organizeImports) using `report`.
+    // Touched files' imports are then re-sorted (organizeImports) using `format`.
     interface RenameOpts extends CommonOpts {
         from: string
         to: string
         file: string | null
         dryRun: boolean
-        report: ReportResult
+        format: FormatOptions
     }
 
     // refineRename returns the applied rename and the in-project files whose text

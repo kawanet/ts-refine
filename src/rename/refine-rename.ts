@@ -4,7 +4,7 @@
 // which `from` and `to` must share — a member is never moved across containers.
 //
 // Supported `from`/`to` shapes and the collision/scope rules live in parseTarget
-// and resolveTarget below; the surveyed `report` drives the post-rename
+// and resolveTarget below; the surveyed `format` style drives the post-rename
 // organizeImports.
 
 import {type ClassDeclaration, type Identifier, type InterfaceDeclaration, type ModuleDeclaration, Node, type Project, type SourceFile} from "ts-morph"
@@ -30,7 +30,7 @@ interface Resolved {
 }
 
 export const refineRename: typeof declared.refineRename = async (project, opts) => {
-    const {from, to, file, dryRun, report, log} = opts
+    const {from, to, file, dryRun, format, log} = opts
 
     const fromT = parseTarget(from)
     const toT = parseTarget(to)
@@ -62,7 +62,7 @@ export const refineRename: typeof declared.refineRename = async (project, opts) 
 
     // Re-sort imports in every file the rename edited, so a changed import
     // binding leaves a tidy, conventionally-ordered block.
-    organizeChangedImports(targetFiles, report)
+    organizeChangedImports(targetFiles, format)
 
     const touched = [...targetFiles]
     if (!dryRun) for (const sf of touched) await sf.save()

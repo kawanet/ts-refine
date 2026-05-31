@@ -46,7 +46,7 @@ function withExtension(specifier: string, ext: string): string {
 }
 
 export const refineMove: typeof declared.refineMove = async (project, opts) => {
-    const {sources, dest, dryRun, report, log} = opts
+    const {sources, dest, dryRun, format, log} = opts
 
     const plan = planMoves(project, sources, dest)
 
@@ -84,7 +84,7 @@ export const refineMove: typeof declared.refineMove = async (project, opts) => {
     // since organizeImports invalidates the recorded nodes as it rewrites.
     const importChangedFiles = new Set<SourceFile>()
     for (const r of records) importChangedFiles.add(r.node.getSourceFile())
-    organizeChangedImports(importChangedFiles, report)
+    organizeChangedImports(importChangedFiles, format)
 
     // Dry-run: print planned moves + the importers that would change;
     // never touch disk. Otherwise persist only what we changed — call

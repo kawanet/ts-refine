@@ -12,27 +12,17 @@ import {ts} from "ts-morph"
 import type {TSR} from "ts-refine"
 import {applyReportNames} from "../report/report-names.ts"
 
-// `newLine` is lf|crlf only: a `cr` recommendation is neither a runnable
-// ts-refine flag nor an LS setting, so it never enters FormatOptions.
-export interface FormatOptions {
-    organizeImports?: "on" | "off"
-    indent?: number | "tab"
-    semicolons?: "on" | "off"
-    newLine?: "lf" | "crlf"
-    bracketSpacing?: "on" | "off"
-}
-
 // A CLI override pins a field, so surveying the matching report is redundant;
 // organizeImports has no report. reportNamesForFormat trims the apply set to
 // the reports still worth running — a fully-pinned format skips the survey.
-const reportByOverride: {field: keyof FormatOptions; report: TSR.ReportName}[] = [
+const reportByOverride: {field: keyof TSR.FormatOptions; report: TSR.ReportName}[] = [
     {field: "semicolons", report: "semicolons"},
     {field: "indent", report: "indent"},
     {field: "newLine", report: "new-line"},
     {field: "bracketSpacing", report: "bracket-spacing"},
 ]
 
-export function reportNamesForFormat(overrides: FormatOptions): TSR.ReportName[] {
+export function reportNamesForFormat(overrides: TSR.FormatOptions): TSR.ReportName[] {
     const skip = new Set(reportByOverride.filter((m) => overrides[m.field] !== undefined).map((m) => m.report))
     return applyReportNames.filter((name) => !skip.has(name))
 }
@@ -51,8 +41,8 @@ type MutableFormatSettings = {-readonly [K in keyof FormatCodeSettings]: FormatC
 
 // Recommendation → options. `cr` is read and discarded (see FormatOptions);
 // member-separators has no actionable mapping and is dropped too.
-export function reportToFormatOptions(report: TSR.ReportResult): FormatOptions {
-    const options: FormatOptions = {}
+export function reportToFormatOptions(report: TSR.ReportResult): TSR.FormatOptions {
+    const options: TSR.FormatOptions = {}
     if (report.semicolons?.semicolons) options.semicolons = report.semicolons.semicolons
     if (report.indent?.width !== undefined) options.indent = report.indent.width
     const newLine = report.newLine?.newLine
@@ -63,7 +53,7 @@ export function reportToFormatOptions(report: TSR.ReportResult): FormatOptions {
 
 // CLI overrides → options. A typed seam keeping parseArgs decoupled from
 // the FormatOptions vocabulary; the shapes happen to line up today.
-export function overridesToFormatOptions(overrides: FormatOptions): FormatOptions {
+export function overridesToFormatOptions(overrides: TSR.FormatOptions): TSR.FormatOptions {
     return {
         organizeImports: overrides.organizeImports,
         indent: overrides.indent,
@@ -74,7 +64,7 @@ export function overridesToFormatOptions(overrides: FormatOptions): FormatOption
 }
 
 // Per-field precedence: override wins over base, else base, else unset.
-export function mergeFormatOptions(base: FormatOptions, override: FormatOptions): FormatOptions {
+export function mergeFormatOptions(base: TSR.FormatOptions, override: TSR.FormatOptions): TSR.FormatOptions {
     return {
         organizeImports: override.organizeImports ?? base.organizeImports,
         indent: override.indent ?? base.indent,
@@ -85,7 +75,7 @@ export function mergeFormatOptions(base: FormatOptions, override: FormatOptions)
 }
 
 // FormatOptions → the settings refineFormat hands to ts-morph.
-export function resolveSettings(options: FormatOptions): ResolvedSettings {
+export function resolveSettings(options: TSR.FormatOptions): ResolvedSettings {
     const formatSettings: MutableFormatSettings = {}
 
     // "tab" turns convertTabsToSpaces off (LS then indents with tabs);

@@ -3,13 +3,13 @@
 // `grep -E '^ +--'` extract just the flags.
 
 import type {TSR} from "ts-refine"
-import {type FormatOptions, reportToFormatOptions} from "../../recommend/format-options.ts"
+import {reportToFormatOptions} from "../../recommend/format-options.ts"
 
 // Returns argv-style tokens (flag and value pushed separately), the same
 // shape parseArgs consumes. Reads FormatOptions — the same value the
 // `format` command applies — so the printed command and the apply agree;
 // `cr` is already dropped upstream, so --new-line is always runnable.
-function buildFormatFlags(options: FormatOptions): string[] {
+function buildFormatFlags(options: TSR.FormatOptions): string[] {
     const flags: string[] = []
     if (options.semicolons) flags.push("--semicolons", options.semicolons)
     if (options.indent !== undefined) flags.push("--indent", String(options.indent))
