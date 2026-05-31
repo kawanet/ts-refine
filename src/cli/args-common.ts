@@ -1,59 +1,36 @@
-// Shared pieces of the CLI argument grammar. parseArgs (in parse-args.ts)
-// only resolves the globals and the subcommand; it returns CommonArgs with the
-// leftover tokens in `rest`, and the per-command parser in
-// src/cli/<command>/<command>-args.ts turns those into its own typed args.
+// CommonArgs holds the position-independent global options every command
+// shares. parseCommonArgs fills it incrementally rather than pre-scanning all
+// of argv: the router consumes the leading globals with it, and each command
+// parser calls it inside its own loop, so -p / --dry-run work on either side
+// of the subcommand.
 
-// Result of the common pass: the leading token verbatim (the router decides
-// whether it names a real command, help, or nothing), the globals, and the
-// still-unparsed tokens to its right. The per-command parser consumes `rest`.
 export interface CommonArgs {
-    command: string | undefined
     tsconfigPath: string | null
     dryRun: boolean
-    rest: string[]
 }
 
-// Global options collected position-independently, plus the leftover tokens
-// (the subcommand and its own arguments, in order).
-export interface Globals {
-    tsconfigPath: string | null
-    dryRun: boolean
-    rest: string[]
-}
-
-// The slice of the globals a per-command parser needs: the raw tsconfig path
-// (resolved per command via resolvePaths) and the dry-run flag.
-export type CommandGlobals = Pick<Globals, "tsconfigPath" | "dryRun">
-
-// Pulls the global options out of argv regardless of position, leaving the
-// subcommand and its own args in `rest`. `-p` given more than once (on
-// either side) is an error; `--dry-run` repeated is idempotent. So the
-// three duplicate shapes — left+left, left+right, right+right — behave
-// identically, which is the whole point of treating these as positionless.
-export function extractGlobals(argv: string[]): Globals | undefined {
-    let tsconfigPath: string | null = null
-    let dryRun = false
-    const rest: string[] = []
-
-    for (let i = 0; i < argv.length; i++) {
-        const a = argv[i]
-        if (a === "-p" || a === "--project") {
-            const v = argv[++i]
-            if (!v || v.startsWith("-")) {
-                console.error(`${a} requires a path (e.g. ${a} tsconfig.json)`)
-                return undefined
-            }
-            if (tsconfigPath !== null) {
-                console.error(`${a} cannot be combined with another tsconfig path`)
-                return undefined
-            }
-            tsconfigPath = v
-        } else if (a === "--dry-run") {
-            dryRun = true
-        } else {
-            rest.push(a)
+// Consumes a global option at argv[index], writing it into `args`. Returns the
+// number of tokens consumed, 0 if argv[index] is not a global, or -1 if it is
+// a global but malformed (a duplicate -p, or a missing value) — in which case
+// the specific error is already on stderr.
+export function parseCommonArgs(args: CommonArgs, argv: string[], index: number): number {
+    const a = argv[index]
+    if (a === "-p" || a === "--project") {
+        const v = argv[index + 1]
+        if (!v || v.startsWith("-")) {
+            console.error(`${a} requires a path (e.g. ${a} tsconfig.json)`)
+            return -1
         }
+        if (args.tsconfigPath !== null) {
+            console.error(`${a} cannot be combined with another tsconfig path`)
+            return -1
+        }
+        args.tsconfigPath = v
+        return 2
     }
-
-    return {tsconfigPath, dryRun, rest}
+    if (a === "--dry-run") {
+        args.dryRun = true
+        return 1
+    }
+    return 0
 }

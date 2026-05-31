@@ -1,7 +1,8 @@
 // `list`: cleanup-candidate filters plus positional files. Each flag is a
-// boolean; multiple are OR-combined downstream.
+// boolean; multiple are OR-combined downstream. Globals are consumed into
+// `common`.
 
-import type {CommandGlobals} from "../args-common.ts"
+import {type CommonArgs, parseCommonArgs} from "../args-common.ts"
 
 // `list` filter flags; OR-combined when more than one is set.
 export interface ListFilters {
@@ -10,39 +11,50 @@ export interface ListFilters {
     unusedExports: boolean
 }
 
-// Raw values only: the runner resolves tsconfigPath/paths into absolute paths.
+// Raw values only: the runner resolves `paths` into absolute paths.
 export interface ListArgs {
-    tsconfigPath: string | null
     paths: string[]
     listFilters: ListFilters
 }
 
-export function parseList(sub: string[], globals: CommandGlobals): ListArgs | undefined {
-    // list is read-only; --dry-run is a write-command flag.
-    if (globals.dryRun) {
-        console.error("--dry-run is not valid for the list command")
-        return undefined
-    }
-
+export function parseList(sub: string[], common: CommonArgs): ListArgs | undefined {
     const paths: string[] = []
     let noExports = false
     let noImporters = false
     let unusedExports = false
+    let i = 0
 
-    for (const a of sub) {
+    while (i < sub.length) {
+        const a = sub[i]
         if (a === "--no-exports") {
             noExports = true
+            i++
         } else if (a === "--no-importers") {
             noImporters = true
+            i++
         } else if (a === "--unused-exports") {
             unusedExports = true
-        } else if (a.startsWith("-")) {
-            console.error(`unknown option: ${a}`)
-            return undefined
+            i++
         } else {
-            paths.push(a)
+            const consumed = parseCommonArgs(common, sub, i)
+            if (consumed < 0) return undefined
+            if (consumed > 0) {
+                i += consumed
+            } else if (a.startsWith("-")) {
+                console.error(`unknown option: ${a}`)
+                return undefined
+            } else {
+                paths.push(a)
+                i++
+            }
         }
     }
 
-    return {tsconfigPath: globals.tsconfigPath, paths, listFilters: {noExports, noImporters, unusedExports}}
+    // list is read-only; --dry-run is a write-command flag.
+    if (common.dryRun) {
+        console.error("--dry-run is not valid for the list command")
+        return undefined
+    }
+
+    return {paths, listFilters: {noExports, noImporters, unusedExports}}
 }

@@ -4,18 +4,18 @@
 
 import {initProject, refineFormat, refineReport, type TSR} from "../../index.ts"
 import {applyReportNames} from "../../report/report-names.ts"
-import type {CommandGlobals} from "../args-common.ts"
+import type {CommonArgs} from "../args-common.ts"
 import {NULL_SINK} from "../cli-io.ts"
 import {resolvePaths} from "../resolve-paths.ts"
 import {parseFormat} from "./format-args.ts"
 
-export async function runFormat(sub: string[], globals: CommandGlobals): Promise<number> {
-    const args = parseFormat(sub, globals)
+export async function runFormat(sub: string[], common: CommonArgs): Promise<number> {
+    const args = parseFormat(sub, common)
     if (!args) return 1
-    const {absTsconfig, paths} = resolvePaths(args.tsconfigPath, args.paths)
+    const {absTsconfig, paths} = resolvePaths(common.tsconfigPath, args.paths)
     const project = initProject({tsConfigFilePath: absTsconfig})
     const reportNames = applyReportNames as TSR.ReportName[]
     const report = await refineReport(project, {paths, reportNames, stream: NULL_SINK})
-    await refineFormat(project, {paths, dryRun: args.dryRun, report, ...args.applyOverrides})
+    await refineFormat(project, {paths, dryRun: common.dryRun, report, ...args.applyOverrides})
     return 0
 }

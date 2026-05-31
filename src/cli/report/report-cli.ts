@@ -3,19 +3,19 @@
 // Named reports and `--output` paths skip those survey-only blocks.
 
 import {initProject, refineList, refineReport, type TSR} from "../../index.ts"
-import type {CommandGlobals} from "../args-common.ts"
+import type {CommonArgs} from "../args-common.ts"
 import type {CLIStream} from "../cli-io.ts"
-import {resolvePaths} from "../resolve-paths.ts"
 import {filterListEntries, writeListTable} from "../list/format-list.ts"
-import {parseReport} from "./report-args.ts"
+import {resolvePaths} from "../resolve-paths.ts"
 import {writePrettierMarkdown} from "./output-prettier.ts"
 import {writeFormatMarkdown} from "./output-ts-refine.ts"
+import {parseReport} from "./report-args.ts"
 import {selectOutput} from "./select-output.ts"
 
-export async function runReport(sub: string[], globals: CommandGlobals, stream: CLIStream): Promise<number> {
-    const args = parseReport(sub, globals)
+export async function runReport(sub: string[], common: CommonArgs, stream: CLIStream): Promise<number> {
+    const args = parseReport(sub, common)
     if (!args) return 1
-    const {absTsconfig, paths} = resolvePaths(args.tsconfigPath, args.paths)
+    const {absTsconfig, paths} = resolvePaths(common.tsconfigPath, args.paths)
     const project = initProject({tsConfigFilePath: absTsconfig})
 
     // Report-name validation lives in refineReport so typos surface there.

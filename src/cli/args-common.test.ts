@@ -1,14 +1,15 @@
-// Shared CLI grammar: the position-independent globals, the raw command split,
-// and tsconfig/path resolution. Help, validity, and dispatch are the router's
-// job (see refine-cli.test.ts); per-command option parsing lives in
-// src/cli/<command>/<command>-args.test.ts.
+// parseCommonArgs consumes the position-independent globals one option at a
+// time. Either-side behavior and dispatch are covered end-to-end in
+// refine-cli.test.ts; per-command option parsing lives in the
+// <command>-args.test.ts files.
 
 import {strict as assert} from "node:assert"
-import path from "node:path"
 import {describe, it} from "node:test"
-import {parseArgs} from "./parse-args.ts"
+import {type CommonArgs, parseCommonArgs} from "./args-common.ts"
 
-const SAMPLE_TSCONFIG = path.resolve(import.meta.dirname, "../../sample/basic/tsconfig.json")
+function fresh(): CommonArgs {
+    return {tsconfigPath: null, dryRun: false}
+}
 
 // Silences the expected stderr writes so the test output stays clean.
 function quiet<T>(fn: () => T): T {
@@ -21,81 +22,54 @@ function quiet<T>(fn: () => T): T {
     }
 }
 
-describe("parseArgs globals (position-independent)", () => {
-    // Global options (-p / --project, --dry-run) may sit on either side of
-    // the subcommand. parseArgs returns the leading token, the raw globals,
-    // and the still-unparsed tokens to its right.
-    it("accepts -p with a tsconfig.json path", () => {
-        const r = parseArgs(["report", "-p", SAMPLE_TSCONFIG])
-        assert.ok(r)
-        assert.equal(r.tsconfigPath, SAMPLE_TSCONFIG)
+describe("parseCommonArgs", () => {
+    it("consumes -p <path> into tsconfigPath and reports two tokens", () => {
+        const c = fresh()
+        assert.equal(parseCommonArgs(c, ["-p", "tsconfig.json"], 0), 2)
+        assert.equal(c.tsconfigPath, "tsconfig.json")
     })
 
     it("accepts --project as the long form of -p", () => {
-        const r = parseArgs(["report", "--project", SAMPLE_TSCONFIG])
-        assert.ok(r)
-        assert.equal(r.tsconfigPath, SAMPLE_TSCONFIG)
+        const c = fresh()
+        assert.equal(parseCommonArgs(c, ["--project", "x.json"], 0), 2)
+        assert.equal(c.tsconfigPath, "x.json")
     })
 
-    it("accepts -p before the subcommand (global, left side)", () => {
-        const r = parseArgs(["-p", SAMPLE_TSCONFIG, "report"])
-        assert.ok(r)
-        assert.equal(r.command, "report")
-        assert.equal(r.tsconfigPath, SAMPLE_TSCONFIG)
+    it("consumes --dry-run into dryRun and reports one token", () => {
+        const c = fresh()
+        assert.equal(parseCommonArgs(c, ["--dry-run"], 0), 1)
+        assert.equal(c.dryRun, true)
     })
 
-    it("leaves the command's own tokens in `rest` regardless of global position", () => {
-        const r = parseArgs(["--project", SAMPLE_TSCONFIG, "format", "--semicolons", "off"])
-        assert.ok(r)
-        assert.equal(r.command, "format")
-        assert.equal(r.tsconfigPath, SAMPLE_TSCONFIG)
-        assert.deepEqual(r.rest, ["--semicolons", "off"])
+    it("reports zero for a token that is not a global", () => {
+        const c = fresh()
+        assert.equal(parseCommonArgs(c, ["report"], 0), 0)
+        assert.equal(parseCommonArgs(c, ["--semicolons"], 0), 0)
     })
 
-    it("records --dry-run from either side without judging whether it applies", () => {
-        const r = parseArgs(["--dry-run", "format", "-p", SAMPLE_TSCONFIG])
-        assert.ok(r)
-        assert.equal(r.command, "format")
-        assert.equal(r.dryRun, true)
+    it("reads at the given index, not just the front", () => {
+        const c = fresh()
+        assert.equal(parseCommonArgs(c, ["report", "-p", "x.json"], 1), 2)
+        assert.equal(c.tsconfigPath, "x.json")
     })
 
-    it("rejects -p duplicated across either side, like the right-side duplicate", () => {
-        // left+right
+    it("rejects -p without a value (-1)", () => {
         assert.equal(
-            quiet(() => parseArgs(["-p", SAMPLE_TSCONFIG, "report", "-p", SAMPLE_TSCONFIG])),
-            undefined,
+            quiet(() => parseCommonArgs(fresh(), ["-p"], 0)),
+            -1,
         )
-        // left+left
         assert.equal(
-            quiet(() => parseArgs(["-p", SAMPLE_TSCONFIG, "-p", SAMPLE_TSCONFIG, "report"])),
-            undefined,
-        )
-        // right+right
-        assert.equal(
-            quiet(() => parseArgs(["report", "-p", SAMPLE_TSCONFIG, "-p", SAMPLE_TSCONFIG])),
-            undefined,
+            quiet(() => parseCommonArgs(fresh(), ["-p", "--dry-run"], 0)),
+            -1,
         )
     })
-})
 
-describe("parseArgs subcommand split", () => {
-    it("passes an unrecognized subcommand through verbatim (validity is the router's job)", () => {
-        const r = parseArgs(["frobnicate", "-p", SAMPLE_TSCONFIG])
-        assert.ok(r)
-        assert.equal(r.command, "frobnicate")
-    })
-
-    it("passes a leading-dash token through verbatim", () => {
-        // The router turns this into an "expected a subcommand" error.
-        const r = parseArgs(["--output", "prettier", "-p", SAMPLE_TSCONFIG])
-        assert.ok(r)
-        assert.equal(r.command, "--output")
-        assert.deepEqual(r.rest, ["prettier"])
-    })
-
-    it("reports command undefined when no subcommand is given", () => {
-        const r = parseArgs(["-p", SAMPLE_TSCONFIG])
-        assert.ok(r)
-        assert.equal(r.command, undefined)
+    it("rejects a duplicate -p, even across separate calls (-1)", () => {
+        const c = fresh()
+        parseCommonArgs(c, ["-p", "a.json"], 0)
+        assert.equal(
+            quiet(() => parseCommonArgs(c, ["-p", "b.json"], 0)),
+            -1,
+        )
     })
 })

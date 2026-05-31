@@ -99,6 +99,21 @@ describe("refineCLI", () => {
         assert.match(r.stdout, /^\| line \| kind \| name \| importers \| example \|/m)
     })
 
+    it("accepts -p on either side of the subcommand", async () => {
+        const left = await run(["-p", SAMPLE, "report", "semicolons"])
+        assert.equal(left.status, 0)
+        assert.match(left.stdout, /### semicolons/)
+        const right = await run(["report", "semicolons", "-p", SAMPLE])
+        assert.equal(right.status, 0)
+        assert.match(right.stdout, /### semicolons/)
+    })
+
+    it("rejects -p duplicated across the subcommand", async () => {
+        const r = await run(["-p", SAMPLE, "report", "-p", SAMPLE])
+        assert.notEqual(r.status, 0)
+        assert.match(r.stderr, /cannot be combined with another tsconfig path/)
+    })
+
     it("exits non-zero on an unknown command", async () => {
         const r = await run(["frobnicate", "-p", SAMPLE])
         assert.notEqual(r.status, 0)

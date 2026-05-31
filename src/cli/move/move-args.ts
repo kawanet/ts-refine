@@ -1,25 +1,33 @@
-// `move`: positional args are `<source...> <dest>` — the parser only
-// validates the count and keeps them raw in `paths`; the runner resolves them
-// and splits the list (last element → dest, the rest → sources). `paths`
-// rather than `files` because the destination may be a directory.
+// `move`: positional args are `<source...> <dest>` — the parser only validates
+// the count and keeps them raw in `paths`; the runner resolves them and splits
+// the list (last element → dest, the rest → sources). `paths` rather than
+// `files` because the destination may be a directory. Globals are consumed
+// into `common`.
 
-import type {CommandGlobals} from "../args-common.ts"
+import {type CommonArgs, parseCommonArgs} from "../args-common.ts"
 
-// Raw values only: the runner resolves tsconfigPath/paths into absolute paths.
+// Raw values only: the runner resolves `paths` into absolute paths.
 export interface MoveArgs {
-    tsconfigPath: string | null
     paths: string[]
-    dryRun: boolean
 }
 
-export function parseMove(sub: string[], globals: CommandGlobals): MoveArgs | undefined {
+export function parseMove(sub: string[], common: CommonArgs): MoveArgs | undefined {
     const paths: string[] = []
-    for (const a of sub) {
-        if (a.startsWith("-")) {
+    let i = 0
+
+    while (i < sub.length) {
+        const a = sub[i]
+        const consumed = parseCommonArgs(common, sub, i)
+        if (consumed < 0) return undefined
+        if (consumed > 0) {
+            i += consumed
+        } else if (a.startsWith("-")) {
             console.error(`unknown option: ${a}`)
             return undefined
+        } else {
+            paths.push(a)
+            i++
         }
-        paths.push(a)
     }
 
     if (paths.length < 2) {
@@ -27,5 +35,5 @@ export function parseMove(sub: string[], globals: CommandGlobals): MoveArgs | un
         return undefined
     }
 
-    return {tsconfigPath: globals.tsconfigPath, paths, dryRun: globals.dryRun}
+    return {paths}
 }

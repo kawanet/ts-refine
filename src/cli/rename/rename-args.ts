@@ -1,42 +1,51 @@
 // `rename`: rename an exported identifier. --from / --to are required; an
-// optional positional file scopes the lookup to that file's exports.
+// optional positional file scopes the lookup to that file's exports. Globals
+// are consumed into `common`.
 
-import type {CommandGlobals} from "../args-common.ts"
+import {type CommonArgs, parseCommonArgs} from "../args-common.ts"
 
-// Raw values only: the runner resolves tsconfigPath/paths into absolute paths.
-// `paths` holds the optional scope file (zero or one entry).
+// Raw values only: the runner resolves `paths` into absolute paths. `paths`
+// holds the optional scope file (zero or one entry).
 export interface RenameArgs {
-    tsconfigPath: string | null
     paths: string[]
-    dryRun: boolean
     from: string
     to: string
 }
 
-export function parseRename(sub: string[], globals: CommandGlobals): RenameArgs | undefined {
+export function parseRename(sub: string[], common: CommonArgs): RenameArgs | undefined {
     let from: string | undefined
     let to: string | undefined
     const paths: string[] = []
+    let i = 0
 
-    for (let i = 0; i < sub.length; i++) {
+    while (i < sub.length) {
         const a = sub[i]
         if (a === "--from") {
-            from = sub[++i]
+            from = sub[i + 1]
             if (!from || from.startsWith("-")) {
                 console.error("--from requires an identifier (e.g. --from oldName)")
                 return undefined
             }
+            i += 2
         } else if (a === "--to") {
-            to = sub[++i]
+            to = sub[i + 1]
             if (!to || to.startsWith("-")) {
                 console.error("--to requires an identifier (e.g. --to newName)")
                 return undefined
             }
-        } else if (a.startsWith("-")) {
-            console.error(`unknown option: ${a}`)
-            return undefined
+            i += 2
         } else {
-            paths.push(a)
+            const consumed = parseCommonArgs(common, sub, i)
+            if (consumed < 0) return undefined
+            if (consumed > 0) {
+                i += consumed
+            } else if (a.startsWith("-")) {
+                console.error(`unknown option: ${a}`)
+                return undefined
+            } else {
+                paths.push(a)
+                i++
+            }
         }
     }
 
@@ -49,5 +58,5 @@ export function parseRename(sub: string[], globals: CommandGlobals): RenameArgs 
         return undefined
     }
 
-    return {tsconfigPath: globals.tsconfigPath, paths, dryRun: globals.dryRun, from, to}
+    return {paths, from, to}
 }
