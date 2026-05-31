@@ -3,7 +3,7 @@
 // `grep -E '^ +--'` extract just the flags.
 
 import type {TSR} from "ts-refine"
-import {type FormatOptions, reportToFormatOptions} from "../recommend/format-options.ts"
+import {type FormatOptions, reportToFormatOptions} from "../../recommend/format-options.ts"
 
 // Local alias for readability — not exported.
 type Writer = TSR.ReportOpts["stream"]

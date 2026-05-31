@@ -3,7 +3,7 @@
 
 import {inspectorNames} from "../inspect/inspector-names.ts"
 import {reportNames} from "../report/report-names.ts"
-import {outputNames} from "./select-output.ts"
+import {outputNames} from "./report/select-output.ts"
 
 export function usage(): string {
     const reportFlags = reportNames.map((name) => `--${name}`).join(" ")

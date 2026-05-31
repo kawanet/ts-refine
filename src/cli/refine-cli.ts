@@ -1,92 +1,109 @@
-// refineCLI is the whole CLI as a function: parse argv, dispatch the
-// subcommand, write stdout-bound output to `stream`, and resolve with the
-// process exit status. It never calls process.exit and never rejects.
+// refineCLI is the whole CLI as a function: consume the leading global options
+// up to the subcommand, then hand the remaining tokens to the matching command
+// handler in COMMAND_TABLE. Each handler parses its own options (calling
+// parseCommonArgs for any trailing globals), opens the project, and runs.
+// refineCLI writes stdout-bound output to `stream`, resolves with the process
+// exit status, and never calls process.exit or rejects.
 //
-// `stream` stands in for stdout (the report Markdown, list/inspect tables,
-// usage, --output bodies). Diagnostics and per-command progress stay on
-// console.error / the runners' own console output, which already target the
-// process's stderr/stdout.
+// Diagnostics and per-command progress stay on console.error / the runners'
+// own console output, which already target the process's stderr/stdout.
 
-import {initProject, refineFormat, refineInspect, refineList, refineMove, refineRename, refineReport, type TSR} from "../index.ts"
-import {writeInspectFile} from "./format-inspect.ts"
-import {filterListEntries, writeListTable} from "./format-list.ts"
-import {writePrettierMarkdown} from "./output-prettier.ts"
-import {writeFormatMarkdown} from "./output-ts-refine.ts"
-import {parseArgs} from "./parse-args.ts"
-import {selectOutput} from "./select-output.ts"
+import {type CommonArgs, parseCommonArgs} from "./args-common.ts"
+import type {CLIStream} from "./cli-io.ts"
+import {runFormat} from "./format/format-cli.ts"
+import {runInspect} from "./inspect/inspect-cli.ts"
+import {runList} from "./list/list-cli.ts"
+import {runMove} from "./move/move-cli.ts"
+import {runRename} from "./rename/rename-cli.ts"
+import {runReport} from "./report/report-cli.ts"
 import {usage} from "./usage.ts"
+
+// A command handler parses its own tokens (using `common` for globals), opens
+// the project, runs, and resolves with the exit status. Read-only commands
+// ignore `stream` only by taking fewer parameters.
+type CommandHandler = (sub: string[], common: CommonArgs, stream: CLIStream) => Promise<number>
+
+// The command table is the single source of truth for the set of subcommands:
+// membership here is what makes a name valid. Insertion order also drives the
+// accepted-subcommand error message.
+const COMMAND_TABLE = new Map<string, CommandHandler>([
+    ["report", runReport],
+    ["format", runFormat],
+    ["list", runList],
+    ["inspect", runInspect],
+    ["move", runMove],
+    ["rename", runRename],
+])
+
+function acceptedSubcommands(): string {
+    return [...COMMAND_TABLE.keys(), "help"].join(", ")
+}
 
 // The whole CLI as a function: parse `args` (argv minus node/script),
 // dispatch the subcommand writing stdout-bound output to `stream`, and
 // resolve with the process exit status (0 ok, 1 on error). Never throws.
-type refineCLI = (args: string[], stream: {write: (line: string) => void}) => Promise<number>
+type refineCLI = (args: string[], stream: CLIStream) => Promise<number>
 
 export const refineCLI: refineCLI = async (args, stream) => {
-    const opts = parseArgs(args)
-
-    // parseArgs returns undefined for argv errors (stderr already written),
-    // {help} for the help command, or ParsedArgs for normal dispatch.
-    if (opts === undefined) {
-        console.error(usage())
-        return 1
-    }
-    if ("help" in opts) {
+    // -h / --help win wherever they appear; `help` and a bare invocation also
+    // print usage.
+    if (args.includes("--help") || args.includes("-h")) {
         stream.write(usage() + "\n")
         return 0
     }
 
-    const fileOpts = {paths: opts.paths}
-    // Swallow the Markdown stream in the write modes; the runner consumes it.
-    const NULL_SINK = {write: () => {}}
-    // Report-name validation lives in refineReport so typos surface there.
-    const reportNames = opts.reportNames as TSR.ReportName[]
+    // Consume the leading globals; the first token that isn't one is the
+    // subcommand, and the tokens to its right go to that command's handler.
+    const common: CommonArgs = {tsconfigPath: null, dryRun: false}
+    let i = 0
+    let command: string | undefined
+    while (i < args.length) {
+        const consumed = parseCommonArgs(common, args, i)
+        if (consumed < 0) {
+            // A global option was malformed; stderr already explains it.
+            console.error(usage())
+            return 1
+        }
+        if (consumed === 0) {
+            command = args[i]
+            i++
+            break
+        }
+        i += consumed
+    }
+
+    if (command === undefined) {
+        // Bare invocation is help; globals with no subcommand is a usage error.
+        if (common.tsconfigPath !== null || common.dryRun) {
+            console.error(`expected a subcommand: ${acceptedSubcommands()}`)
+            console.error(usage())
+            return 1
+        }
+        stream.write(usage() + "\n")
+        return 0
+    }
+    if (command === "help") {
+        stream.write(usage() + "\n")
+        return 0
+    }
+
+    const handler = COMMAND_TABLE.get(command)
+    if (handler === undefined) {
+        // A leading dash means the user gave an option where the subcommand
+        // belongs; otherwise it's just an unrecognized command name.
+        if (command.startsWith("-")) {
+            console.error(`expected a subcommand: ${acceptedSubcommands()}`)
+        } else {
+            console.error(`unknown command: ${command} (expected: ${acceptedSubcommands()})`)
+        }
+        console.error(usage())
+        return 1
+    }
 
     // Library throws (missing tsconfig, unknown report name) become a clean
     // non-zero status rather than an unhandled rejection.
     try {
-        const tsConfigFilePath = opts.tsconfigPath
-        const project = initProject({tsConfigFilePath})
-
-        if (opts.command === "list") {
-            const entries = await refineList(project, fileOpts)
-            writeListTable(filterListEntries(entries, opts.listFilters!), stream)
-        } else if (opts.command === "inspect") {
-            const inspectorNames = opts.inspectorNames! as TSR.InspectorName[]
-            const files = await refineInspect(project, {...fileOpts, inspectorNames})
-            for (const file of files) writeInspectFile(file, stream)
-        } else if (opts.command === "move") {
-            // Move's positionals arrive flat; split the destination (last)
-            // from the sources (rest). Survey the whole project first so the
-            // post-move organizeImports follows the codebase's conventions.
-            const sources = opts.paths.slice(0, -1)
-            const dest = opts.paths[opts.paths.length - 1]
-            const report = await refineReport(project, {paths: [], reportNames, stream: NULL_SINK})
-            await refineMove(project, {sources, dest, dryRun: opts.dryRun, report})
-        } else if (opts.command === "rename") {
-            const report = await refineReport(project, {paths: [], reportNames, stream: NULL_SINK})
-            await refineRename(project, {from: opts.from!, to: opts.to!, file: opts.renameFile ?? null, dryRun: opts.dryRun, report})
-        } else if (opts.command === "format") {
-            const report = await refineReport(project, {...fileOpts, reportNames, stream: NULL_SINK})
-            await refineFormat(project, {...fileOpts, dryRun: opts.dryRun, report, ...opts.applyOverrides})
-        } else {
-            const output = selectOutput(opts.output, stream)
-            // The default survey leads with the list cleanup-candidate listing,
-            // then the report tables, then `## recommendation` + `### .prettierrc`.
-            // Named reports and `--output` paths skip these survey-only blocks.
-            if (opts.surveyDefault) {
-                const entries = await refineList(project, fileOpts)
-                const candidates = filterListEntries(entries, {noExports: true, noImporters: true, unusedExports: true})
-                stream.write("### list --no-exports --no-importers --unused-exports\n\n")
-                writeListTable(candidates, stream)
-            }
-            const report = await refineReport(project, {...fileOpts, reportNames, stream: output.reportStream})
-            if (opts.surveyDefault) {
-                writeFormatMarkdown(report, stream)
-                writePrettierMarkdown(report, stream)
-            }
-            output.finalize(report)
-        }
-        return 0
+        return await handler(args.slice(i), common, stream)
     } catch (e) {
         console.error(e instanceof Error ? e.message : String(e))
         return 1
