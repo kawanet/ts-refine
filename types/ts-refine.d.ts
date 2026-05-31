@@ -49,7 +49,7 @@ export declare namespace TSR {
 
     interface ReportOpts extends CommonOpts {
         paths: string[]
-        stream: Writer
+        output: Writer
         reportNames: ReportName[]
     }
 

@@ -3,9 +3,7 @@ import {describe, it} from "node:test"
 import type {TSR} from "ts-refine"
 import {selectOutput} from "./select-output.ts"
 
-type Writer = TSR.ReportOpts["stream"]
-
-function makeStdout(): {writer: Writer; out: () => string} {
+function makeStdout(): {writer: TSR.Writer; out: () => string} {
     let out = ""
     return {writer: {write: (s) => (out += s)}, out: () => out}
 }

@@ -29,7 +29,7 @@ export async function runReport(ctx: Context): Promise<number> {
         stream.write("### list --no-exports --no-importers --unused-exports\n\n")
         writeListTable(candidates, stream)
     }
-    const report = await refineReport(project, {paths, reportNames, stream: output.reportStream, log})
+    const report = await refineReport(project, {paths, reportNames, output: output.reportStream, log})
     if (args.surveyDefault) {
         writeFormatMarkdown(report, stream)
         writePrettierMarkdown(report, stream)

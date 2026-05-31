@@ -19,10 +19,6 @@
 import type {Options as PrettierOptions} from "prettier"
 import type {TSR} from "ts-refine"
 
-// Local alias derived from the published shape — not exported, kept
-// solely to keep the signatures below readable.
-type Writer = TSR.ReportOpts["stream"]
-
 // Collects the recommendations that fired into a PrettierOptions object.
 // Shared by the raw --emit prettier output and the .prettierrc fence
 // embedded in the default Markdown survey.
@@ -42,7 +38,7 @@ function buildPrettierOptions(report: TSR.ReportResult): PrettierOptions {
     return opts
 }
 
-export function writePrettierConfig(report: TSR.ReportResult, stream: Writer): void {
+export function writePrettierConfig(report: TSR.ReportResult, stream: TSR.Writer): void {
     stream.write(JSON.stringify(buildPrettierOptions(report), null, 4) + "\n")
 }
 
@@ -50,7 +46,7 @@ export function writePrettierConfig(report: TSR.ReportResult, stream: Writer): v
 // Markdown output. The whole block is skipped when no recommendations
 // fired — an empty `{}` block would be pure noise. The trailing blank
 // line matches the convention every other report block follows.
-export function writePrettierMarkdown(report: TSR.ReportResult, stream: Writer): void {
+export function writePrettierMarkdown(report: TSR.ReportResult, stream: TSR.Writer): void {
     const opts = buildPrettierOptions(report)
     if (Object.keys(opts).length === 0) return
     stream.write("### .prettierrc\n")

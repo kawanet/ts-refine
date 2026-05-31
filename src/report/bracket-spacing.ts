@@ -21,7 +21,7 @@ const STYLE_LABEL: Record<Style, string> = {
 
 type Bucket = {lines: number; files: number; topPath: string; topLines: number}
 
-export async function runReportBracketSpacing(project: Project, {stream, paths, log}: ReportOpts): Promise<Partial<TSR.BracketSpacingOpts>> {
+export async function runReportBracketSpacing(project: Project, {output, paths, log}: ReportOpts): Promise<Partial<TSR.BracketSpacingOpts>> {
     const sourceFiles = selectSourceFiles(project, {paths}).filter((sf) => !sf.getFilePath().endsWith(".d.ts"))
 
     type PerFile = {path: string; counts: Map<Style, number>; primary: Style}
@@ -59,22 +59,22 @@ export async function runReportBracketSpacing(project: Project, {stream, paths, 
 
     const totalLines = [...buckets.values()].reduce((s, b) => s + b.lines, 0)
 
-    stream.write("### bracket-spacing\n")
-    stream.write("\n")
-    stream.write("| style | nodes | files | example |\n")
-    stream.write("| --- | --- | --- | --- |\n")
+    output.write("### bracket-spacing\n")
+    output.write("\n")
+    output.write("| style | nodes | files | example |\n")
+    output.write("| --- | --- | --- | --- |\n")
     for (const k of DISPLAY_ORDER) {
         const b = buckets.get(k)
         // Both styles always get a row (0 when absent) so the two-way
         // comparison is always visible at a glance.
         if (b) {
-            stream.write(`| ${STYLE_LABEL[k]} | ${b.lines} | ${b.files} | ${b.topPath} |\n`)
+            output.write(`| ${STYLE_LABEL[k]} | ${b.lines} | ${b.files} | ${b.topPath} |\n`)
         } else {
-            stream.write(`| ${STYLE_LABEL[k]} | 0 | 0 ||\n`)
+            output.write(`| ${STYLE_LABEL[k]} | 0 | 0 ||\n`)
         }
     }
-    stream.write(`| total | ${totalLines} | ${perFile.length} | |\n`)
-    stream.write("\n")
+    output.write(`| total | ${totalLines} | ${perFile.length} | |\n`)
+    output.write("\n")
     log.write(`report bracket-spacing: ${perFile.length} files counted / ${sourceFiles.length} files total\n`)
     return recommend !== undefined ? {bracketSpacing: recommend} : {}
 }

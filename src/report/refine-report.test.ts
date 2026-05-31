@@ -21,7 +21,7 @@ describe("refineReport", () => {
                     // names, so the cast lets the test reach the runtime
                     // validation that the production CLI also relies on.
                     reportNames: ["typo-name" as unknown as TSR.ReportName],
-                    stream: {write: (l) => lines.push(l)},
+                    output: {write: (l) => lines.push(l)},
                     paths: [],
                 }),
             /unknown report name: typo-name/,
@@ -36,7 +36,7 @@ describe("refineReport", () => {
             // Input deliberately in reverse of registry order to confirm the
             // router re-orders. indent precedes semicolons in the registry.
             reportNames: ["semicolons", "indent"],
-            stream: {write: (l) => lines.push(l)},
+            output: {write: (l) => lines.push(l)},
             paths: [],
         })
         const out = lines.join("")

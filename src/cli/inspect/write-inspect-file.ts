@@ -5,7 +5,7 @@
 import type {TSR} from "ts-refine"
 
 // Local alias for readability — not exported.
-type Writer = TSR.ReportOpts["stream"]
+type Writer = TSR.ReportOpts["output"]
 
 export function writeInspectFile(file: TSR.InspectFile, stream: Writer): void {
     stream.write(`## ${file.file}\n`)

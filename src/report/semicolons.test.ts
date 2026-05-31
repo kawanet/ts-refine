@@ -12,7 +12,7 @@ describe("runReportSemicolons (sample/semicolons-mixed)", () => {
     it("buckets files by trailing `;` ratio and returns the action params", async () => {
         const project = new Project({tsConfigFilePath: SAMPLE_TSCONFIG})
         const lines: string[] = []
-        const ret = await runReportSemicolons(project, {log, stream: {write: (l) => lines.push(l)}, paths: []})
+        const ret = await runReportSemicolons(project, {log, output: {write: (l) => lines.push(l)}, paths: []})
 
         const out = lines.join("")
         assert.match(out, /^### semicolons\n/)
@@ -37,7 +37,7 @@ describe("runReportSemicolons (sample/semicolons-mixed)", () => {
         project.createSourceFile("/sample/ninety-percent.ts", statements(9, 10))
         const lines: string[] = []
 
-        await runReportSemicolons(project, {log, stream: {write: (l) => lines.push(l)}, paths: ["/sample/*.ts"]})
+        await runReportSemicolons(project, {log, output: {write: (l) => lines.push(l)}, paths: ["/sample/*.ts"]})
 
         const out = lines.join("")
         assert.match(out, /\| 1-10% \| 10 \| 1 \| /)
@@ -52,7 +52,7 @@ describe("runReportSemicolons (sample/semicolons-mixed)", () => {
         project.createSourceFile("/sample/no-semi.ts", statements(0, 10))
         project.createSourceFile("/sample/all-semi.ts", statements(3, 3))
         const lines: string[] = []
-        const ret = await runReportSemicolons(project, {log, stream: {write: (l) => lines.push(l)}, paths: ["/sample/*.ts"]})
+        const ret = await runReportSemicolons(project, {log, output: {write: (l) => lines.push(l)}, paths: ["/sample/*.ts"]})
         assert.deepEqual(ret, {semicolons: "off"})
     })
 
@@ -61,7 +61,7 @@ describe("runReportSemicolons (sample/semicolons-mixed)", () => {
         project.createSourceFile("/sample/no-semi.ts", statements(0, 5))
         project.createSourceFile("/sample/all-semi.ts", statements(5, 5))
         const lines: string[] = []
-        const ret = await runReportSemicolons(project, {log, stream: {write: (l) => lines.push(l)}, paths: ["/sample/*.ts"]})
+        const ret = await runReportSemicolons(project, {log, output: {write: (l) => lines.push(l)}, paths: ["/sample/*.ts"]})
         assert.deepEqual(ret, {})
     })
 
@@ -72,7 +72,7 @@ describe("runReportSemicolons (sample/semicolons-mixed)", () => {
         const project = new Project({useInMemoryFileSystem: true})
         project.createSourceFile("/sample/iface.ts", ["interface A {", "  a: string;", "  b: number;", "  c: boolean", "  d(): void,", "}"].join("\n"))
         const lines: string[] = []
-        const ret = await runReportSemicolons(project, {log, stream: {write: (l) => lines.push(l)}, paths: ["/sample/*.ts"]})
+        const ret = await runReportSemicolons(project, {log, output: {write: (l) => lines.push(l)}, paths: ["/sample/*.ts"]})
         const out = lines.join("")
         // 3 members counted (comma member excluded), 2 with `;`.
         assert.match(out, /\| total \| 3 \| 1 \| \|/)
@@ -84,7 +84,7 @@ describe("runReportSemicolons (sample/semicolons-mixed)", () => {
         project.createSourceFile("/sample/do-while.ts", ["let x = 0", "do {", "  x++", "} while (x < 2);"].join("\n"))
         const lines: string[] = []
 
-        await runReportSemicolons(project, {log, stream: {write: (l) => lines.push(l)}, paths: ["/sample/*.ts"]})
+        await runReportSemicolons(project, {log, output: {write: (l) => lines.push(l)}, paths: ["/sample/*.ts"]})
 
         const out = lines.join("")
         assert.match(out, /\| 0% \| \d+ \| 1 \| /)

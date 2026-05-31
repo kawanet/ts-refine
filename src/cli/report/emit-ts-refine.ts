@@ -5,9 +5,6 @@
 import type {TSR} from "ts-refine"
 import {type FormatOptions, reportToFormatOptions} from "../../recommend/format-options.ts"
 
-// Local alias for readability — not exported.
-type Writer = TSR.ReportOpts["stream"]
-
 // Returns argv-style tokens (flag and value pushed separately), the same
 // shape parseArgs consumes. Reads FormatOptions — the same value the
 // `format` command applies — so the printed command and the apply agree;
@@ -24,7 +21,7 @@ function buildFormatFlags(options: FormatOptions): string[] {
 // Always starts with the `format` command (the verb the recommendation
 // translates to). Empty recommendations still emit `ts-refine format`,
 // paralleling `--emit prettier`'s empty `{}`.
-export function writeFormatCommand(report: TSR.ReportResult, stream: Writer): void {
+export function writeFormatCommand(report: TSR.ReportResult, stream: TSR.Writer): void {
     const flags = buildFormatFlags(reportToFormatOptions(report))
     if (flags.length === 0) {
         stream.write("ts-refine format\n")
@@ -36,7 +33,7 @@ export function writeFormatCommand(report: TSR.ReportResult, stream: Writer): vo
 
 // `## recommendation` block in the default-survey Markdown. Skipped
 // when no recommendations fired (the empty form carries no information).
-export function writeFormatMarkdown(report: TSR.ReportResult, stream: Writer): void {
+export function writeFormatMarkdown(report: TSR.ReportResult, stream: TSR.Writer): void {
     const flags = buildFormatFlags(reportToFormatOptions(report))
     if (flags.length === 0) return
     stream.write("## recommendation\n")

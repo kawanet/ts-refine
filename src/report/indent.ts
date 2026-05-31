@@ -16,7 +16,7 @@ import type {ReportOpts} from "./types.ts"
 
 type Bucket = {lines: number; files: number; topPath: string; topLines: number}
 
-export async function runReportIndent(project: Project, {stream, paths, log}: ReportOpts): Promise<Partial<TSR.IndentOpts>> {
+export async function runReportIndent(project: Project, {output, paths, log}: ReportOpts): Promise<Partial<TSR.IndentOpts>> {
     const sourceFiles = selectSourceFiles(project, {paths}).filter((sf) => !sf.getFilePath().endsWith(".d.ts"))
 
     // Per-file: detect leading-width distribution, then collapse to one
@@ -62,20 +62,20 @@ export async function runReportIndent(project: Project, {stream, paths, log}: Re
 
     const totalLines = [...buckets.values()].reduce((s, b) => s + b.lines, 0)
 
-    stream.write("### indent\n")
-    stream.write("\n")
-    stream.write("| indent | lines | files | example |\n")
-    stream.write("| --- | --- | --- | --- |\n")
+    output.write("### indent\n")
+    output.write("\n")
+    output.write("| indent | lines | files | example |\n")
+    output.write("| --- | --- | --- | --- |\n")
     for (const w of widths) {
         const b = buckets.get(w)
         if (b) {
-            stream.write(`| ${w} | ${b.lines} | ${b.files} | ${b.topPath} |\n`)
+            output.write(`| ${w} | ${b.lines} | ${b.files} | ${b.topPath} |\n`)
         } else {
-            stream.write(`| ${w} | 0 | 0 ||\n`)
+            output.write(`| ${w} | 0 | 0 ||\n`)
         }
     }
-    stream.write(`| total | ${totalLines} | ${perFile.length} | |\n`)
-    stream.write("\n")
+    output.write(`| total | ${totalLines} | ${perFile.length} | |\n`)
+    output.write("\n")
     log.write(`report indent: ${perFile.length} files counted / ${sourceFiles.length} files total\n`)
     // The recommendation is rendered in the `## recommendation` section
     // at the end of the Markdown survey. Both a numeric width and a "tab"

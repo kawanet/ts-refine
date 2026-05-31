@@ -18,7 +18,7 @@ export async function runMove(ctx: Context): Promise<number> {
     const sources = paths.slice(0, -1)
     const dest = paths[paths.length - 1]
     const reportNames = applyReportNames as TSR.ReportName[]
-    const report = await refineReport(project, {paths: [], reportNames, stream: NULL_SINK, log})
+    const report = await refineReport(project, {paths: [], reportNames, output: NULL_SINK, log})
     await refineMove(project, {sources, dest, dryRun: common.dryRun, report, log})
     return 0
 }

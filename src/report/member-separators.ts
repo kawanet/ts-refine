@@ -38,7 +38,7 @@ const SEP_FLAG_VALUE: Record<Separator, TSR.MemberSeparatorsOpts["separator"]> =
 
 type Bucket = {lines: number; files: number; topPath: string; topLines: number}
 
-export async function runReportMemberSeparators(project: Project, {stream, paths, log}: ReportOpts): Promise<Partial<TSR.MemberSeparatorsOpts>> {
+export async function runReportMemberSeparators(project: Project, {output, paths, log}: ReportOpts): Promise<Partial<TSR.MemberSeparatorsOpts>> {
     const sourceFiles = selectSourceFiles(project, {paths}).filter((sf) => !sf.getFilePath().endsWith(".d.ts"))
 
     type PerFile = {path: string; counts: Map<Separator, number>; primary: Separator}
@@ -79,23 +79,23 @@ export async function runReportMemberSeparators(project: Project, {stream, paths
 
     const totalLines = [...buckets.values()].reduce((s, b) => s + b.lines, 0)
 
-    stream.write("### member-separators\n")
-    stream.write("\n")
-    stream.write("| separator | lines | files | example |\n")
-    stream.write("| --- | --- | --- | --- |\n")
+    output.write("### member-separators\n")
+    output.write("\n")
+    output.write("| separator | lines | files | example |\n")
+    output.write("| --- | --- | --- | --- |\n")
     for (const s of DISPLAY_ORDER) {
         const b = buckets.get(s)
         // `\n` and `;` always get a row (0 when absent); `,` only appears
         // when present, since a comma style is unusual enough to be noise
         // as a permanent 0-row.
         if (b) {
-            stream.write(`| ${SEP_LABEL[s]} | ${b.lines} | ${b.files} | ${b.topPath} |\n`)
+            output.write(`| ${SEP_LABEL[s]} | ${b.lines} | ${b.files} | ${b.topPath} |\n`)
         } else if (s !== ",") {
-            stream.write(`| ${SEP_LABEL[s]} | 0 | 0 ||\n`)
+            output.write(`| ${SEP_LABEL[s]} | 0 | 0 ||\n`)
         }
     }
-    stream.write(`| total | ${totalLines} | ${perFile.length} | |\n`)
-    stream.write("\n")
+    output.write(`| total | ${totalLines} | ${perFile.length} | |\n`)
+    output.write("\n")
     log.write(`report member-separators: ${perFile.length} files counted / ${sourceFiles.length} files total\n`)
     // The recommendation is rendered in the trailing `## recommendation`
     // section, so all we return is the action params shape. An ambiguous

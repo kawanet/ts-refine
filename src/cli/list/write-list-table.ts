@@ -4,7 +4,7 @@
 import type {TSR} from "ts-refine"
 
 // Local alias for readability — not exported.
-type Writer = TSR.ReportOpts["stream"]
+type Writer = TSR.ReportOpts["output"]
 
 interface ListFilters {
     noExports: boolean

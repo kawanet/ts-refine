@@ -13,19 +13,16 @@ import type {TSR} from "ts-refine"
 import {writePrettierConfig} from "./emit-prettier.ts"
 import {writeFormatCommand} from "./emit-ts-refine.ts"
 
-// Local alias for readability — not exported.
-type Writer = TSR.ReportOpts["stream"]
-
 export const emitNames = ["prettier", "ts-refine"] as const
 
 interface OutputDispatch {
-    reportStream: Writer
+    reportStream: TSR.Writer
     finalize: (report: TSR.ReportResult) => void
 }
 
-const NULL_SINK: Writer = {write: () => {}}
+const NULL_SINK: TSR.Writer = {write: () => {}}
 
-export function selectOutput(name: string | null, stdout: Writer): OutputDispatch {
+export function selectOutput(name: string | null, stdout: TSR.Writer): OutputDispatch {
     if (name === null) {
         return {reportStream: stdout, finalize: () => {}}
     }

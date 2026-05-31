@@ -20,7 +20,7 @@ const NL_LABEL: Record<NewLine, string> = {
 
 type Bucket = {lines: number; files: number; topPath: string; topLines: number}
 
-export async function runReportNewLine(project: Project, {stream, paths, log}: ReportOpts): Promise<Partial<TSR.NewLineOpts>> {
+export async function runReportNewLine(project: Project, {output, paths, log}: ReportOpts): Promise<Partial<TSR.NewLineOpts>> {
     const sourceFiles = selectSourceFiles(project, {paths}).filter((sf) => !sf.getFilePath().endsWith(".d.ts"))
 
     type PerFile = {path: string; counts: Map<NewLine, number>; primary: NewLine}
@@ -52,17 +52,17 @@ export async function runReportNewLine(project: Project, {stream, paths, log}: R
 
     const totalLines = [...buckets.values()].reduce((s, b) => s + b.lines, 0)
 
-    stream.write("### new-line\n")
-    stream.write("\n")
-    stream.write("| new-line | lines | files | example |\n")
-    stream.write("| --- | --- | --- | --- |\n")
+    output.write("### new-line\n")
+    output.write("\n")
+    output.write("| new-line | lines | files | example |\n")
+    output.write("| --- | --- | --- | --- |\n")
     for (const k of DISPLAY_ORDER) {
         const b = buckets.get(k)
         if (!b) continue
-        stream.write(`| ${NL_LABEL[k]} | ${b.lines} | ${b.files} | ${b.topPath} |\n`)
+        output.write(`| ${NL_LABEL[k]} | ${b.lines} | ${b.files} | ${b.topPath} |\n`)
     }
-    stream.write(`| total | ${totalLines} | ${perFile.length} | |\n`)
-    stream.write("\n")
+    output.write(`| total | ${totalLines} | ${perFile.length} | |\n`)
+    output.write("\n")
     log.write(`report new-line: ${perFile.length} files counted / ${sourceFiles.length} files total\n`)
     return recommend !== undefined ? {newLine: recommend} : {}
 }

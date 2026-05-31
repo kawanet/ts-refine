@@ -15,7 +15,7 @@ export async function runRename(ctx: Context): Promise<number> {
     const {absTsconfig, paths} = resolvePaths(common.tsconfigPath, args.paths)
     const project = initProject({tsConfigFilePath: absTsconfig})
     const reportNames = applyReportNames as TSR.ReportName[]
-    const report = await refineReport(project, {paths: [], reportNames, stream: NULL_SINK, log})
+    const report = await refineReport(project, {paths: [], reportNames, output: NULL_SINK, log})
     await refineRename(project, {from: args.from, to: args.to, file: paths[0] ?? null, dryRun: common.dryRun, report, log})
     return 0
 }
