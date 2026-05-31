@@ -64,6 +64,14 @@ describe("refineCLI", () => {
         assert.match(r.stderr, /apply: would change/)
     })
 
+    it("exits non-zero with a fix hint when format --check finds changes", async () => {
+        const r = await run(["format", "--check", "-p", SAMPLE])
+        assert.notEqual(r.status, 0)
+        // --check writes nothing (would-change), then points at the fix.
+        assert.match(r.stderr, /apply: would change/)
+        assert.match(r.stderr, /Run `ts-refine format` to fix\./)
+    })
+
     it("renames an exported identifier via the rename subcommand (dry-run)", async () => {
         const r = await run(["rename", "--from", "usedFn", "--to", "renamedFn", "-p", SAMPLE, "--dry-run"])
         assert.equal(r.status, 0)

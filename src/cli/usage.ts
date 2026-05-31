@@ -44,6 +44,7 @@ export function usage(): string {
         "  --new-line lf|crlf          Override end-of-line",
         "  --bracket-spacing on|off    Override inner-brace spacing",
         "  --organize-imports on|off   Toggle organize-imports (default: on)",
+        "  --check                     Report only; exit non-zero if any file would change",
         "",
         "inspect (read; per-file analysis):",
         "  inspect                     Run every inspector on every file",

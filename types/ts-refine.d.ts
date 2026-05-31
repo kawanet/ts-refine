@@ -72,6 +72,13 @@ export declare namespace TSR {
         bracketSpacing?: "on" | "off"
     }
 
+    // refineFormat returns the in-project files whose text was rewritten, so a
+    // caller can report a dry-run summary or decide an exit status without
+    // re-reading the files.
+    interface FormatResult {
+        touched: string[]
+    }
+
     // One row of `list` output: per-file export / usage counts. refineList returns
     // the full set (unfiltered) so later commands can reuse the snapshot; the
     // CLI applies the --no-exports / --no-importers / --unused-exports filters.
@@ -168,7 +175,7 @@ export declare function initProject(opts: {tsConfigFilePath: string}): Project
 
 export declare function refineReport(project: Project, opts: TSR.ReportOpts): Promise<TSR.ReportResult>
 
-export declare function refineFormat(project: Project, opts: TSR.FormatOpts): Promise<void>
+export declare function refineFormat(project: Project, opts: TSR.FormatOpts): Promise<TSR.FormatResult>
 
 export declare function refineList(project: Project, opts: TSR.ListOpts): Promise<TSR.ListEntry[]>
 

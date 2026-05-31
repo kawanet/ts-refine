@@ -52,7 +52,7 @@ smoke: $(MJS_DST)
 	cd .. && node --input-type=module -e 'const m = await import("ts-refine"); for (const k of process.argv.slice(1)) { if (typeof m[k] !== "function") { console.error("missing MJS export:", k); process.exit(1); } console.log("MJS export OK:", k); }' $(NAMED_EXPORTS)
 
 test: all smoke
-	cd .. && node dist/ts-refine.cli.mjs | grep '^Usage: ts-refine'
+	cd .. && node dist/ts-refine.cli.mjs format --check
 	cd .. && ./node_modules/.bin/tsc --noEmit
 	cd .. && node --test 'src/**/*.test.ts'
 

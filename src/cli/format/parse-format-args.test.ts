@@ -25,6 +25,18 @@ describe("parseFormat", () => {
         assert.throws(() => parseFormatArgs(["--definitely-not-a-flag"], common()), /unknown option/)
     })
 
+    it("parses --check as a raw flag, defaulting to false", () => {
+        assert.equal(parseFormatArgs([], common())?.check, false)
+        assert.equal(parseFormatArgs(["--check"], common())?.check, true)
+    })
+
+    it("does not force dry-run in the parser (the runner derives it from --check)", () => {
+        // The parser stays side-effect free: --check must not flip common.dryRun.
+        const c = common()
+        parseFormatArgs(["--check"], c)
+        assert.equal(c.dryRun, false)
+    })
+
     it("rejects --semicolons with an invalid value", () => {
         assert.throws(() => parseFormatArgs(["--semicolons", "yes"], common()), /--semicolons expects/)
     })

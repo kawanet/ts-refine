@@ -17,6 +17,13 @@ export async function runFormat(sub: string[], common: CommonArgs): Promise<numb
     const project = initProject({tsConfigFilePath: absTsconfig})
     const reportNames = applyReportNames as TSR.ReportName[]
     const report = await refineReport(project, {paths, reportNames, stream: NULL_SINK})
-    await refineFormat(project, {paths, dryRun: common.dryRun, report, ...args.applyOverrides})
+    // `--check` reports without writing, so it forces dry-run; the per-file
+    // list and summary are already on stderr, so only the fix hint is added.
+    const dryRun = common.dryRun || args.check
+    const result = await refineFormat(project, {paths, dryRun, report, ...args.applyOverrides})
+    if (args.check && result.touched.length > 0) {
+        console.error("Run `ts-refine format` to fix.")
+        return 1
+    }
     return 0
 }

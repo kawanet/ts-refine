@@ -23,7 +23,9 @@ export const refineFormat: typeof declared.refineFormat = async (project, opts) 
     // .d.ts excluded — same scope every report uses for measurement.
     const sourceFiles = selectSourceFiles(project, {paths}).filter((sf) => !sf.getFilePath().endsWith(".d.ts"))
 
-    let changedCount = 0
+    // Absolute paths of the files whose text changed; returned so callers
+    // (e.g. `--check`) can act on whether anything would be rewritten.
+    const touched: string[] = []
     let totalCount = 0
 
     for (const sf of sourceFiles) {
@@ -55,7 +57,7 @@ export const refineFormat: typeof declared.refineFormat = async (project, opts) 
 
         if (before === after) continue
 
-        changedCount++
+        touched.push(filePath)
         if (dryRun) {
             console.error(`would update: ${filePath}`)
         } else {
@@ -65,5 +67,7 @@ export const refineFormat: typeof declared.refineFormat = async (project, opts) 
     }
 
     const verb = dryRun ? "would change" : "changed"
-    console.error(`apply: ${verb} ${changedCount} / ${totalCount} files`)
+    console.error(`apply: ${verb} ${touched.length} / ${totalCount} files`)
+
+    return {touched}
 }

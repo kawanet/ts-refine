@@ -4,15 +4,18 @@
 import type {FormatOptions} from "../../recommend/format-options.ts"
 import {type CommonArgs, parseCommonArgs} from "../parse-common-args.ts"
 
-// Raw values only: the runner resolves `paths` into absolute paths.
+// Raw values only: the runner resolves `paths` into absolute paths and decides
+// what `check` implies (dry-run plus a non-zero exit when anything would change).
 export interface FormatArgs {
     paths: string[]
     applyOverrides: FormatOptions
+    check: boolean
 }
 
 export function parseFormatArgs(sub: string[], common: CommonArgs): FormatArgs | undefined {
     const overrides: FormatOptions = {}
     const paths: string[] = []
+    let check = false
     let i = 0
 
     while (i < sub.length) {
@@ -62,6 +65,9 @@ export function parseFormatArgs(sub: string[], common: CommonArgs): FormatArgs |
             }
             overrides.bracketSpacing = v
             i += 2
+        } else if (a === "--check") {
+            check = true
+            i++
         } else {
             const consumed = parseCommonArgs(common, sub, i)
             if (consumed < 0) return undefined
@@ -76,5 +82,5 @@ export function parseFormatArgs(sub: string[], common: CommonArgs): FormatArgs |
         }
     }
 
-    return {paths, applyOverrides: overrides}
+    return {paths, applyOverrides: overrides, check}
 }

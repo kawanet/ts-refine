@@ -149,4 +149,26 @@ describe("refineFormat", () => {
         // No throw → no real-fs write attempt; in-memory FS would have surfaced it.
         assert.match(sf.getFullText(), /const a = 1;\n/)
     })
+
+    it("returns the touched files, and an empty list when nothing changes", async () => {
+        const project = new Project({useInMemoryFileSystem: true})
+        const sf = project.createSourceFile("a.ts", "const a = 1\n")
+        const changed = await quiet(() =>
+            refineFormat(project, {
+                dryRun: true,
+                paths: [],
+                report: {semicolons: {semicolons: "on"}},
+            }),
+        )
+        assert.deepEqual(changed.touched, [sf.getFilePath()])
+        // The same pass over the now-formatted in-memory state changes nothing.
+        const again = await quiet(() =>
+            refineFormat(project, {
+                dryRun: true,
+                paths: [],
+                report: {semicolons: {semicolons: "on"}},
+            }),
+        )
+        assert.deepEqual(again.touched, [])
+    })
 })

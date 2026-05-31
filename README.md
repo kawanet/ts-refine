@@ -139,6 +139,9 @@ npx ts-refine format
 # preview the changes without writing
 npx ts-refine format --dry-run
 
+# report only, exiting non-zero if any file would change (for CI)
+npx ts-refine format --check
+
 # pin the indent width (a number, or `tab`)
 npx ts-refine format --indent 2
 
