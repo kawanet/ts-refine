@@ -5,7 +5,7 @@
 // rename-specific and stays in refine-rename.
 
 import {type ClassDeclaration, type Identifier, type InterfaceDeclaration, type ModuleDeclaration, Node, type Project} from "ts-morph"
-import {displayPath} from "./source-files.ts"
+import {displayPath, inProjectSourceFileOrThrow, inProjectSourceFiles} from "./source-files.ts"
 
 export const IDENT = /^[A-Za-z_$][A-Za-z0-9_$]*$/
 
@@ -77,8 +77,7 @@ function resolveExportedName(project: Project, from: string, file: string | null
 // project — zero or multiple distinct declarations are an error.
 function resolveExportedDecl(project: Project, from: string, file: string | null): Node {
     if (file) {
-        const sf = project.getSourceFile(file)
-        if (!sf) throw new Error(`refine: not in the project: ${file}`)
+        const sf = inProjectSourceFileOrThrow(project, file)
         const decls = sf.getExportedDeclarations().get(from)
         if (!decls || decls.length === 0) {
             throw new Error(`refine: ${displayPath(file)} does not export: ${from}`)
@@ -87,7 +86,7 @@ function resolveExportedDecl(project: Project, from: string, file: string | null
     }
 
     const found = new Set<Node>()
-    for (const sf of project.getSourceFiles()) {
+    for (const sf of inProjectSourceFiles(project)) {
         const decls = sf.getExportedDeclarations().get(from)
         if (decls) for (const d of decls) found.add(d)
     }
@@ -102,8 +101,7 @@ function resolveExportedDecl(project: Project, from: string, file: string | null
 // Mirrors resolveExportedName's file-scope / uniqueness rules.
 function resolveNamespaceMember(project: Project, ns: string, name: string, file: string | null): Identifier {
     if (file) {
-        const sf = project.getSourceFile(file)
-        if (!sf) throw new Error(`refine: not in the project: ${file}`)
+        // findNamespaceMembers validates the file scope (via inProjectSourceFileOrThrow).
         const nodes = findNamespaceMembers(project, ns, name, file)
         if (nodes.length === 0) throw new Error(`refine: ${displayPath(file)} has no member ${ns}.${name}`)
         return nodes[0]
@@ -135,9 +133,9 @@ function resolveContainerType(project: Project, path: string[], file: string | n
     return found[0]
 }
 
-// Whether any source file declares a top-level namespace called `name`.
+// Whether any in-project file declares a top-level namespace called `name`.
 function isNamespace(project: Project, name: string): boolean {
-    return project.getSourceFiles().some((sf) => sf.getModules().some((m) => m.getName() === name))
+    return inProjectSourceFiles(project).some((sf) => sf.getModules().some((m) => m.getName() === name))
 }
 
 // The name Identifier of an interface/class member (property, method, or — for
@@ -156,7 +154,7 @@ export function memberNameNode(container: InterfaceDeclaration | ClassDeclaratio
 // declared as several `namespace ns {}` blocks (merged) within and across
 // files, so every matching block is scanned — getModule would see only one.
 export function findNamespaceMembers(project: Project, ns: string, name: string, file: string | null): Identifier[] {
-    const files = file ? [project.getSourceFileOrThrow(file)] : project.getSourceFiles()
+    const files = file ? [inProjectSourceFileOrThrow(project, file)] : inProjectSourceFiles(project)
     const nodes: Identifier[] = []
     for (const sf of files) {
         for (const mod of sf.getModules()) {
@@ -171,7 +169,7 @@ export function findNamespaceMembers(project: Project, ns: string, name: string,
 // Every interface/class named `typeName` inside namespace `ns` (one per
 // matching merged block), across the project or a single file.
 function findNamespaceTypes(project: Project, ns: string, typeName: string, file: string | null): (InterfaceDeclaration | ClassDeclaration)[] {
-    const files = file ? [project.getSourceFileOrThrow(file)] : project.getSourceFiles()
+    const files = file ? [inProjectSourceFileOrThrow(project, file)] : inProjectSourceFiles(project)
     const found: (InterfaceDeclaration | ClassDeclaration)[] = []
     for (const sf of files) {
         for (const mod of sf.getModules()) {
