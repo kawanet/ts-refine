@@ -1,20 +1,15 @@
 // `list`: cleanup-candidate filters plus positional files. Each flag is a
-// boolean; multiple are OR-combined downstream. Globals are consumed into
-// `common`.
+// boolean; refineList combines several active ones with AND. Globals are
+// consumed into `common`.
 
+import type {TSR} from "../../index.ts"
 import {type CommonArgs, parseCommonArgs} from "../parse-common-args.ts"
 
-// `list` filter flags; OR-combined when more than one is set.
-export interface ListFilters {
-    noExports: boolean
-    noImporters: boolean
-    unusedExports: boolean
-}
-
-// Raw values only: the runner resolves `paths` into absolute paths.
+// Raw values only: the runner resolves `paths` into absolute paths and hands
+// `listFilters` straight to refineList.
 export interface ListArgs {
     paths: string[]
-    listFilters: ListFilters
+    listFilters: TSR.ListFilters
 }
 
 export function parseListArgs(sub: string[], common: CommonArgs): ListArgs | undefined {

@@ -102,13 +102,14 @@ describe("refineCLI", () => {
         assert.match(r.stdout, /^\| file \| exports \| unused \| importers \|/m)
     })
 
-    it("leads the default survey with the list cleanup-candidate section", async () => {
+    it("opens the default survey with the first report table, not a list section", async () => {
         const r = await run(["report", "-p", SAMPLE])
         assert.equal(r.status, 0)
-        assert.match(r.stdout, /^### list --no-exports --no-importers --unused-exports$/m)
 
-        // The list section precedes the first report table.
-        assert.ok(r.stdout.indexOf("### list ") < r.stdout.indexOf("### semicolons"))
+        // The survey no longer embeds a list cleanup-candidate section; use
+        // `list --unused-exports` for that on demand.
+        assert.doesNotMatch(r.stdout, /^### list /m)
+        assert.match(r.stdout, /^### semicolons$/m)
     })
 
     it("inspects files via the inspect subcommand", async () => {

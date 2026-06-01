@@ -96,9 +96,9 @@ export declare namespace TSR {
         touched: string[]
     }
 
-    // One row of `list` output: per-file export / usage counts. refineList returns
-    // the full set (unfiltered) so later commands can reuse the snapshot; the
-    // CLI applies the --no-exports / --no-importers / --unused-exports filters.
+    // One row of `list` output: per-file export / usage counts. refineList
+    // builds the per-file snapshot and applies the requested ListFilters
+    // (if any) before returning.
     interface ListEntry {
         file: string
         exports: number
@@ -106,8 +106,18 @@ export declare namespace TSR {
         importers: number
     }
 
+    // `list` cleanup-candidate filters; all optional. Several active filters
+    // narrow the result together (AND): an entry is kept only when it matches
+    // every filter that is set.
+    interface ListFilters {
+        noExports?: boolean
+        noImporters?: boolean
+        unusedExports?: boolean
+    }
+
     interface ListOpts extends CommonOpts {
-        paths: string[]
+        paths?: string[]
+        filters?: ListFilters
     }
 
     // Per-file inspect output. Each requested inspector populates its slot

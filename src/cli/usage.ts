@@ -27,7 +27,7 @@ export function usage(): string {
         "  --no-exports                Only files that export nothing",
         "  --no-importers              Only files no other file imports",
         "  --unused-exports            Only files with unused exports",
-        "                              (multiple list filters combine with OR)",
+        "                              (multiple list filters combine with AND)",
         "",
         "report (read; the primary mode):",
         "  report                      Run every report and print the survey Markdown",

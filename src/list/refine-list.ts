@@ -1,9 +1,8 @@
 // `list`: per-file export / usage snapshot. For each in-project file (external
 // library declarations aside, .d.ts included) it counts exported declarations,
 // how many of those have no external reference (unused), and how many other
-// files import it. The
-// full set is returned unfiltered so later commands can reuse it; the CLI
-// applies the --no-exports / --no-importers / --unused-exports filters.
+// files import it. The optional ListFilters narrow the result here, so callers
+// receive exactly the cleanup candidates they asked for.
 //
 // The export/unused counting mirrors the unused-exports report; the two
 // will be unified in a later pass (that report is left untouched for now).
@@ -15,7 +14,7 @@ import {resolveProject} from "../lib/init-project.ts"
 import {displayPath, selectSourceFiles} from "../lib/source-files.ts"
 
 export const refineList: typeof declared.refineList = async (opts) => {
-    const {paths, log} = opts
+    const {paths = [], filters, log} = opts
     const project = resolveProject(opts)
     const sourceFiles = selectSourceFiles(project, {paths})
 
@@ -51,6 +50,17 @@ export const refineList: typeof declared.refineList = async (opts) => {
     }
 
     entries.sort((a, b) => a.file.localeCompare(b.file))
-    log.write(`list: ${entries.length} files\n`)
-    return entries
+
+    const result = filters ? entries.filter((e) => keepEntry(e, filters)) : entries
+    log.write(`list: ${result.length} files\n`)
+    return result
+}
+
+// AND semantics: an entry survives only when it matches every filter that is
+// set. With no filter active every entry passes.
+function keepEntry(e: TSR.ListEntry, f: TSR.ListFilters): boolean {
+    if (f.noExports && e.exports !== 0) return false
+    if (f.noImporters && e.importers !== 0) return false
+    if (f.unusedExports && e.unused === 0) return false
+    return true
 }

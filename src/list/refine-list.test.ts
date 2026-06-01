@@ -1,6 +1,7 @@
 import {strict as assert} from "node:assert"
 import path from "node:path"
 import {describe, it} from "node:test"
+import type {TSR} from "ts-refine"
 import {initInMemoryTestProject, initTestProject} from "../test-utils/init-test-project.ts"
 import {refineList} from "./refine-list.ts"
 
@@ -49,5 +50,35 @@ describe("refineList (sample/basic)", () => {
         assert.ok(entries.some((e) => path.basename(e.file) === "types.d.ts"))
         const a = entries.find((e) => path.basename(e.file) === "a.ts")!
         assert.equal(a.importers, 1)
+    })
+})
+
+// sample/basic: index.ts {0,0,0}, partial.ts {2,1,1}, unused.ts {2,2,0},
+// used.ts {2,0,1} (exports/unused/importers).
+describe("refineList filters (sample/basic)", () => {
+    async function names(filters: TSR.ListFilters): Promise<string[]> {
+        const project = initTestProject(SAMPLE_TSCONFIG)
+        const entries = await refineList({project, log, paths: [], filters})
+        return entries.map((e) => path.basename(e.file))
+    }
+
+    it("--no-exports keeps only files that export nothing", async () => {
+        assert.deepEqual(await names({noExports: true}), ["index.ts"])
+    })
+
+    it("--no-importers keeps only files no one imports", async () => {
+        assert.deepEqual(await names({noImporters: true}), ["index.ts", "unused.ts"])
+    })
+
+    it("--unused-exports keeps only files with unused exports", async () => {
+        assert.deepEqual(await names({unusedExports: true}), ["partial.ts", "unused.ts"])
+    })
+
+    it("combines multiple filters with AND", async () => {
+        assert.deepEqual(await names({noImporters: true, unusedExports: true}), ["unused.ts"])
+    })
+
+    it("yields nothing for a contradictory AND (no exports yet unused exports)", async () => {
+        assert.deepEqual(await names({noExports: true, unusedExports: true}), [])
     })
 })
