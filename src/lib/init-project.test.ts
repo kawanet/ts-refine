@@ -17,9 +17,9 @@ describe("resolveProject", () => {
         assert.ok(project.getSourceFiles().length > 0)
     })
 
-    it("prefers the project when both are given", () => {
+    it("throws when both are given", () => {
         const project = new Project({useInMemoryFileSystem: true})
-        assert.equal(resolveProject({project, tsConfigFilePath: SAMPLE_TSCONFIG}), project)
+        assert.throws(() => resolveProject({project, tsConfigFilePath: SAMPLE_TSCONFIG}), /not both/)
     })
 
     it("throws when neither is given", () => {

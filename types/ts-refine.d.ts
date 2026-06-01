@@ -14,7 +14,7 @@ export declare namespace TSR {
     // Common base for every entry. Supply the ts-morph project one of two ways:
     // your own `project` (bring-your-own — in-memory, custom options, and reuse
     // across calls), or a `tsConfigFilePath` to build a fresh one (best for
-    // one-shot use). Exactly one is required; `project` wins if both are given.
+    // one-shot use). Exactly one is required — supplying both throws.
     // log receives progress/notes (route it to stderr); no-op Writer to discard.
     interface CommonOpts {
         project?: Project
