@@ -63,7 +63,8 @@
     "build": "make -C builder",
     "fixpack": "fixpack",
     "format": "node src/cli.ts format",
-    "prepack": "make -C builder test",
+    "prepack": "make -C builder is-buildable",
+    "prepare": "make -C builder is-not-buildable 2> /dev/null || make -C builder clean all test",
     "prettier": "prettier --write 'src/**/*.ts' 'types/**/*.ts'",
     "test": "make -C builder test"
   },

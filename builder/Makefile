@@ -27,7 +27,25 @@ MAX_BYTES := 80000
 
 ALL := $(MJS_DST) $(CLI_DST)
 
-all: $(ALL)
+# Build/test paths require Node's native TypeScript type-strip (default on
+# Node 22.18+). Older runtimes (e.g. Node 20) report BUILDABLE=NO and can
+# still verify pre-built bundles via `make smoke`.
+BUILDABLE := $(shell node -e 'console.log(process.features.typescript ? "YES" : "NO")')
+
+####
+
+# Build all artifacts.
+all: is-buildable $(ALL)
+
+# Gate that fails loudly when type-strip is unavailable; consumed by `all`
+# and by `npm prepack` to refuse packaging on a non-buildable runtime.
+is-buildable:
+	@ [ "$(BUILDABLE)" = "YES" ]
+
+# Inverse gate used by `npm prepare` to short-circuit on a non-buildable
+# runtime so consumer install on Node 20 silently skips build/test.
+is-not-buildable:
+	@ [ "$(BUILDABLE)" = "NO" ]
 
 $(MJS_DST): $(MJS_CONFIG) $(SRC) $(BUILDER_SRC)
 	@mkdir -p $(dir $@)
@@ -51,12 +69,18 @@ smoke: $(MJS_DST)
 	@test -n "$(NAMED_EXPORTS)" || { echo "ERROR: NAMED_EXPORTS empty — check the sed pattern against $(TYPES)" >&2; exit 1; }
 	cd .. && node --input-type=module -e 'const m = await import("ts-refine"); for (const k of process.argv.slice(1)) { if (typeof m[k] !== "function") { console.error("missing MJS export:", k); process.exit(1); } console.log("MJS export OK:", k); }' $(NAMED_EXPORTS)
 
-test: all smoke
-	cd .. && node dist/ts-refine.cli.mjs format --check
+# Build, run smoke tests, and conditionally run full tests (tsc and node:test).
+# Consumer `npm install` skips the heavy test-ts step to keep install fast.
+test: all smoke $(TYPES)
+	@ [ "$$npm_command" != "install" ] || echo "npm install detected: skipping full tests."
+	@ [ "$$npm_command" = "install" ] || $(MAKE) test-ts
+
+test-ts:
 	cd .. && ./node_modules/.bin/tsc --noEmit
 	cd .. && node --test 'src/**/*.test.ts'
+	cd .. && node dist/ts-refine.cli.mjs format --check
 
 clean:
 	/bin/rm -fr $(ALL)
 
-.PHONY: all clean test smoke
+.PHONY: all clean test smoke is-buildable is-not-buildable
