@@ -270,4 +270,5 @@ npx ts-refine rename --from nsA.typeB.propC --to nsA.typeB.propD
 ## Links
 
 - https://github.com/kawanet/ts-refine
+- https://github.com/kawanet/ts-refine/blob/main/types/ts-refine.d.ts
 - https://www.npmjs.com/package/ts-refine
