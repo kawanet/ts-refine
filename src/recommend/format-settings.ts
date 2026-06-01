@@ -5,7 +5,7 @@ import type {TSR} from "ts-refine"
 // LS settings + refineFormat-only concerns (organize gate, newline post-pass).
 // Local-ish shape — refineFormat reads it; the CR diagnostic is computed at
 // the apply entry from the report, not carried here.
-interface ResolvedSettings {
+interface FormatSettings {
     formatSettings: FormatCodeSettings
     organizeImports: boolean
     newLineNormalize: "\n" | "\r\n" | undefined
@@ -15,7 +15,7 @@ interface ResolvedSettings {
 type MutableFormatSettings = {-readonly [K in keyof FormatCodeSettings]: FormatCodeSettings[K]}
 
 // FormatStyle → the settings refineFormat hands to ts-morph.
-export function resolveSettings(options: TSR.FormatStyle): ResolvedSettings {
+export function formatStyleToSettings(options: TSR.FormatStyle): FormatSettings {
     const formatSettings: MutableFormatSettings = {}
 
     // "tab" turns convertTabsToSpaces off (LS then indents with tabs);

@@ -1,10 +1,10 @@
 import {strict as assert} from "node:assert"
 import {describe, it} from "node:test"
-import {reportToFormatOptions} from "./format-style.ts"
+import {reportToFormatStyle} from "./format-style.ts"
 
-describe("reportToFormatOptions", () => {
+describe("reportToFormatStyle", () => {
     it("maps the actionable report fields", () => {
-        const o = reportToFormatOptions({
+        const o = reportToFormatStyle({
             semicolons: {semicolons: "on"},
             indent: {width: 4},
             newLine: {newLine: "crlf"},
@@ -14,16 +14,16 @@ describe("reportToFormatOptions", () => {
     })
 
     it("carries indent.width=tab through", () => {
-        assert.equal(reportToFormatOptions({indent: {width: "tab"}}).indent, "tab")
+        assert.equal(reportToFormatStyle({indent: {width: "tab"}}).indent, "tab")
     })
 
     it("discards a cr newline recommendation (not a runnable flag nor an LS setting)", () => {
-        const o = reportToFormatOptions({newLine: {newLine: "cr"}})
+        const o = reportToFormatStyle({newLine: {newLine: "cr"}})
         assert.equal(o.newLine, undefined)
     })
 
     it("ignores member-separators (no actionable mapping)", () => {
-        const o = reportToFormatOptions({memberSeparators: {separator: "comma"}})
+        const o = reportToFormatStyle({memberSeparators: {separator: "comma"}})
         assert.deepEqual(o, {})
     })
 })

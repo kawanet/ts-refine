@@ -2,11 +2,11 @@
 // (plus any CLI overrides). The Markdown stream is swallowed; refineFormat
 // writes the files.
 
+import {reportToFormatStyle} from "../../common/format-style.ts"
 import {initProject, refineFormat, refineReport} from "../../index.ts"
-import {reportToFormatOptions} from "../../common/format-style.ts"
 import {type CLI, NULL_SINK} from "../cli-io.ts"
 import {resolvePaths} from "../resolve-paths.ts"
-import {mergeFormatOptions, overridesToFormatOptions, reportNamesForFormat} from "./format-options.ts"
+import {mergeFormatStyles, overridesToFormatStyle, reportNamesForFormat} from "./format-options.ts"
 import {parseFormatArgs} from "./parse-format-args.ts"
 
 export const formatCLI: CLI = async (ctx) => {
@@ -23,7 +23,7 @@ export const formatCLI: CLI = async (ctx) => {
 
     // Merge the survey recommendation (base) with the CLI overrides (win per
     // field) here, so refineFormat just applies the result.
-    const format = mergeFormatOptions(reportToFormatOptions(report), overridesToFormatOptions(args.applyOverrides))
+    const format = mergeFormatStyles(reportToFormatStyle(report), overridesToFormatStyle(args.applyOverrides))
     // `cr` is dropped from FormatStyle, so flag it from the report: the survey
     // recommended CR-only newlines but no override forced an applicable value.
     if (args.applyOverrides.newLine === undefined && report.newLine?.newLine === "cr") {

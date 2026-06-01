@@ -1,8 +1,8 @@
 import type {TSR} from "ts-refine"
 
-// Recommendation → options. `cr` is read and discarded (see FormatStyle);
+// ReportResult → FormatStyle. `cr` is read and discarded (see FormatStyle);
 // member-separators has no actionable mapping and is dropped too.
-export function reportToFormatOptions(report: TSR.ReportResult): TSR.FormatStyle {
+export function reportToFormatStyle(report: TSR.ReportResult): TSR.FormatStyle {
     const options: TSR.FormatStyle = {}
     if (report.semicolons?.semicolons) options.semicolons = report.semicolons.semicolons
     if (report.indent?.width !== undefined) options.indent = report.indent.width

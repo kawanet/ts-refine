@@ -3,7 +3,7 @@
 // `grep -E '^ +--'` extract just the flags.
 
 import type {TSR} from "ts-refine"
-import {reportToFormatOptions} from "../../common/format-style.ts"
+import {reportToFormatStyle} from "../../common/format-style.ts"
 
 // Returns argv-style tokens (flag and value pushed separately), the same
 // shape parseArgs consumes. Reads FormatStyle — the same value the
@@ -22,7 +22,7 @@ function buildFormatFlags(options: TSR.FormatStyle): string[] {
 // translates to). Empty recommendations still emit `ts-refine format`,
 // paralleling `--emit prettier`'s empty `{}`.
 export function writeFormatCommand(report: TSR.ReportResult, output: TSR.Writer): void {
-    const flags = buildFormatFlags(reportToFormatOptions(report))
+    const flags = buildFormatFlags(reportToFormatStyle(report))
     if (flags.length === 0) {
         output.write("ts-refine format\n")
         return
@@ -34,7 +34,7 @@ export function writeFormatCommand(report: TSR.ReportResult, output: TSR.Writer)
 // `## recommendation` block in the default-survey Markdown. Skipped
 // when no recommendations fired (the empty form carries no information).
 export function writeFormatMarkdown(report: TSR.ReportResult, output: TSR.Writer): void {
-    const flags = buildFormatFlags(reportToFormatOptions(report))
+    const flags = buildFormatFlags(reportToFormatStyle(report))
     if (flags.length === 0) return
     output.write("## recommendation\n")
     output.write("\n")

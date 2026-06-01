@@ -1,25 +1,25 @@
 import {strict as assert} from "node:assert"
 import {describe, it} from "node:test"
-import {mergeFormatOptions, overridesToFormatOptions, reportNamesForFormat} from "./format-options.ts"
+import {mergeFormatStyles, overridesToFormatStyle, reportNamesForFormat} from "./format-options.ts"
 
-describe("overridesToFormatOptions", () => {
+describe("overridesToFormatStyle", () => {
     it("copies the override fields into options", () => {
-        const o = overridesToFormatOptions({indent: "tab", semicolons: "off", organizeImports: "off"})
+        const o = overridesToFormatStyle({indent: "tab", semicolons: "off", organizeImports: "off"})
         assert.equal(o.indent, "tab")
         assert.equal(o.semicolons, "off")
         assert.equal(o.organizeImports, "off")
     })
 })
 
-describe("mergeFormatOptions", () => {
+describe("mergeFormatStyles", () => {
     it("lets the override win per field, falling back to the base", () => {
-        const merged = mergeFormatOptions({semicolons: "on", indent: 2}, {indent: 4})
+        const merged = mergeFormatStyles({semicolons: "on", indent: 2}, {indent: 4})
         assert.equal(merged.semicolons, "on")
         assert.equal(merged.indent, 4)
     })
 
     it("leaves a field unset when neither side speaks", () => {
-        assert.equal(mergeFormatOptions({}, {}).bracketSpacing, undefined)
+        assert.equal(mergeFormatStyles({}, {}).bracketSpacing, undefined)
     })
 })
 
