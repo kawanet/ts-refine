@@ -89,7 +89,7 @@ Global options may appear on either side of the command:
 ## List
 
 `list` reports each file's export, unused-export, and importer counts. Filters
-combine with OR.
+combine with AND.
 
 ```sh
 # every file with its export / unused / importer counts
@@ -104,8 +104,12 @@ npx ts-refine list --no-importers
 # only files that have unused exports
 npx ts-refine list --unused-exports
 
-# any file matching at least one of the filters
-npx ts-refine list --no-exports --no-importers --unused-exports
+# only files that reference a given target (an identifier or a dotted
+# member spec — the same forms `rename --from` accepts)
+npx ts-refine list --ref funcA
+npx ts-refine list --ref nsA.funcB
+npx ts-refine list --ref typeA.propB
+npx ts-refine list --ref nsA.typeB.propC
 ```
 
 ## Report

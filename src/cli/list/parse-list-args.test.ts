@@ -26,6 +26,17 @@ describe("parseList", () => {
         assert.deepEqual(r.paths, ["a.ts"])
     })
 
+    it("reads the --ref target into the filters", () => {
+        const r = parseListArgs(["--ref", "nsA.funcB"], common())
+        assert.ok(r)
+        assert.equal(r.listFilters.ref, "nsA.funcB")
+    })
+
+    it("throws when --ref has no target", () => {
+        assert.throws(() => parseListArgs(["--ref"], common()), /--ref requires a <target>/)
+        assert.throws(() => parseListArgs(["--ref", "--no-exports"], common()), /--ref requires a <target>/)
+    })
+
     it("rejects --dry-run as a read command", () => {
         assert.throws(() => parseListArgs(["--dry-run"], common()), /--dry-run is not valid/)
     })
