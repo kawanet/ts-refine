@@ -7,7 +7,7 @@
 import type {SourceFile} from "ts-morph"
 import type {TSR} from "ts-refine"
 import {applyTypeOnlyFixes} from "../lib/type-only-fixes.ts"
-import {resolveSettings} from "./format-options.ts"
+import {resolveSettings} from "./format-settings.ts"
 
 export function organizeChangedImports(files: Iterable<SourceFile>, format: TSR.FormatStyle): void {
     const resolved = resolveSettings(format)

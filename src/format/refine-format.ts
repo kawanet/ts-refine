@@ -7,7 +7,7 @@ import fs from "node:fs/promises"
 import type * as declared from "ts-refine"
 import {selectSourceFiles} from "../lib/source-files.ts"
 import {applyTypeOnlyFixes} from "../lib/type-only-fixes.ts"
-import {normalizeNewLines, resolveSettings} from "../recommend/format-options.ts"
+import {normalizeNewLines, resolveSettings} from "../recommend/format-settings.ts"
 
 export const refineFormat: typeof declared.refineFormat = async (project, opts) => {
     const {dryRun, paths, format, log} = opts

@@ -3,9 +3,10 @@
 // writes the files.
 
 import {initProject, refineFormat, refineReport} from "../../index.ts"
-import {mergeFormatOptions, overridesToFormatOptions, reportNamesForFormat, reportToFormatOptions} from "../../recommend/format-options.ts"
+import {reportToFormatOptions} from "../../recommend/format-style.ts"
 import {type CLI, NULL_SINK} from "../cli-io.ts"
 import {resolvePaths} from "../resolve-paths.ts"
+import {mergeFormatOptions, overridesToFormatOptions, reportNamesForFormat} from "./format-options.ts"
 import {parseFormatArgs} from "./parse-format-args.ts"
 
 export const formatCLI: CLI = async (ctx) => {

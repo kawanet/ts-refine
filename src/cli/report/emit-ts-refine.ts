@@ -3,7 +3,7 @@
 // `grep -E '^ +--'` extract just the flags.
 
 import type {TSR} from "ts-refine"
-import {reportToFormatOptions} from "../../recommend/format-options.ts"
+import {reportToFormatOptions} from "../../recommend/format-style.ts"
 
 // Returns argv-style tokens (flag and value pushed separately), the same
 // shape parseArgs consumes. Reads FormatStyle — the same value the

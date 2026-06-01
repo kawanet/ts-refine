@@ -3,7 +3,7 @@
 // conventions, then relocate.
 
 import {initProject, refineMove, refineReport, type TSR} from "../../index.ts"
-import {reportToFormatOptions} from "../../recommend/format-options.ts"
+import {reportToFormatOptions} from "../../recommend/format-style.ts"
 import {applyReportNames} from "../../report/report-names.ts"
 import {type CLI, NULL_SINK} from "../cli-io.ts"
 import {resolvePaths} from "../resolve-paths.ts"
