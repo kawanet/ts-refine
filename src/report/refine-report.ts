@@ -8,8 +8,8 @@
 
 import type * as declared from "ts-refine"
 import type {TSR} from "ts-refine"
+import {resolveProject} from "../common/init-project.ts"
 import {reportNames} from "../common/report-names.ts"
-import {resolveProject} from "../lib/init-project.ts"
 import {runReportBracketSpacing} from "./bracket-spacing.ts"
 import {runReportIndent} from "./indent.ts"
 import {runReportMemberSeparators} from "./member-separators.ts"

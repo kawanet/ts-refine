@@ -9,7 +9,7 @@
 
 import {Node, type Project, type SourceFile} from "ts-morph"
 import type * as declared from "ts-refine"
-import {resolveProject} from "../lib/init-project.ts"
+import {resolveProject} from "../common/init-project.ts"
 import {findNamespaceMembers, IDENT, memberNameNode, parseTarget, type ResolvedTarget, resolveTarget} from "../lib/resolve-target.ts"
 import {displayPath} from "../lib/source-files.ts"
 import {organizeChangedImports} from "../recommend/organize-changed.ts"

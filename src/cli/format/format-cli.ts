@@ -3,8 +3,8 @@
 // writes the files.
 
 import {reportToFormatStyle} from "../../common/format-style.ts"
+import {initProject} from "../../common/init-project.ts"
 import {refineFormat, refineReport} from "../../index.ts"
-import {initProject} from "../../lib/init-project.ts"
 import {type CLI, NULL_SINK} from "../cli-io.ts"
 import {buildFormatTokens} from "../report/emit-ts-refine.ts"
 import {resolvePaths} from "../resolve-paths.ts"

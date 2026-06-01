@@ -10,7 +10,7 @@
 import {Node, type Project} from "ts-morph"
 import type * as declared from "ts-refine"
 import type {TSR} from "ts-refine"
-import {resolveProject} from "../lib/init-project.ts"
+import {resolveProject} from "../common/init-project.ts"
 import {resolveTargetNode} from "../lib/resolve-target.ts"
 import {displayPath, selectSourceFiles} from "../lib/source-files.ts"
 

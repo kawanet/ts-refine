@@ -1,8 +1,8 @@
 // `list` runner: gather the cleanup-candidate entries and write the filtered
 // table to stdout.
 
+import {initProject} from "../../common/init-project.ts"
 import {refineList} from "../../index.ts"
-import {initProject} from "../../lib/init-project.ts"
 import type {CLI} from "../cli-io.ts"
 import {resolvePaths} from "../resolve-paths.ts"
 import {parseListArgs} from "./parse-list-args.ts"

@@ -13,8 +13,8 @@ import path from "node:path"
 import {type ImportDeclaration, Node, type SourceFile, ts} from "ts-morph"
 import type * as declared from "ts-refine"
 import type {TSR} from "ts-refine"
+import {resolveProject} from "../common/init-project.ts"
 import {inspectorNames} from "../common/inspector-names.ts"
-import {resolveProject} from "../lib/init-project.ts"
 import {displayPath, selectSourceFiles} from "../lib/source-files.ts"
 
 export const refineInspect: typeof declared.refineInspect = async (opts) => {

@@ -18,7 +18,7 @@ import fs from "node:fs"
 import path from "node:path"
 import {type ExportDeclaration, type ImportDeclaration, Node, type Project, type SourceFile, type StringLiteral, ts} from "ts-morph"
 import type * as declared from "ts-refine"
-import {resolveProject} from "../lib/init-project.ts"
+import {resolveProject} from "../common/init-project.ts"
 import {displayPath} from "../lib/source-files.ts"
 import {organizeChangedImports} from "../recommend/organize-changed.ts"
 

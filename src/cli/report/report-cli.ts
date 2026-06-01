@@ -3,8 +3,8 @@
 // skip those survey-only blocks.
 
 import type {TSR} from "ts-refine"
+import {initProject} from "../../common/init-project.ts"
 import {refineReport} from "../../index.ts"
-import {initProject} from "../../lib/init-project.ts"
 import type {CLI} from "../cli-io.ts"
 import {resolvePaths} from "../resolve-paths.ts"
 import {writePrettierMarkdown} from "./emit-prettier.ts"
