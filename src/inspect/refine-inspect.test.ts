@@ -12,7 +12,7 @@ const log = {write: () => {}}
 describe("refineInspect", () => {
     it("returns one InspectExport per export with importers count and alphabetical example", async () => {
         const project = new Project({tsConfigFilePath: SAMPLE_TSCONFIG})
-        const files = await refineInspect(project, {log, paths: [], inspectorNames: ["exports"]})
+        const files = await refineInspect({project, log, paths: [], inspectorNames: ["exports"]})
 
         const byName = Object.fromEntries(files.map((f) => [path.basename(f.file), f]))
         const used = byName["used.ts"]
@@ -37,7 +37,7 @@ describe("refineInspect", () => {
     it("scopes to the given file globs", async () => {
         const project = new Project({tsConfigFilePath: SAMPLE_TSCONFIG})
         const dir = path.dirname(SAMPLE_TSCONFIG)
-        const files = await refineInspect(project, {log, paths: [path.join(dir, "src/used.ts")], inspectorNames: ["exports"]})
+        const files = await refineInspect({project, log, paths: [path.join(dir, "src/used.ts")], inspectorNames: ["exports"]})
         assert.deepEqual(
             files.map((f) => path.basename(f.file)),
             ["used.ts"],
@@ -46,7 +46,7 @@ describe("refineInspect", () => {
 
     it("rejects an unknown inspector name", async () => {
         const project = new Project({tsConfigFilePath: SAMPLE_TSCONFIG})
-        await assert.rejects(() => refineInspect(project, {log, paths: [], inspectorNames: ["typo" as unknown as TSR.InspectorName]}), /unknown inspector name: typo/)
+        await assert.rejects(() => refineInspect({project, log, paths: [], inspectorNames: ["typo" as unknown as TSR.InspectorName]}), /unknown inspector name: typo/)
     })
 
     it("classifies each importer form (value / type / namespace / side-effect / re-export / dynamic / mixed)", async () => {
@@ -63,7 +63,7 @@ describe("refineInspect", () => {
         project.createSourceFile("/dyn.ts", 'export const load = () => import("./target.ts")\n')
         project.createSourceFile("/mixed.ts", 'import {x, type T} from "./target.ts"\nconst _: T = x\n')
 
-        const files = await refineInspect(project, {log, paths: ["/target.ts"], inspectorNames: ["importers"]})
+        const files = await refineInspect({project, log, paths: ["/target.ts"], inspectorNames: ["importers"]})
         assert.equal(files.length, 1)
         const got = Object.fromEntries(files[0].importers!.map((i) => [i.file.replace(/^.*\//, ""), {kinds: i.kinds, names: i.names}]))
         assert.deepEqual(got["value.ts"], {kinds: ["value"], names: ["x"]})
@@ -82,7 +82,7 @@ describe("refineInspect", () => {
     it("returns an empty importers list when nothing imports the file", async () => {
         const project = new Project({useInMemoryFileSystem: true})
         project.createSourceFile("/orphan.ts", "export const x = 1\n")
-        const files = await refineInspect(project, {log, paths: ["/orphan.ts"], inspectorNames: ["importers"]})
+        const files = await refineInspect({project, log, paths: ["/orphan.ts"], inspectorNames: ["importers"]})
         assert.deepEqual(files[0].importers, [])
     })
 
@@ -90,7 +90,7 @@ describe("refineInspect", () => {
         const project = new Project({useInMemoryFileSystem: true})
         project.createSourceFile("/target.ts", "export const x = 1\n")
         project.createSourceFile("/ambient.d.ts", 'import {x} from "./target.ts"\ndeclare const _: typeof x\n')
-        const files = await refineInspect(project, {log, paths: ["/target.ts"], inspectorNames: ["importers"]})
+        const files = await refineInspect({project, log, paths: ["/target.ts"], inspectorNames: ["importers"]})
         assert.ok(files[0].importers!.some((i) => i.file.endsWith("ambient.d.ts")))
     })
 })

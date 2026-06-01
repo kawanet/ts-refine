@@ -16,7 +16,7 @@
 
 import fs from "node:fs"
 import path from "node:path"
-import {Node, ts, type ExportDeclaration, type ImportDeclaration, type Project, type SourceFile, type StringLiteral} from "ts-morph"
+import {type ExportDeclaration, type ImportDeclaration, Node, type Project, type SourceFile, type StringLiteral, ts} from "ts-morph"
 import type * as declared from "ts-refine"
 import {displayPath} from "../lib/source-files.ts"
 import {organizeChangedImports} from "../recommend/organize-changed.ts"
@@ -45,8 +45,8 @@ function withExtension(specifier: string, ext: string): string {
     return specifier.replace(KNOWN_EXT, "") + ext
 }
 
-export const refineMove: typeof declared.refineMove = async (project, opts) => {
-    const {sources, dest, dryRun, format, log} = opts
+export const refineMove: typeof declared.refineMove = async (opts) => {
+    const {project, sources, dest, dryRun, format, log} = opts
 
     const plan = planMoves(project, sources, dest)
 

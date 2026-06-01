@@ -13,7 +13,7 @@ import type * as declared from "ts-refine"
 import type {TSR} from "ts-refine"
 import {displayPath, selectSourceFiles} from "../lib/source-files.ts"
 
-export const refineList: typeof declared.refineList = async (project, {paths, log}) => {
+export const refineList: typeof declared.refineList = async ({project, paths, log}) => {
     const sourceFiles = selectSourceFiles(project, {paths})
 
     const entries: TSR.ListEntry[] = []

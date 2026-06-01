@@ -3,7 +3,6 @@
 // interface/type-literal members (comma-separated members excluded).
 // Helps decide which direction minimizes churn when standardizing.
 
-import type {Project} from "ts-morph"
 import type {TSR} from "ts-refine"
 import {displayPath, selectSourceFiles} from "../lib/source-files.ts"
 import {isSemiEligibleStatement, isTypeMember} from "./statement-kinds.ts"
@@ -15,7 +14,7 @@ import type {ReportOpts} from "./types.ts"
 // too sparse to be useful — every middle bucket was empty for typical files.
 const BUCKET_LABELS = ["0%", "1-10%", "11-49%", "50%", "51-89%", "90-99%", "100%"] as const
 
-export async function runReportSemicolons(project: Project, {output, paths, log}: ReportOpts): Promise<Partial<TSR.SemicolonsOpts>> {
+export async function runReportSemicolons({project, output, paths, log}: ReportOpts): Promise<Partial<TSR.SemicolonsOpts>> {
     const sourceFiles = selectSourceFiles(project, {paths})
 
     type PerFile = {path: string; total: number; withSemi: number}

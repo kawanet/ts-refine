@@ -29,8 +29,8 @@ interface Resolved {
     collisions: (toName: string, targetFiles: Set<SourceFile>) => SourceFile[]
 }
 
-export const refineRename: typeof declared.refineRename = async (project, opts) => {
-    const {from, to, file, dryRun, format, log} = opts
+export const refineRename: typeof declared.refineRename = async (opts) => {
+    const {project, from, to, file, dryRun, format, log} = opts
 
     const fromT = parseTarget(from)
     const toT = parseTarget(to)

@@ -24,12 +24,12 @@ export const reportCLI: CLI = async (ctx) => {
     const emitter = selectEmitter(args.emit, output)
 
     if (args.surveyDefault) {
-        const entries = await refineList(project, {paths, log})
+        const entries = await refineList({project, paths, log})
         const candidates = filterListEntries(entries, {noExports: true, noImporters: true, unusedExports: true})
         output.write("### list --no-exports --no-importers --unused-exports\n\n")
         writeListTable(candidates, output)
     }
-    const report = await refineReport(project, {paths, reportNames, output: emitter.reportStream, log})
+    const report = await refineReport({project, paths, reportNames, output: emitter.reportStream, log})
     if (args.surveyDefault) {
         writeFormatMarkdown(report, output)
         writePrettierMarkdown(report, output)

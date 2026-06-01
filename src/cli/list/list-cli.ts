@@ -14,7 +14,7 @@ export const listCLI: CLI = async (ctx) => {
     if (common.help) throw new Error("--help is not supported for the list command")
     const {absTsconfig, paths} = resolvePaths(common.tsconfigPath, args.paths)
     const project = initProject({tsConfigFilePath: absTsconfig})
-    const entries = await refineList(project, {paths, log})
+    const entries = await refineList({project, paths, log})
     writeListTable(filterListEntries(entries, args.listFilters), output)
     return 0
 }

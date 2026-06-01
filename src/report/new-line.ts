@@ -2,7 +2,6 @@
 // pick the file-count majority. Maps to FormatCodeSettings.newLineCharacter
 // and Prettier's `endOfLine`.
 
-import type {Project} from "ts-morph"
 import type {TSR} from "ts-refine"
 import {displayPath, selectSourceFiles} from "../lib/source-files.ts"
 import {pickRecommendByFiles} from "../recommend/pick-recommend.ts"
@@ -20,7 +19,7 @@ const NL_LABEL: Record<NewLine, string> = {
 
 type Bucket = {lines: number; files: number; topPath: string; topLines: number}
 
-export async function runReportNewLine(project: Project, {output, paths, log}: ReportOpts): Promise<Partial<TSR.NewLineOpts>> {
+export async function runReportNewLine({project, output, paths, log}: ReportOpts): Promise<Partial<TSR.NewLineOpts>> {
     const sourceFiles = selectSourceFiles(project, {paths})
 
     type PerFile = {path: string; counts: Map<NewLine, number>; primary: NewLine}

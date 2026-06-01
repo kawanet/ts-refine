@@ -21,10 +21,10 @@ export const moveCLI: CLI = async (ctx) => {
     const dest = paths[paths.length - 1]
     const reportNames = applyReportNames as TSR.ReportName[]
     // Survey, then reduce to the format subset refineMove actually needs.
-    const report = await refineReport(project, {paths: [], reportNames, output: NULL_SINK, log})
+    const report = await refineReport({project, paths: [], reportNames, output: NULL_SINK, log})
     const format = reportToFormatStyle(report)
     log.write(`format: ${buildFormatTokens(format).join(" ")}\n`)
 
-    await refineMove(project, {sources, dest, dryRun: common.dryRun, format, log})
+    await refineMove({project, sources, dest, dryRun: common.dryRun, format, log})
     return 0
 }

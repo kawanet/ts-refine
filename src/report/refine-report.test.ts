@@ -15,7 +15,8 @@ describe("refineReport", () => {
         const lines: string[] = []
         await assert.rejects(
             () =>
-                refineReport(project, {
+                refineReport({
+                    project,
                     log,
                     // Intentional typo. The typed surface narrows to known
                     // names, so the cast lets the test reach the runtime
@@ -31,7 +32,8 @@ describe("refineReport", () => {
     it("runs requested reports in registry order regardless of input order", async () => {
         const project = new Project({tsConfigFilePath: SAMPLE_TSCONFIG})
         const lines: string[] = []
-        await refineReport(project, {
+        await refineReport({
+            project,
             log,
             // Input deliberately in reverse of registry order to confirm the
             // router re-orders. indent precedes semicolons in the registry.

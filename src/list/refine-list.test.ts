@@ -11,7 +11,7 @@ const log = {write: () => {}}
 describe("refineList (sample/basic)", () => {
     it("reports per-file export / unused / importer counts", async () => {
         const project = new Project({tsConfigFilePath: SAMPLE_TSCONFIG})
-        const entries = await refineList(project, {log, paths: []})
+        const entries = await refineList({project, log, paths: []})
 
         const got = Object.fromEntries(entries.map((e) => [path.basename(e.file), {exports: e.exports, unused: e.unused, importers: e.importers}]))
         assert.deepEqual(got, {
@@ -29,7 +29,7 @@ describe("refineList (sample/basic)", () => {
     it("scopes to the given file globs", async () => {
         const project = new Project({tsConfigFilePath: SAMPLE_TSCONFIG})
         const dir = path.dirname(SAMPLE_TSCONFIG)
-        const entries = await refineList(project, {log, paths: [path.join(dir, "src/used.ts")]})
+        const entries = await refineList({project, log, paths: [path.join(dir, "src/used.ts")]})
         assert.deepEqual(
             entries.map((e) => path.basename(e.file)),
             ["used.ts"],
@@ -40,7 +40,7 @@ describe("refineList (sample/basic)", () => {
         const project = new Project({useInMemoryFileSystem: true})
         project.createSourceFile("/src/a.ts", "export const x = 1\n")
         project.createSourceFile("/src/types.d.ts", 'import {x} from "./a.ts"\nexport type T = typeof x\n')
-        const entries = await refineList(project, {log, paths: []})
+        const entries = await refineList({project, log, paths: []})
         // The .d.ts is listed, and counts as an importer of a.ts.
         assert.ok(entries.some((e) => path.basename(e.file) === "types.d.ts"))
         const a = entries.find((e) => path.basename(e.file) === "a.ts")!

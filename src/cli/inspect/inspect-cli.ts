@@ -15,7 +15,7 @@ export const inspectCLI: CLI = async (ctx) => {
     const {absTsconfig, paths} = resolvePaths(common.tsconfigPath, args.paths)
     const project = initProject({tsConfigFilePath: absTsconfig})
     const inspectorNames = args.inspectorNames as TSR.InspectorName[]
-    const files = await refineInspect(project, {paths, inspectorNames, log})
+    const files = await refineInspect({project, paths, inspectorNames, log})
     for (const file of files) writeInspectFile(file, output)
     return 0
 }

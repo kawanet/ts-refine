@@ -15,6 +15,7 @@ export declare namespace TSR {
     // progress and notes (the callers route it to stderr); pass a no-op Writer
     // to discard them. Path-scoped commands add their own `paths`.
     interface CommonOpts {
+        project: Project
         log: Writer
     }
 
@@ -187,14 +188,14 @@ export declare namespace TSR {
 
 export declare function initProject(opts: {tsConfigFilePath: string}): Project
 
-export declare function refineReport(project: Project, opts: TSR.ReportOpts): Promise<TSR.ReportResult>
+export declare function refineReport(opts: TSR.ReportOpts): Promise<TSR.ReportResult>
 
-export declare function refineFormat(project: Project, opts: TSR.FormatOpts): Promise<TSR.FormatResult>
+export declare function refineFormat(opts: TSR.FormatOpts): Promise<TSR.FormatResult>
 
-export declare function refineList(project: Project, opts: TSR.ListOpts): Promise<TSR.ListEntry[]>
+export declare function refineList(opts: TSR.ListOpts): Promise<TSR.ListEntry[]>
 
-export declare function refineInspect(project: Project, opts: TSR.InspectOpts): Promise<TSR.InspectFile[]>
+export declare function refineInspect(opts: TSR.InspectOpts): Promise<TSR.InspectFile[]>
 
-export declare function refineMove(project: Project, opts: TSR.MoveOpts): Promise<TSR.MoveResult>
+export declare function refineMove(opts: TSR.MoveOpts): Promise<TSR.MoveResult>
 
-export declare function refineRename(project: Project, opts: TSR.RenameOpts): Promise<TSR.RenameResult>
+export declare function refineRename(opts: TSR.RenameOpts): Promise<TSR.RenameResult>

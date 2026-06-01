@@ -16,8 +16,8 @@ import {runReportNewLine} from "./new-line.ts"
 import {runReportSemicolons} from "./semicolons.ts"
 import type {ReportOpts} from "./types.ts"
 
-export const refineReport: typeof declared.refineReport = async (project, opts) => {
-    const {output, reportNames: requested, paths, log} = opts
+export const refineReport: typeof declared.refineReport = async (opts) => {
+    const {project, output, reportNames: requested, paths, log} = opts
 
     // Validate every requested name up-front so a typo fails before any
     // report runs. `reportNames` is the source of truth for what exists.
@@ -28,22 +28,22 @@ export const refineReport: typeof declared.refineReport = async (project, opts) 
     }
 
     const report: TSR.ReportResult = {}
-    const reportOpts: ReportOpts = {output, paths, log}
+    const reportOpts: ReportOpts = {project, output, paths, log}
 
     if (requested.includes("semicolons")) {
-        report.semicolons = await runReportSemicolons(project, reportOpts)
+        report.semicolons = await runReportSemicolons(reportOpts)
     }
     if (requested.includes("indent")) {
-        report.indent = await runReportIndent(project, reportOpts)
+        report.indent = await runReportIndent(reportOpts)
     }
     if (requested.includes("member-separators")) {
-        report.memberSeparators = await runReportMemberSeparators(project, reportOpts)
+        report.memberSeparators = await runReportMemberSeparators(reportOpts)
     }
     if (requested.includes("new-line")) {
-        report.newLine = await runReportNewLine(project, reportOpts)
+        report.newLine = await runReportNewLine(reportOpts)
     }
     if (requested.includes("bracket-spacing")) {
-        report.bracketSpacing = await runReportBracketSpacing(project, reportOpts)
+        report.bracketSpacing = await runReportBracketSpacing(reportOpts)
     }
 
     return report

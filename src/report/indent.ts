@@ -7,7 +7,6 @@
 // map (see ./detect-indent) so callers can introspect the distribution;
 // the report just picks the per-file mode out of that map.
 
-import type {Project} from "ts-morph"
 import type {TSR} from "ts-refine"
 import {displayPath, selectSourceFiles} from "../lib/source-files.ts"
 import {pickRecommendByFiles} from "../recommend/pick-recommend.ts"
@@ -16,7 +15,7 @@ import type {ReportOpts} from "./types.ts"
 
 type Bucket = {lines: number; files: number; topPath: string; topLines: number}
 
-export async function runReportIndent(project: Project, {output, paths, log}: ReportOpts): Promise<Partial<TSR.IndentOpts>> {
+export async function runReportIndent({project, output, paths, log}: ReportOpts): Promise<Partial<TSR.IndentOpts>> {
     const sourceFiles = selectSourceFiles(project, {paths})
 
     // Per-file: detect leading-width distribution, then collapse to one

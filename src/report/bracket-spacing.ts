@@ -3,7 +3,6 @@
 // insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces rewrites —
 // object literals, destructuring, and import/export named bindings.
 
-import type {Project} from "ts-morph"
 import {Node} from "ts-morph"
 import type {TSR} from "ts-refine"
 import {displayPath, selectSourceFiles} from "../lib/source-files.ts"
@@ -21,7 +20,7 @@ const STYLE_LABEL: Record<Style, string> = {
 
 type Bucket = {lines: number; files: number; topPath: string; topLines: number}
 
-export async function runReportBracketSpacing(project: Project, {output, paths, log}: ReportOpts): Promise<Partial<TSR.BracketSpacingOpts>> {
+export async function runReportBracketSpacing({project, output, paths, log}: ReportOpts): Promise<Partial<TSR.BracketSpacingOpts>> {
     const sourceFiles = selectSourceFiles(project, {paths})
 
     type PerFile = {path: string; counts: Map<Style, number>; primary: Style}

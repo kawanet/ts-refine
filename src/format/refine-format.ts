@@ -9,8 +9,8 @@ import {selectSourceFiles} from "../lib/source-files.ts"
 import {applyTypeOnlyFixes} from "../lib/type-only-fixes.ts"
 import {formatStyleToSettings, normalizeNewLines} from "../recommend/format-settings.ts"
 
-export const refineFormat: typeof declared.refineFormat = async (project, opts) => {
-    const {dryRun, paths, format, log} = opts
+export const refineFormat: typeof declared.refineFormat = async (opts) => {
+    const {project, dryRun, paths, format, log} = opts
     const resolved = formatStyleToSettings(format)
 
     const sourceFiles = selectSourceFiles(project, {paths})

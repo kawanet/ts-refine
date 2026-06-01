@@ -9,7 +9,7 @@
 // choice is already governed by the semicolons report, so the
 // recommendation is not emitted to either output.
 
-import type {ClassMemberTypes, Project, TypeElementTypes} from "ts-morph"
+import type {ClassMemberTypes, TypeElementTypes} from "ts-morph"
 import {Node} from "ts-morph"
 import type {TSR} from "ts-refine"
 import {displayPath, selectSourceFiles} from "../lib/source-files.ts"
@@ -38,7 +38,7 @@ const SEP_FLAG_VALUE: Record<Separator, TSR.MemberSeparatorsOpts["separator"]> =
 
 type Bucket = {lines: number; files: number; topPath: string; topLines: number}
 
-export async function runReportMemberSeparators(project: Project, {output, paths, log}: ReportOpts): Promise<Partial<TSR.MemberSeparatorsOpts>> {
+export async function runReportMemberSeparators({project, output, paths, log}: ReportOpts): Promise<Partial<TSR.MemberSeparatorsOpts>> {
     const sourceFiles = selectSourceFiles(project, {paths})
 
     type PerFile = {path: string; counts: Map<Separator, number>; primary: Separator}
