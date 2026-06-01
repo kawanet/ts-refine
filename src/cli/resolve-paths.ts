@@ -6,14 +6,14 @@
 
 import path from "node:path"
 
-export function resolvePaths(tsconfigPath: string | undefined, files: string[]): {absTsconfig: string; paths: string[]} {
-    const absTsconfig = resolveTsconfigPath(tsconfigPath ?? ".")
-    const tsconfigDir = path.dirname(absTsconfig)
+export function resolvePaths(tsconfigPath: string | undefined, files: string[]): {tsConfigFilePath: string; paths: string[]} {
+    const tsConfigFilePath = resolveTsconfigPath(tsconfigPath ?? ".")
+    const tsconfigDir = path.dirname(tsConfigFilePath)
     const paths = files.map((g) => {
         const absolute = path.isAbsolute(g) ? g : path.resolve(tsconfigDir, g)
         return g.endsWith("/") || g.endsWith(path.sep) ? absolute + path.sep : absolute
     })
-    return {absTsconfig, paths}
+    return {tsConfigFilePath, paths}
 }
 
 // Mirrors `tsc -p`: a non-`.json` value is treated as a directory and

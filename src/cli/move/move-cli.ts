@@ -4,7 +4,8 @@
 
 import {reportToFormatStyle} from "../../common/format-style.ts"
 import {applyReportNames} from "../../common/report-names.ts"
-import {initProject, refineMove, refineReport, type TSR} from "../../index.ts"
+import {refineMove, refineReport, type TSR} from "../../index.ts"
+import {initProject} from "../../lib/init-project.ts"
 import {type CLI, NULL_SINK} from "../cli-io.ts"
 import {buildFormatTokens} from "../report/emit-ts-refine.ts"
 import {resolvePaths} from "../resolve-paths.ts"
@@ -15,8 +16,8 @@ export const moveCLI: CLI = async (ctx) => {
     const args = parseMoveArgs(tokens, common)
     if (!args) return 1
     if (common.help) throw new Error("--help is not supported for the move command")
-    const {absTsconfig, paths} = resolvePaths(common.tsconfigPath, args.paths)
-    const project = initProject({tsConfigFilePath: absTsconfig})
+    const {tsConfigFilePath, paths} = resolvePaths(common.tsconfigPath, args.paths)
+    const project = initProject({tsConfigFilePath})
     const sources = paths.slice(0, -1)
     const dest = paths[paths.length - 1]
     const reportNames = applyReportNames as TSR.ReportName[]

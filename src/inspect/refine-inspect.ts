@@ -14,10 +14,12 @@ import {type ImportDeclaration, Node, type SourceFile, ts} from "ts-morph"
 import type * as declared from "ts-refine"
 import type {TSR} from "ts-refine"
 import {inspectorNames} from "../common/inspector-names.ts"
+import {resolveProject} from "../lib/init-project.ts"
 import {displayPath, selectSourceFiles} from "../lib/source-files.ts"
 
 export const refineInspect: typeof declared.refineInspect = async (opts) => {
-    const {project, paths, inspectorNames: requested, log} = opts
+    const {paths, inspectorNames: requested, log} = opts
+    const project = resolveProject(opts)
 
     for (const name of requested) {
         if (!(inspectorNames as readonly string[]).includes(name)) {

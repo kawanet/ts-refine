@@ -18,6 +18,7 @@ import fs from "node:fs"
 import path from "node:path"
 import {type ExportDeclaration, type ImportDeclaration, Node, type Project, type SourceFile, type StringLiteral, ts} from "ts-morph"
 import type * as declared from "ts-refine"
+import {resolveProject} from "../lib/init-project.ts"
 import {displayPath} from "../lib/source-files.ts"
 import {organizeChangedImports} from "../recommend/organize-changed.ts"
 
@@ -46,7 +47,8 @@ function withExtension(specifier: string, ext: string): string {
 }
 
 export const refineMove: typeof declared.refineMove = async (opts) => {
-    const {project, sources, dest, dryRun, format, log} = opts
+    const {sources, dest, dryRun, format, log} = opts
+    const project = resolveProject(opts)
 
     const plan = planMoves(project, sources, dest)
 

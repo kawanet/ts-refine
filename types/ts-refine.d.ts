@@ -11,11 +11,14 @@ export declare namespace TSR {
     // stream, the CLI's stdout, the diagnostics log, and NULL_SINK all satisfy it.
     type Writer = {write: (line: string) => void}
 
-    // Common base for every entry: just the diagnostics sink. log receives
-    // progress and notes (the callers route it to stderr); pass a no-op Writer
-    // to discard them. Path-scoped commands add their own `paths`.
+    // Common base for every entry. Supply the ts-morph project one of two ways:
+    // your own `project` (bring-your-own — in-memory, custom options, and reuse
+    // across calls), or a `tsConfigFilePath` to build a fresh one (best for
+    // one-shot use). Exactly one is required — supplying both throws.
+    // log receives progress/notes (route it to stderr); no-op Writer to discard.
     interface CommonOpts {
-        project: Project
+        project?: Project
+        tsConfigFilePath?: string
         log: Writer
     }
 
@@ -185,8 +188,6 @@ export declare namespace TSR {
         touched: string[]
     }
 }
-
-export declare function initProject(opts: {tsConfigFilePath: string}): Project
 
 export declare function refineReport(opts: TSR.ReportOpts): Promise<TSR.ReportResult>
 

@@ -3,7 +3,8 @@
 // writes the files.
 
 import {reportToFormatStyle} from "../../common/format-style.ts"
-import {initProject, refineFormat, refineReport} from "../../index.ts"
+import {refineFormat, refineReport} from "../../index.ts"
+import {initProject} from "../../lib/init-project.ts"
 import {type CLI, NULL_SINK} from "../cli-io.ts"
 import {buildFormatTokens} from "../report/emit-ts-refine.ts"
 import {resolvePaths} from "../resolve-paths.ts"
@@ -15,8 +16,8 @@ export const formatCLI: CLI = async (ctx) => {
     const args = parseFormatArgs(tokens, common)
     if (!args) return 1
     if (common.help) throw new Error("--help is not supported for the format command")
-    const {absTsconfig, paths} = resolvePaths(common.tsconfigPath, args.paths)
-    const project = initProject({tsConfigFilePath: absTsconfig})
+    const {tsConfigFilePath, paths} = resolvePaths(common.tsconfigPath, args.paths)
+    const project = initProject({tsConfigFilePath})
     // Skip surveying any field the CLI already pinned; a fully-pinned run
     // makes this an empty set and refineReport does no work.
     const reportNames = reportNamesForFormat(args.applyOverrides)

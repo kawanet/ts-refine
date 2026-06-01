@@ -9,6 +9,7 @@
 import type * as declared from "ts-refine"
 import type {TSR} from "ts-refine"
 import {reportNames} from "../common/report-names.ts"
+import {resolveProject} from "../lib/init-project.ts"
 import {runReportBracketSpacing} from "./bracket-spacing.ts"
 import {runReportIndent} from "./indent.ts"
 import {runReportMemberSeparators} from "./member-separators.ts"
@@ -17,7 +18,8 @@ import {runReportSemicolons} from "./semicolons.ts"
 import type {ReportOpts} from "./types.ts"
 
 export const refineReport: typeof declared.refineReport = async (opts) => {
-    const {project, output, reportNames: requested, paths, log} = opts
+    const {output, reportNames: requested, paths, log} = opts
+    const project = resolveProject(opts)
 
     // Validate every requested name up-front so a typo fails before any
     // report runs. `reportNames` is the source of truth for what exists.

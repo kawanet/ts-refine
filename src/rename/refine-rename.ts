@@ -9,6 +9,7 @@
 
 import {type ClassDeclaration, type Identifier, type InterfaceDeclaration, type ModuleDeclaration, Node, type Project, type SourceFile} from "ts-morph"
 import type * as declared from "ts-refine"
+import {resolveProject} from "../lib/init-project.ts"
 import {displayPath} from "../lib/source-files.ts"
 import {organizeChangedImports} from "../recommend/organize-changed.ts"
 
@@ -30,7 +31,8 @@ interface Resolved {
 }
 
 export const refineRename: typeof declared.refineRename = async (opts) => {
-    const {project, from, to, file, dryRun, format, log} = opts
+    const {from, to, file, dryRun, format, log} = opts
+    const project = resolveProject(opts)
 
     const fromT = parseTarget(from)
     const toT = parseTarget(to)

@@ -3,7 +3,8 @@
 
 import {reportToFormatStyle} from "../../common/format-style.ts"
 import {applyReportNames} from "../../common/report-names.ts"
-import {initProject, refineRename, refineReport, type TSR} from "../../index.ts"
+import {refineRename, refineReport, type TSR} from "../../index.ts"
+import {initProject} from "../../lib/init-project.ts"
 import {type CLI, NULL_SINK} from "../cli-io.ts"
 import {buildFormatTokens} from "../report/emit-ts-refine.ts"
 import {resolvePaths} from "../resolve-paths.ts"
@@ -14,8 +15,8 @@ export const renameCLI: CLI = async (ctx) => {
     const args = parseRenameArgs(tokens, common)
     if (!args) return 1
     if (common.help) throw new Error("--help is not supported for the rename command")
-    const {absTsconfig, paths} = resolvePaths(common.tsconfigPath, args.paths)
-    const project = initProject({tsConfigFilePath: absTsconfig})
+    const {tsConfigFilePath, paths} = resolvePaths(common.tsconfigPath, args.paths)
+    const project = initProject({tsConfigFilePath})
     const reportNames = applyReportNames as TSR.ReportName[]
     // Survey, then reduce to the format subset refineRename actually needs.
     const report = await refineReport({project, paths: [], reportNames, output: NULL_SINK, log})

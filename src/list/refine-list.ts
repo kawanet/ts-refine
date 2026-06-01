@@ -11,9 +11,12 @@
 import {Node} from "ts-morph"
 import type * as declared from "ts-refine"
 import type {TSR} from "ts-refine"
+import {resolveProject} from "../lib/init-project.ts"
 import {displayPath, selectSourceFiles} from "../lib/source-files.ts"
 
-export const refineList: typeof declared.refineList = async ({project, paths, log}) => {
+export const refineList: typeof declared.refineList = async (opts) => {
+    const {paths, log} = opts
+    const project = resolveProject(opts)
     const sourceFiles = selectSourceFiles(project, {paths})
 
     const entries: TSR.ListEntry[] = []
