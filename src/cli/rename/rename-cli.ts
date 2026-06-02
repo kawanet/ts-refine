@@ -1,5 +1,6 @@
-// `rename` runner: survey the project so the post-rename organizeImports
-// follows the codebase's conventions, then rename the exported identifier.
+// `rename` runner: rename the exported identifier, then re-sort each edited
+// file's imports using that file's own surveyed style (reported per file), so
+// a project with mixed formatting keeps each file's conventions.
 
 import type {TSR} from "ts-refine"
 import {reportToFormatStyle} from "../../common/format-style.ts"
@@ -7,7 +8,6 @@ import {initProject} from "../../common/init-project.ts"
 import {applyReportNames} from "../../common/report-names.ts"
 import {refineRename, refineReport} from "../../index.ts"
 import {type CLI, NULL_SINK} from "../cli-io.ts"
-import {buildFormatTokens} from "../report/emit-ts-refine.ts"
 import {resolvePaths} from "../resolve-paths.ts"
 import {parseRenameArgs} from "./parse-rename-args.ts"
 
@@ -20,10 +20,9 @@ export const renameCLI: CLI = async (ctx) => {
     const project = initProject({tsConfigFilePath})
     const reportNames = applyReportNames as TSR.ReportName[]
 
-    // Survey, then reduce to the format subset refineRename actually needs.
-    const report = await refineReport({project, paths: [], reportNames, output: NULL_SINK, log})
-    const format = reportToFormatStyle(report)
-    log.write(`format: ${buildFormatTokens(format).join(" ")}\n`)
+    // Per-file style: survey just the file being organized so each edited file
+    // keeps its own existing conventions (use `format` to unify a project).
+    const format = (file: string) => refineReport({project, paths: [file], reportNames, output: NULL_SINK, log}).then(reportToFormatStyle)
 
     await refineRename({project, from: args.from, to: args.to, file: paths[0] ?? null, dryRun: common.dryRun, format, log})
     return 0

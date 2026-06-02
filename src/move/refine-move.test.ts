@@ -254,6 +254,40 @@ describe("refineMove (in-memory, dry-run)", () => {
         // Its unsorted import block is left exactly as written.
         assert.equal(u.getFullText(), ['import {q} from "./q.ts"', 'import {p} from "./p.ts"', "const _ = p + q", ""].join("\n"))
     })
+
+    it("samples a per-file style resolver at each file's pre-move path", async () => {
+        const project = newProject()
+        project.createSourceFile("/src/dep.ts", "export const y = 2\n")
+        project.createSourceFile("/src/a.ts", 'import {y} from "./dep.ts"\nexport const x = y\n')
+        project.createSourceFile("/src/b.ts", 'import {x} from "./a.ts"\nconst _ = x\n')
+
+        // The resolver must see the moved file (which has its own import to
+        // re-sort) at its original path, before relocation repaths it.
+        const seen: string[] = []
+        const format = (file: string): Promise<TSR.FormatStyle> => {
+            seen.push(file)
+            return Promise.resolve(NO_SPACE)
+        }
+        await refineMove({project, log, sources: ["/src/a.ts"], dest: "/src/sub/", dryRun: true, format})
+
+        assert.ok(seen.includes("/src/a.ts"), `moved file should be sampled at its pre-move path; saw ${JSON.stringify(seen)}`)
+        assert.ok(!seen.includes("/src/sub/a.ts"), `must not sample the post-move path; saw ${JSON.stringify(seen)}`)
+        assert.ok(seen.includes("/src/b.ts"), `importer should be sampled at its own path; saw ${JSON.stringify(seen)}`)
+    })
+
+    it("organizes each changed file with its own per-file style", async () => {
+        const project = newProject()
+        project.createSourceFile("/src/dep.ts", "export const y = 2\n")
+        project.createSourceFile("/src/a.ts", 'import {y} from "./dep.ts"\nexport const x = y\n')
+        const b = project.createSourceFile("/src/b.ts", 'import {x} from "./a.ts"\nconst _ = x\n')
+
+        // Moved file gets spaced braces, the importer gets tight braces.
+        const format = (file: string): Promise<TSR.FormatStyle> => Promise.resolve(file.endsWith("/a.ts") ? SPACED : NO_SPACE)
+        await refineMove({project, log, sources: ["/src/a.ts"], dest: "/src/sub/", dryRun: true, format})
+
+        assert.match(project.getSourceFileOrThrow("/src/sub/a.ts").getFullText(), /import \{ y \} from "\.\.\/dep\.ts"/)
+        assert.match(b.getFullText(), /import \{x\} from "\.\/sub\/a\.ts"/)
+    })
 })
 
 describe("refineMove (on disk)", () => {

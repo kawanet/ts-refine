@@ -20,7 +20,7 @@ import {type ExportDeclaration, type ImportDeclaration, Node, type Project, type
 import type * as declared from "ts-refine"
 import {resolveProject} from "../common/init-project.ts"
 import {displayPath, inProjectSourceFiles} from "../lib/source-files.ts"
-import {organizeChangedImports} from "../recommend/organize-changed.ts"
+import {organizeChangedImports, resolveFormatByFile} from "../recommend/organize-changed.ts"
 
 // One captured module specifier whose target is moving. Held by AST node
 // reference so it stays valid across sf.move() and can be patched in place.
@@ -58,6 +58,13 @@ export const refineMove: typeof declared.refineMove = async (opts) => {
     const movingPaths = new Set(plan.map((p) => p.from))
     const records = snapshotSpecifiers(project, movingPaths)
 
+    // Sample each changed file's organize style from its pre-move state: a
+    // moved file must be reported at its original path, before relocation
+    // repaths it. Keyed by SourceFile so the map stays valid across move().
+    const importChangedFiles = new Set<SourceFile>()
+    for (const r of records) importChangedFiles.add(r.node.getSourceFile())
+    const stylesByFile = await resolveFormatByFile(importChangedFiles, format)
+
     // Apply each move in turn. ts-morph keeps cross-file references in sync
     // — including the moved file's own outgoing relative paths.
     for (const {from, to} of plan) {
@@ -81,13 +88,10 @@ export const refineMove: typeof declared.refineMove = async (opts) => {
     for (const r of records) touchedFiles.add(r.node.getSourceFile())
 
     // organizeImports re-sorts each import-changed file's import block (a
-    // relocation can reorder specifiers), using the project's surveyed style.
+    // relocation can reorder specifiers), using the style sampled above.
     // Restricted to the files whose specifiers actually changed — files with
-    // no import change stay untouched. Collect the SourceFile set first,
-    // since organizeImports invalidates the recorded nodes as it rewrites.
-    const importChangedFiles = new Set<SourceFile>()
-    for (const r of records) importChangedFiles.add(r.node.getSourceFile())
-    organizeChangedImports(importChangedFiles, format)
+    // no import change stay untouched.
+    organizeChangedImports(stylesByFile)
 
     // Dry-run: print planned moves + the importers that would change;
     // never touch disk. Otherwise persist only what we changed — call

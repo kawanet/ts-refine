@@ -1,6 +1,7 @@
 // `move` runner: split the resolved positional list into sources + destination,
-// survey the project so the post-move organizeImports follows the codebase's
-// conventions, then relocate.
+// then relocate. The post-move organizeImports samples each changed file's own
+// style (surveyed per file), so a project with mixed formatting keeps each
+// file's conventions; use `format` to unify them instead.
 
 import type {TSR} from "ts-refine"
 import {reportToFormatStyle} from "../../common/format-style.ts"
@@ -8,7 +9,6 @@ import {initProject} from "../../common/init-project.ts"
 import {applyReportNames} from "../../common/report-names.ts"
 import {refineMove, refineReport} from "../../index.ts"
 import {type CLI, NULL_SINK} from "../cli-io.ts"
-import {buildFormatTokens} from "../report/emit-ts-refine.ts"
 import {resolvePaths} from "../resolve-paths.ts"
 import {parseMoveArgs} from "./parse-move-args.ts"
 
@@ -23,10 +23,10 @@ export const moveCLI: CLI = async (ctx) => {
     const dest = paths[paths.length - 1]
     const reportNames = applyReportNames as TSR.ReportName[]
 
-    // Survey, then reduce to the format subset refineMove actually needs.
-    const report = await refineReport({project, paths: [], reportNames, output: NULL_SINK, log})
-    const format = reportToFormatStyle(report)
-    log.write(`format: ${buildFormatTokens(format).join(" ")}\n`)
+    // Per-file style: survey just the file being organized so each changed
+    // file keeps its own existing conventions. refineMove samples a moved file
+    // before relocation, so the original path is reported.
+    const format = (file: string) => refineReport({project, paths: [file], reportNames, output: NULL_SINK, log}).then(reportToFormatStyle)
 
     await refineMove({project, sources, dest, dryRun: common.dryRun, format, log})
     return 0

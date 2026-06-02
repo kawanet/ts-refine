@@ -12,7 +12,7 @@ import type * as declared from "ts-refine"
 import {resolveProject} from "../common/init-project.ts"
 import {parseTarget, resolveInProjectAnchors} from "../lib/resolve-target.ts"
 import {displayPath} from "../lib/source-files.ts"
-import {organizeChangedImports} from "../recommend/organize-changed.ts"
+import {organizeChangedImports, resolveFormatByFile} from "../recommend/organize-changed.ts"
 
 export const refineRename: typeof declared.refineRename = async (opts) => {
     const {from, to, file, dryRun, format, log} = opts
@@ -48,11 +48,16 @@ export const refineRename: typeof declared.refineRename = async (opts) => {
         throw new Error(`rename: \`${to}\` already exists in: ${where} (aliasing on collision is not supported yet)`)
     }
 
+    // Sample each file's organize style before the rename edits anything, so it
+    // reflects the file's pristine state — mirrors move's pre-move sampling.
+    // Keyed by SourceFile; applied after the rename.
+    const stylesByFile = await resolveFormatByFile(targetFiles, format)
+
     node.rename(toT.name)
 
     // Re-sort imports in every file the rename edited, so a changed import
     // binding leaves a tidy, conventionally-ordered block.
-    organizeChangedImports(targetFiles, format)
+    organizeChangedImports(stylesByFile)
 
     const touched = [...targetFiles]
     if (!dryRun) for (const sf of touched) await sf.save()

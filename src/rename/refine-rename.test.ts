@@ -223,4 +223,18 @@ describe("refineRename", () => {
         project.createSourceFile("/types.ts", "export interface Shape {\n    width: number\n}\n")
         await assert.rejects(refineRename({project, log, from: "Shape.height", to: "Shape.h", file: null, dryRun: true, format: NO_SPACE}), /no in-project identifier/)
     })
+
+    it("organizes each edited file with its own per-file style", async () => {
+        const project = newProject()
+        project.createSourceFile("/libs.ts", "export function funcA() { return 1 }\n")
+        const a = project.createSourceFile("/a.ts", 'import {funcA} from "./libs.ts"\nconst _ = funcA()\n')
+        const b = project.createSourceFile("/b.ts", 'import {funcA} from "./libs.ts"\nconst _ = funcA()\n')
+
+        // a.ts keeps spaced braces, b.ts keeps tight braces — each file's own style.
+        const format = (file: string): Promise<TSR.FormatStyle> => Promise.resolve(file.endsWith("/a.ts") ? {bracketSpacing: "on"} : {bracketSpacing: "off"})
+        await refineRename({project, log, from: "funcA", to: "funcB", file: null, dryRun: true, format})
+
+        assert.equal(a.getFullText(), 'import { funcB } from "./libs.ts"\nconst _ = funcB()\n')
+        assert.equal(b.getFullText(), 'import {funcB} from "./libs.ts"\nconst _ = funcB()\n')
+    })
 })

@@ -163,15 +163,15 @@ export declare namespace TSR {
     }
 
     // Input to `refineMove`. `sources` are absolute paths of existing project
-    // source files; `dest` is either an existing directory (multi-source) or
-    // a destination file path (single-source rename). After moving, imports of
-    // the files whose specifiers changed are re-sorted (organizeImports) using
-    // `format` — the project-wide surveyed style — so they converge on it.
+    // source files; `dest` is an existing directory (multi-source) or a
+    // destination file path (single-source rename). After moving, the changed
+    // files are re-sorted (organizeImports) using `format`: a single style, or
+    // a per-file resolver sampled at each file's pre-move path.
     interface MoveOpts extends CommonOpts {
         sources: string[]
         dest: string
         dryRun: boolean
-        format: FormatStyle
+        format: FormatStyle | ((file: string) => Promise<FormatStyle>)
     }
 
     // refineMove returns the planned moves (from → to) and the set of in-project
@@ -186,13 +186,14 @@ export declare namespace TSR {
     // Input to `refineRename`. Renames `from` to `to` in place; a dotted spec
     // (ns.member, Type.prop, ns.Type.prop) renames a member of a matching
     // container. `file` scopes the lookup; null requires a project-unique symbol.
-    // Touched files' imports are then re-sorted (organizeImports) using `format`.
+    // Touched files' imports are re-sorted (organizeImports) using `format`:
+    // a single style, or a per-file resolver keyed on each file's path.
     interface RenameOpts extends CommonOpts {
         from: string
         to: string
         file: string | null
         dryRun: boolean
-        format: FormatStyle
+        format: FormatStyle | ((file: string) => Promise<FormatStyle>)
     }
 
     // refineRename returns the applied rename and the in-project files whose text
