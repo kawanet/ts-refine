@@ -26,7 +26,7 @@ export const moveCLI: CLI = async (ctx) => {
     // Per-file style: survey just the file being organized so each changed
     // file keeps its own existing conventions. refineMove samples a moved file
     // before relocation, so the original path is reported.
-    const format = (file: string) => refineReport({project, paths: [file], reportNames, output: NULL_SINK, log}).then(reportToFormatStyle)
+    const format = (file: string) => refineReport({project, paths: [file], reportNames, output: NULL_SINK, log: NULL_SINK}).then(reportToFormatStyle)
 
     await refineMove({project, sources, dest, dryRun: common.dryRun, format, log})
     return 0

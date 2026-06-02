@@ -2,6 +2,7 @@
 // (plus any CLI overrides). The Markdown stream is swallowed; refineFormat
 // writes the files.
 
+import type {TSR} from "ts-refine"
 import {reportToFormatStyle} from "../../common/format-style.ts"
 import {initProject} from "../../common/init-project.ts"
 import {refineFormat, refineReport} from "../../index.ts"
@@ -22,19 +23,26 @@ export const formatCLI: CLI = async (ctx) => {
     // Skip surveying any field the CLI already pinned; a fully-pinned run
     // makes this an empty set and refineReport does no work.
     const reportNames = reportNamesForFormat(args.applyOverrides)
-    const report = await refineReport({project, paths, reportNames, output: NULL_SINK, log})
+    const overrides = overridesToFormatStyle(args.applyOverrides)
 
-    // Merge the survey recommendation (base) with the CLI overrides (win per
-    // field) here, so refineFormat just applies the result.
-    const format = mergeFormatStyles(reportToFormatStyle(report), overridesToFormatStyle(args.applyOverrides))
+    // `only` re-sorts imports without reformatting the rest, so survey each
+    // file on its own: an un-unified project then keeps every file's existing
+    // style and changes the least. Full format instead unifies the project, so
+    // it surveys once and applies a single style.
+    let format: TSR.FormatOpts["format"]
+    if (args.organizeImports === "only") {
+        format = (file) => refineReport({project, paths: [file], reportNames, output: NULL_SINK, log: NULL_SINK}).then((r) => mergeFormatStyles(reportToFormatStyle(r), overrides))
+    } else {
+        const report = await refineReport({project, paths, reportNames, output: NULL_SINK, log})
+        format = mergeFormatStyles(reportToFormatStyle(report), overrides)
 
-    // `cr` is dropped from FormatStyle, so flag it from the report: the survey
-    // recommended CR-only newlines but no override forced an applicable value.
-    if (args.applyOverrides.newLine === undefined && report.newLine?.newLine === "cr") {
-        log.write("note: report recommends CR-only newlines; not applied (LS formatter supports LF/CRLF only)\n")
+        // `cr` is dropped from FormatStyle, so flag it from the report: the survey
+        // recommended CR-only newlines but no override forced an applicable value.
+        if (args.applyOverrides.newLine === undefined && report.newLine?.newLine === "cr") {
+            log.write("note: report recommends CR-only newlines; not applied (LS formatter supports LF/CRLF only)\n")
+        }
+        log.write(`format: ${buildFormatTokens(format).join(" ")}\n`)
     }
-
-    log.write(`format: ${buildFormatTokens(format).join(" ")}\n`)
 
     // `--check` reports without writing, so it forces dry-run; the per-file
     // list and summary are already on the log, so only the fix hint is added.

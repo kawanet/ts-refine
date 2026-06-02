@@ -22,7 +22,7 @@ export const renameCLI: CLI = async (ctx) => {
 
     // Per-file style: survey just the file being organized so each edited file
     // keeps its own existing conventions (use `format` to unify a project).
-    const format = (file: string) => refineReport({project, paths: [file], reportNames, output: NULL_SINK, log}).then(reportToFormatStyle)
+    const format = (file: string) => refineReport({project, paths: [file], reportNames, output: NULL_SINK, log: NULL_SINK}).then(reportToFormatStyle)
 
     await refineRename({project, from: args.from, to: args.to, file: paths[0] ?? null, dryRun: common.dryRun, format, log})
     return 0

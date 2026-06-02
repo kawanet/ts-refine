@@ -78,15 +78,16 @@ export declare namespace TSR {
         bracketSpacing?: "on" | "off"
     }
 
-    // Input to `refineFormat`: the already-merged style to apply (survey
-    // recommendation + CLI overrides). `organizeImports` is a behavior flag,
-    // not a surveyed style: "on" (default) re-sorts imports after formatting,
-    // "off" skips it, "only" organizes without reformatting anything else.
+    // Input to `refineFormat`: the style to apply (survey recommendation + CLI
+    // overrides). `organizeImports` is a behavior flag: "on" (default) re-sorts
+    // imports after formatting, "off" skips it, "only" organizes without
+    // reformatting the rest. `format` is one style, or a per-file resolver —
+    // the `only` CLI path uses the latter so each file keeps its conventions.
     interface FormatOpts extends CommonOpts {
         paths: string[]
         dryRun: boolean
         organizeImports?: "on" | "off" | "only"
-        format: FormatStyle
+        format: FormatStyle | ((file: string) => Promise<FormatStyle>)
     }
 
     // refineFormat returns the in-project files whose text was rewritten, so a

@@ -1,6 +1,7 @@
 import {strict as assert} from "node:assert"
 import {describe, it} from "node:test"
 import {ts} from "ts-morph"
+import type {TSR} from "ts-refine"
 import {initInMemoryTestProject} from "../test-utils/init-test-project.ts"
 import {refineFormat} from "./refine-format.ts"
 
@@ -90,6 +91,25 @@ describe("refineFormat", () => {
 
         // ...but formatText is skipped: the body keeps its odd spacing and no `;`.
         assert.match(text, /const {3}x = a\+b\n/)
+    })
+
+    it("organizes each file in its own style under a per-file resolver (organizeImports 'only')", async () => {
+        const project = initInMemoryTestProject()
+        project.createSourceFile("dep.ts", "export const a = 1\nexport const b = 2\n")
+        const x = project.createSourceFile("x.ts", "import {b, a} from './dep.ts'\nconst   _ = a+b\n")
+        const y = project.createSourceFile("y.ts", "import {b, a} from './dep.ts'\nconst   _ = a+b\n")
+
+        // x.ts keeps spaced braces, y.ts keeps tight braces — each its own.
+        const format = (file: string): Promise<TSR.FormatStyle> => Promise.resolve(file.includes("x.ts") ? {bracketSpacing: "on"} : {bracketSpacing: "off"})
+        await refineFormat({project, log, dryRun: true, paths: [], organizeImports: "only", format})
+
+        // imports sorted in each file's own brace style...
+        assert.match(x.getFullText(), /import \{ a, b \}/)
+        assert.match(y.getFullText(), /import \{a, b\}/)
+
+        // ...and `only` skips formatText, so the odd body spacing survives in both.
+        assert.match(x.getFullText(), /const {3}_ = a\+b\n/)
+        assert.match(y.getFullText(), /const {3}_ = a\+b\n/)
     })
 
     it("formats .d.ts files too (no longer excluded)", async () => {
