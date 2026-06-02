@@ -114,6 +114,8 @@ npx ts-refine list --ref typeA.propB
 npx ts-refine list --ref nsA.typeB.propC
 ```
 
+The `--ref` target may be declared in the project or imported from a dependency.
+
 ## Report
 
 `report` surveys the code style and prints a recommendation per dimension —

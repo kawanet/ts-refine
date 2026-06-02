@@ -191,13 +191,17 @@ describe("refineList --ref", () => {
         await assert.rejects(refineList({project, log, paths: [], filters: {ref: "nope"}}), /no exported or imported identifier/)
     })
 
-    it("throws on an ambiguous in-project name instead of silently picking one", async () => {
-        // Shared in-project path with rename: a name exported from two files is
-        // an ambiguity error, not a non-deterministic first match.
+    it("OR-unions a name declared in several in-project files", async () => {
+        // Unlike rename (which requires a single match), list unions same-name
+        // declarations: every file that uses either `dup` is listed.
         const project = initInMemoryTestProject(BUNDLER)
         project.createSourceFile("/a.ts", "export const dup = 1\n")
         project.createSourceFile("/b.ts", "export const dup = 2\n")
-        await assert.rejects(refineList({project, log, paths: [], filters: {ref: "dup"}}), /exported from multiple places/)
+        const entries = await refineList({project, log, paths: [], filters: {ref: "dup"}})
+        assert.deepEqual(
+            entries.map((e) => e.file).sort(),
+            ["a.ts", "b.ts"],
+        )
     })
 
     it("falls back to an import binding for a symbol the project only imports (e.g. a dependency type)", async () => {
@@ -230,6 +234,16 @@ describe("refineList --ref", () => {
         const files = entries.map((e) => e.file)
         assert.ok(files.includes("a.ts") && files.includes("b.ts"), `expected a.ts and b.ts, got ${files.join(", ")}`)
         assert.ok(!files.includes("c.ts"), `c.ts uses .name, not .render: ${files.join(", ")}`)
+    })
+
+    it("OR-unions a name imported from different dependencies", async () => {
+        // Two distinct `Widget` symbols (libX, libY); both imported sites union.
+        const project = initInMemoryTestProject(BUNDLER)
+        project.createSourceFile("/shims.d.ts", 'declare module "libX" {\n    export class Widget {}\n}\ndeclare module "libY" {\n    export class Widget {}\n}\n')
+        project.createSourceFile("/a.ts", 'import {Widget} from "libX"\nexport const f = (w: Widget) => w\n')
+        project.createSourceFile("/b.ts", 'import {Widget} from "libY"\nexport const g = (w: Widget) => w\n')
+        const files = (await refineList({project, log, paths: [], filters: {ref: "Widget"}})).map((e) => e.file).sort()
+        assert.deepEqual(files, ["a.ts", "b.ts", "shims.d.ts"])
     })
 
     it("anchors a bare imported root on its binding, even for an anonymous default export", async () => {

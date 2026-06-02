@@ -88,7 +88,7 @@ describe("refineRename", () => {
     it("errors when the identifier is not exported", async () => {
         const project = newProject()
         project.createSourceFile("/libs.ts", "export function funcA() { return 1 }\n")
-        await assert.rejects(refineRename({project, log, from: "nope", to: "funcB", file: null, dryRun: true, format: NO_SPACE}), /no exported identifier/)
+        await assert.rejects(refineRename({project, log, from: "nope", to: "funcB", file: null, dryRun: true, format: NO_SPACE}), /no in-project identifier/)
     })
 
     it("rejects an invalid target identifier and a no-op rename", async () => {
@@ -142,7 +142,7 @@ describe("refineRename", () => {
     it("errors when the namespace member is not found", async () => {
         const project = newProject()
         project.createSourceFile("/types.ts", "export declare namespace NS {\n    interface A {}\n}\n")
-        await assert.rejects(refineRename({project, log, from: "NS.Nope", to: "NS.X", file: null, dryRun: true, format: NO_SPACE}), /no namespace member named/)
+        await assert.rejects(refineRename({project, log, from: "NS.Nope", to: "NS.X", file: null, dryRun: true, format: NO_SPACE}), /no in-project identifier/)
     })
 
     it("finds a member declared in a later merged namespace block", async () => {
@@ -221,6 +221,6 @@ describe("refineRename", () => {
     it("errors when the container has no such property", async () => {
         const project = newProject()
         project.createSourceFile("/types.ts", "export interface Shape {\n    width: number\n}\n")
-        await assert.rejects(refineRename({project, log, from: "Shape.height", to: "Shape.h", file: null, dryRun: true, format: NO_SPACE}), /has no member named/)
+        await assert.rejects(refineRename({project, log, from: "Shape.height", to: "Shape.h", file: null, dryRun: true, format: NO_SPACE}), /no in-project identifier/)
     })
 })

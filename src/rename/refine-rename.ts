@@ -10,7 +10,7 @@
 import {Node, type Project, type SourceFile} from "ts-morph"
 import type * as declared from "ts-refine"
 import {resolveProject} from "../common/init-project.ts"
-import {findNamespaceMembers, IDENT, memberNameNode, parseTarget, type ResolvedTarget, resolveTarget} from "../lib/resolve-target.ts"
+import {parseTarget, resolveInProjectAnchors} from "../lib/resolve-target.ts"
 import {displayPath} from "../lib/source-files.ts"
 import {organizeChangedImports} from "../recommend/organize-changed.ts"
 
@@ -18,6 +18,8 @@ export const refineRename: typeof declared.refineRename = async (opts) => {
     const {from, to, file, dryRun, format, log} = opts
     const project = resolveProject(opts)
 
+    // parseTarget validates both identifiers (a `refine: not a valid identifier`
+    // surfaces here for either side); rename adds its own policy checks.
     const fromT = parseTarget(from)
     const toT = parseTarget(to)
     if (from === to) throw new Error("rename: --from and --to are the same")
@@ -25,28 +27,28 @@ export const refineRename: typeof declared.refineRename = async (opts) => {
         throw new Error(`rename: --from and --to must keep the same container (moving across namespaces or types is out of scope): ${from} -> ${to}`)
     }
 
-    // `from` is validated while resolving; the new name `to` is checked here.
-    for (const part of [...toT.path, toT.name]) {
-        if (!IDENT.test(part)) throw new Error(`rename: not a valid identifier: ${part}`)
-    }
-
-    const resolved = resolveTarget(project, from, file)
+    // rename targets a single in-project symbol: refuse a missing or ambiguous
+    // name (list --ref tolerates both; rename cannot).
+    const anchors = resolveInProjectAnchors(project, from, file)
+    if (anchors.length === 0) throw new Error(`rename: no in-project identifier named: ${from}`)
+    if (anchors.length > 1) throw new Error(`rename: \`${from}\` is declared in multiple places; pass the defining file to disambiguate`)
+    const node = anchors[0]
 
     // Reference locations cover the declaration, importer bindings, and
     // usages — the exact set of files the rename will edit.
-    const refs = resolved.node.findReferencesAsNodes()
-    const targetFiles = new Set<SourceFile>([resolved.node.getSourceFile()])
+    const refs = node.findReferencesAsNodes()
+    const targetFiles = new Set<SourceFile>([node.getSourceFile()])
     for (const r of refs) targetFiles.add(r.getSourceFile())
 
     // Collision guard: refuse if the target name already exists where the
     // rename would land.
-    const collisions = renameCollisions(project, resolved, toT.name, targetFiles)
+    const collisions = renameCollisions(project, fromT.path, toT.name, targetFiles)
     if (collisions.length > 0) {
         const where = [...new Set(collisions)].map((sf) => displayPath(sf.getFilePath())).join(", ")
         throw new Error(`rename: \`${to}\` already exists in: ${where} (aliasing on collision is not supported yet)`)
     }
 
-    resolved.node.rename(toT.name)
+    node.rename(toT.name)
 
     // Re-sort imports in every file the rename edited, so a changed import
     // binding leaves a tidy, conventionally-ordered block.
@@ -67,16 +69,14 @@ export const refineRename: typeof declared.refineRename = async (opts) => {
     return {from, to, touched: touched.map((sf) => sf.getFilePath())}
 }
 
-// Collision sites for the new name, keyed by target shape: a namespace member
-// collides project-wide, a type member within its container, and a top-level
-// name against same-named declarations in the files the rename would touch.
-function renameCollisions(project: Project, resolved: ResolvedTarget, toName: string, targetFiles: Set<SourceFile>): SourceFile[] {
-    if (resolved.kind === "namespace-member") {
-        return findNamespaceMembers(project, resolved.namespace!, toName, null).map((n) => n.getSourceFile())
-    }
-    if (resolved.kind === "type-member") {
-        const container = resolved.container!
-        return memberNameNode(container, toName) ? [container.getSourceFile()] : []
+// Collision sites for the new name. A member rename (dotted `from`) collides
+// when the new member spec already resolves in its container (project-wide,
+// covering merged namespaces); a top-level rename collides with a same-named
+// top-level binding in any file the rename would touch.
+function renameCollisions(project: Project, fromPath: string[], toName: string, targetFiles: Set<SourceFile>): SourceFile[] {
+    if (fromPath.length > 0) {
+        const toSpec = [...fromPath, toName].join(".")
+        return resolveInProjectAnchors(project, toSpec, null).map((node) => node.getSourceFile())
     }
     return [...targetFiles].filter((sf) => fileDeclaresTopLevel(sf, toName))
 }

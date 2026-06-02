@@ -5,7 +5,7 @@ import path from "node:path"
 import {before, describe, it} from "node:test"
 import type {Project} from "ts-morph"
 import {initTestProject} from "../test-utils/init-test-project.ts"
-import {resolveTarget, resolveTargetNode} from "./resolve-target.ts"
+import {resolveInProjectAnchors} from "./resolve-target.ts"
 import {inProjectSourceFileOrThrow, inProjectSourceFiles} from "./source-files.ts"
 
 // External-library exclusion only has anything to exclude when the project
@@ -42,14 +42,15 @@ describe("resolve-target external-library exclusion", () => {
         assert.ok(!inProjectSourceFiles(project).includes(added))
     })
 
-    it("does not resolve a name that only an external dependency exports", () => {
+    it("yields no in-project anchor for a name only an external dependency exports", () => {
         // `SourceFile` is exported by ts-morph's .d.ts (now in the program) but by
-        // no in-project file — so the lookup must refuse, not reach into node_modules.
-        assert.throws(() => resolveTargetNode(project, "SourceFile", null), /no exported identifier/)
+        // no in-project file — so the in-project resolver finds nothing rather than
+        // reaching into node_modules.
+        assert.deepEqual(resolveInProjectAnchors(project, "SourceFile", null), [])
     })
 
     it("rejects a file scope that points at an external-library file", () => {
-        assert.throws(() => resolveTarget(project, "SourceFile", dts), /not in the project/)
+        assert.throws(() => resolveInProjectAnchors(project, "SourceFile", dts), /not in the project/)
         assert.throws(() => inProjectSourceFileOrThrow(project, dts), /not in the project/)
     })
 

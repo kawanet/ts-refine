@@ -11,7 +11,7 @@ import {Node, type Project} from "ts-morph"
 import type * as declared from "ts-refine"
 import type {TSR} from "ts-refine"
 import {resolveProject} from "../common/init-project.ts"
-import {resolveReferenceTarget} from "../lib/resolve-target.ts"
+import {resolveImportedAnchors, resolveInProjectAnchors} from "../lib/resolve-target.ts"
 import {displayPath, selectSourceFiles} from "../lib/source-files.ts"
 
 export const refineList: typeof declared.refineList = async (opts) => {
@@ -76,16 +76,22 @@ function keepEntry(e: TSR.ListEntry, f: TSR.ListFilters): boolean {
     return true
 }
 
-// Display paths of every file that references `spec`. The anchor is the
-// in-project declaration, or — for a name the project only imports — the
-// dependency symbol it resolves to (whose declaration may live in a `.d.ts`).
-// Either way findReferences yields this project's uses; out-of-project files in
-// the set are dropped by the caller, which only lists in-project entries.
+// Display paths of every file that references `spec`. In-project matches win
+// (a name the project declares); only when there are none does it fall back to
+// what the project imports. Same-origin matches are OR-unioned, so a name with
+// several declarations lists every file that uses any of them. Out-of-project
+// anchors (a dependency `.d.ts`) drop out — the caller lists in-project entries.
 function referencedFiles(project: Project, spec: string): Set<string> {
-    const node = resolveReferenceTarget(project, spec)
-    const files = new Set<string>([displayPath(node.getSourceFile().getFilePath())])
-    for (const ref of node.findReferencesAsNodes()) {
-        files.add(displayPath(ref.getSourceFile().getFilePath()))
+    let anchors = resolveInProjectAnchors(project, spec, null)
+    if (anchors.length === 0) anchors = resolveImportedAnchors(project, spec)
+    if (anchors.length === 0) throw new Error(`refine: no exported or imported identifier named: ${spec}`)
+
+    const files = new Set<string>()
+    for (const node of anchors) {
+        files.add(displayPath(node.getSourceFile().getFilePath()))
+        for (const ref of node.findReferencesAsNodes()) {
+            files.add(displayPath(ref.getSourceFile().getFilePath()))
+        }
     }
     return files
 }
