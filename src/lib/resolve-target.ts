@@ -92,7 +92,8 @@ export function resolveReferenceTarget(project: Project, spec: string): Identifi
     if (!binding) throw new Error(`refine: no exported or imported identifier named: ${segments[0]}`)
     if (segments.length === 1) return binding
 
-    let symbol = binding.getSymbol()?.getAliasedSymbol() ?? binding.getSymbol()
+    const bindingSymbol = binding.getSymbol()
+    let symbol = bindingSymbol?.getAliasedSymbol() ?? bindingSymbol
     for (let i = 1; i < segments.length; i++) {
         const member = symbol?.getExport(segments[i]) ?? symbol?.getMember(segments[i])
         if (!member) throw new Error(`refine: ${segments.slice(0, i).join(".")} has no member named: ${segments[i]}`)
