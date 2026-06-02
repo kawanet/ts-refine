@@ -78,7 +78,7 @@ test: all $(TYPES)
 		*) $(MAKE) test-full ;; \
 	esac
 
-test-full: smoke
+test-full: smoke $(CLI_DST)
 	cd .. && ./node_modules/.bin/tsc --noEmit
 	cd .. && node --test 'src/**/*.test.ts'
 	cd .. && node dist/ts-refine.cli.mjs format --check
