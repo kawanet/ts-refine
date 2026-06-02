@@ -67,17 +67,29 @@ export function resolveTargetNode(project: Project, spec: string, file: string |
     return resolveTarget(project, spec, file).node
 }
 
-// `list --ref` anchor: resolves the same dotted forms as rename, but symbol-
-// based — so a symbol the project only imports from a dependency, and its
-// members, are searchable too (e.g. `Project.getSourceFiles`). Read-only;
-// rename keeps the strict resolver so it can never reach into a dependency.
+// `list --ref` anchor: the node a reference search starts from. An in-project
+// name resolves through the very same resolver rename uses (resolveTarget —
+// same dotted forms, same ambiguity errors). Only a name the project merely
+// imports falls back to the dependency symbol it aliases (and its members), so
+// `--ref` reaches dependency symbols too. Read-only; rename never takes the
+// fallback, so it can never reach into a dependency.
 export function resolveReferenceTarget(project: Project, spec: string): Identifier {
     const segments = spec.split(".")
     for (const seg of segments) {
         if (!IDENT.test(seg)) throw new Error(`refine: not a valid identifier: ${seg}`)
     }
 
-    let symbol = rootSymbol(project, segments[0])
+    // Shared in-project path: identical resolution (and errors) to rename.
+    if (isInProjectRoot(project, segments[0])) {
+        return resolveTarget(project, spec, null).node
+    }
+
+    // Fallback (list-only): the root is only imported. Resolve the dependency
+    // symbol it aliases and walk dotted members via the checker. The anchor may
+    // be a declaration in a dependency .d.ts — its references still include this
+    // project's uses (which is what the listing keeps).
+    let symbol = firstImportBinding(project, segments[0])?.getSymbol()
+    symbol = symbol?.getAliasedSymbol() ?? symbol
     if (!symbol) throw new Error(`refine: no exported or imported identifier named: ${segments[0]}`)
     for (let i = 1; i < segments.length; i++) {
         const member = symbol.getExport(segments[i]) ?? symbol.getMember(segments[i])
@@ -90,19 +102,11 @@ export function resolveReferenceTarget(project: Project, spec: string): Identifi
     return node
 }
 
-// The symbol the root name resolves to as the project sees it: an in-project
-// export or namespace, else the declaration an in-project import binding points
-// at (following the alias into the dependency). Undefined when it is neither.
-function rootSymbol(project: Project, name: string): TsSymbol | undefined {
-    for (const sf of inProjectSourceFiles(project)) {
-        const decls = sf.getExportedDeclarations().get(name)
-        if (decls && decls.length > 0) return decls[0].getSymbol()
-        for (const mod of sf.getModules()) {
-            if (mod.getName() === name) return mod.getSymbol()
-        }
-    }
-    const sym = firstImportBinding(project, name)?.getSymbol()
-    return sym?.getAliasedSymbol() ?? sym
+// Whether the project itself declares `name` — an exported member or a
+// namespace — so a `--ref` spec rooted there resolves in-project (shared with
+// rename) instead of falling back to a same-named imported symbol.
+function isInProjectRoot(project: Project, name: string): boolean {
+    return inProjectSourceFiles(project).some((sf) => sf.getExportedDeclarations().has(name) || sf.getModules().some((m) => m.getName() === name))
 }
 
 // The name Identifier of the symbol's first declaration that carries one — the

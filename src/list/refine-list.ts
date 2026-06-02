@@ -76,10 +76,11 @@ function keepEntry(e: TSR.ListEntry, f: TSR.ListFilters): boolean {
     return true
 }
 
-// Display paths of every file that references `spec` — the anchor's file plus
-// each file with an import binding or usage of it. The anchor is an in-project
-// declaration, or (for a name the project only imports) its import binding, so
-// `--ref` also covers symbols pulled from dependencies.
+// Display paths of every file that references `spec`. The anchor is the
+// in-project declaration, or — for a name the project only imports — the
+// dependency symbol it resolves to (whose declaration may live in a `.d.ts`).
+// Either way findReferences yields this project's uses; out-of-project files in
+// the set are dropped by the caller, which only lists in-project entries.
 function referencedFiles(project: Project, spec: string): Set<string> {
     const node = resolveReferenceTarget(project, spec)
     const files = new Set<string>([displayPath(node.getSourceFile().getFilePath())])

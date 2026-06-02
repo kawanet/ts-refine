@@ -191,6 +191,15 @@ describe("refineList --ref", () => {
         await assert.rejects(refineList({project, log, paths: [], filters: {ref: "nope"}}), /no exported or imported identifier/)
     })
 
+    it("throws on an ambiguous in-project name instead of silently picking one", async () => {
+        // Shared in-project path with rename: a name exported from two files is
+        // an ambiguity error, not a non-deterministic first match.
+        const project = initInMemoryTestProject(BUNDLER)
+        project.createSourceFile("/a.ts", "export const dup = 1\n")
+        project.createSourceFile("/b.ts", "export const dup = 2\n")
+        await assert.rejects(refineList({project, log, paths: [], filters: {ref: "dup"}}), /exported from multiple places/)
+    })
+
     it("falls back to an import binding for a symbol the project only imports (e.g. a dependency type)", async () => {
         // `Widget` is not exported by any in-project file — it comes from an
         // ambient (dependency-like) module. `--ref` should still find every
