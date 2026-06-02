@@ -5,9 +5,9 @@
 
 import type {TSR} from "ts-refine"
 import {logging} from "../lib/logging.ts"
-import {displayPath, selectSourceFiles} from "../lib/source-files.ts"
+import {displayPath} from "../lib/source-files.ts"
 import {isSemiEligibleStatement, isTypeMember} from "./statement-kinds.ts"
-import type {ReportOpts} from "./types.ts"
+import type {ReportRunOpts} from "./types.ts"
 
 // Fixed 7-row layout: 0% / 100% / exact-50% match by equality, "1-10%" and
 // "90-99%" are the near-boundary tails, and the two middle buckets fill the
@@ -15,9 +15,7 @@ import type {ReportOpts} from "./types.ts"
 // too sparse to be useful — every middle bucket was empty for typical files.
 const BUCKET_LABELS = ["0%", "1-10%", "11-49%", "50%", "51-89%", "90-99%", "100%"] as const
 
-export async function runReportSemicolons({project, output, paths, log}: ReportOpts): Promise<Partial<TSR.SemicolonsOpts>> {
-    const sourceFiles = selectSourceFiles(project, {paths})
-
+export async function runReportSemicolons({sourceFiles, output, log}: ReportRunOpts): Promise<Partial<TSR.SemicolonsOpts>> {
     type PerFile = {path: string; total: number; withSemi: number}
     const perFile: PerFile[] = []
 

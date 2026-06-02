@@ -1,6 +1,7 @@
 import {strict as assert} from "node:assert"
 import path from "node:path"
 import {describe, it} from "node:test"
+import {selectSourceFiles} from "../lib/source-files.ts"
 import {initInMemoryTestProject, initTestProject} from "../test-utils/init-test-project.ts"
 import {runReportNewLine} from "./new-line.ts"
 
@@ -12,7 +13,7 @@ describe("runReportNewLine (sample/newlines-mixed)", () => {
     it("buckets files by primary terminator and returns the majority", async () => {
         const project = initTestProject(SAMPLE_TSCONFIG)
         const lines: string[] = []
-        const ret = await runReportNewLine({project, log, output: {write: (l) => lines.push(l)}, paths: []})
+        const ret = await runReportNewLine({sourceFiles: selectSourceFiles(project, {paths: []}), log, output: {write: (l) => lines.push(l)}})
 
         const out = lines.join("")
         assert.match(out, /^### new-line\n/)
@@ -30,7 +31,7 @@ describe("runReportNewLine (sample/newlines-mixed)", () => {
         const project = initInMemoryTestProject()
         project.createSourceFile("x.ts", "const a = 1\r\nconst b = 2\r\n")
         const lines: string[] = []
-        const ret = await runReportNewLine({project, log, output: {write: (l) => lines.push(l)}, paths: []})
+        const ret = await runReportNewLine({sourceFiles: selectSourceFiles(project, {paths: []}), log, output: {write: (l) => lines.push(l)}})
         const out = lines.join("")
         assert.match(out, /\| `\\r\\n` \| 2 \| 1 \| /)
         assert.equal(/`\\n`/.test(out), false)
@@ -46,7 +47,7 @@ describe("runReportNewLine (sample/newlines-mixed)", () => {
         project.createSourceFile("lf.ts", "a\nb\nc\nd\ne\n")
         project.createSourceFile("crlf.ts", "x\r\n")
         const lines: string[] = []
-        const ret = await runReportNewLine({project, log, output: {write: (l) => lines.push(l)}, paths: []})
+        const ret = await runReportNewLine({sourceFiles: selectSourceFiles(project, {paths: []}), log, output: {write: (l) => lines.push(l)}})
         assert.deepEqual(ret, {newLine: "lf"})
     })
 
@@ -55,7 +56,7 @@ describe("runReportNewLine (sample/newlines-mixed)", () => {
         project.createSourceFile("lf.ts", "const a = 1\n")
         project.createSourceFile("crlf.ts", "const b = 1\r\n")
         const lines: string[] = []
-        const ret = await runReportNewLine({project, log, output: {write: (l) => lines.push(l)}, paths: []})
+        const ret = await runReportNewLine({sourceFiles: selectSourceFiles(project, {paths: []}), log, output: {write: (l) => lines.push(l)}})
         assert.deepEqual(ret, {})
         assert.match(lines.join(""), /\| total \| 2 \| 2 \| \|/)
     })

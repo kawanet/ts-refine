@@ -9,16 +9,14 @@
 
 import type {TSR} from "ts-refine"
 import {logging} from "../lib/logging.ts"
-import {displayPath, selectSourceFiles} from "../lib/source-files.ts"
+import {displayPath} from "../lib/source-files.ts"
 import {pickRecommendByFiles} from "../recommend/pick-recommend.ts"
 import {detectIndent, type IndentCounts, type IndentWidth, primaryIndentWidth} from "./detect-indent.ts"
-import type {ReportOpts} from "./types.ts"
+import type {ReportRunOpts} from "./types.ts"
 
 type Bucket = {lines: number; files: number; topPath: string; topLines: number}
 
-export async function runReportIndent({project, output, paths, log}: ReportOpts): Promise<Partial<TSR.IndentOpts>> {
-    const sourceFiles = selectSourceFiles(project, {paths})
-
+export async function runReportIndent({sourceFiles, output, log}: ReportRunOpts): Promise<Partial<TSR.IndentOpts>> {
     // Per-file: detect leading-width distribution, then collapse to one
     // "primary" width (the line-count mode). Files with no leading
     // whitespace at all are excluded.

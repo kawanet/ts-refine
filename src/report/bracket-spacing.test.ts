@@ -1,6 +1,7 @@
 import {strict as assert} from "node:assert"
 import path from "node:path"
 import {describe, it} from "node:test"
+import {selectSourceFiles} from "../lib/source-files.ts"
 import {initInMemoryTestProject, initTestProject} from "../test-utils/init-test-project.ts"
 import {runReportBracketSpacing} from "./bracket-spacing.ts"
 
@@ -12,7 +13,7 @@ describe("runReportBracketSpacing (sample/braces-mixed)", () => {
     it("buckets files by primary spacing style and returns the majority", async () => {
         const project = initTestProject(SAMPLE_TSCONFIG)
         const lines: string[] = []
-        const ret = await runReportBracketSpacing({project, log, output: {write: (l) => lines.push(l)}, paths: []})
+        const ret = await runReportBracketSpacing({sourceFiles: selectSourceFiles(project, {paths: []}), log, output: {write: (l) => lines.push(l)}})
 
         const out = lines.join("")
         assert.match(out, /^### bracket-spacing\n/)
@@ -32,7 +33,7 @@ describe("runReportBracketSpacing (sample/braces-mixed)", () => {
         const project = initInMemoryTestProject()
         project.createSourceFile("x.ts", ["export const a = {}", "export const b = { }", "export const c = {", "    p: 1,", "}"].join("\n"))
         const lines: string[] = []
-        const ret = await runReportBracketSpacing({project, log, output: {write: (l) => lines.push(l)}, paths: []})
+        const ret = await runReportBracketSpacing({sourceFiles: selectSourceFiles(project, {paths: []}), log, output: {write: (l) => lines.push(l)}})
         const out = lines.join("")
 
         // None of the three forms speak to the bracketSpacing convention,
@@ -54,7 +55,7 @@ describe("runReportBracketSpacing (sample/braces-mixed)", () => {
         project.createSourceFile("cr.ts", "export const a = {\r    p: 1,\r}\r")
         project.createSourceFile("crlf.ts", "export const b = {\r\n    p: 1,\r\n}\r\n")
         const lines: string[] = []
-        const ret = await runReportBracketSpacing({project, log, output: {write: (l) => lines.push(l)}, paths: []})
+        const ret = await runReportBracketSpacing({sourceFiles: selectSourceFiles(project, {paths: []}), log, output: {write: (l) => lines.push(l)}})
         assert.match(lines.join(""), /\| total \| 0 \| 0 \| \|/)
         assert.deepEqual(ret, {})
     })
@@ -66,7 +67,7 @@ describe("runReportBracketSpacing (sample/braces-mixed)", () => {
         project.createSourceFile("tight.ts", "export const a = {x: 1}\n")
         project.createSourceFile("spaced.ts", "export const a = { x: 1 }\nexport const b = { y: 2 }\nexport const c = { z: 3 }\n")
         const lines: string[] = []
-        const ret = await runReportBracketSpacing({project, log, output: {write: (l) => lines.push(l)}, paths: []})
+        const ret = await runReportBracketSpacing({sourceFiles: selectSourceFiles(project, {paths: []}), log, output: {write: (l) => lines.push(l)}})
         assert.deepEqual(ret, {bracketSpacing: "on"})
         assert.match(lines.join(""), /\| total \| 4 \| 2 \| \|/)
     })
@@ -76,7 +77,7 @@ describe("runReportBracketSpacing (sample/braces-mixed)", () => {
         project.createSourceFile("tight.ts", "export const a = {x: 1}\n")
         project.createSourceFile("spaced.ts", "export const a = { x: 1 }\n")
         const lines: string[] = []
-        const ret = await runReportBracketSpacing({project, log, output: {write: (l) => lines.push(l)}, paths: []})
+        const ret = await runReportBracketSpacing({sourceFiles: selectSourceFiles(project, {paths: []}), log, output: {write: (l) => lines.push(l)}})
         assert.deepEqual(ret, {})
     })
 
@@ -84,7 +85,7 @@ describe("runReportBracketSpacing (sample/braces-mixed)", () => {
         const project = initInMemoryTestProject()
         project.createSourceFile("d.ts", "export const f = ({ a, b }: {a: 1; b: 2}) => a + b\n")
         const lines: string[] = []
-        const ret = await runReportBracketSpacing({project, log, output: {write: (l) => lines.push(l)}, paths: []})
+        const ret = await runReportBracketSpacing({sourceFiles: selectSourceFiles(project, {paths: []}), log, output: {write: (l) => lines.push(l)}})
 
         // Only the binding pattern (`{ a, b }`) is counted; the type literal
         // `{a: 1; b: 2}` is a TypeLiteralNode and out of scope.
@@ -101,7 +102,7 @@ describe("runReportBracketSpacing (sample/braces-mixed)", () => {
         project.createSourceFile("tight.ts", ['import {a} from "./x.ts"', 'export {b} from "./y.ts"', ""].join("\n"))
         project.createSourceFile("spaced.ts", ['import { a } from "./x.ts"', 'export { b } from "./y.ts"', ""].join("\n"))
         const lines: string[] = []
-        const ret = await runReportBracketSpacing({project, log, output: {write: (l) => lines.push(l)}, paths: []})
+        const ret = await runReportBracketSpacing({sourceFiles: selectSourceFiles(project, {paths: []}), log, output: {write: (l) => lines.push(l)}})
         const out = lines.join("")
         assert.match(out, /\| `\{ x \}` \| 2 \| 1 \| /)
         assert.match(out, /\| `\{x\}` \| 2 \| 1 \| /)

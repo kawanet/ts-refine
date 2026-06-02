@@ -10,12 +10,13 @@ import type * as declared from "ts-refine"
 import type {TSR} from "ts-refine"
 import {resolveProject} from "../common/init-project.ts"
 import {reportNames} from "../common/report-names.ts"
+import {selectSourceFiles} from "../lib/source-files.ts"
 import {runReportBracketSpacing} from "./bracket-spacing.ts"
 import {runReportIndent} from "./indent.ts"
 import {runReportMemberSeparators} from "./member-separators.ts"
 import {runReportNewLine} from "./new-line.ts"
 import {runReportSemicolons} from "./semicolons.ts"
-import type {ReportOpts} from "./types.ts"
+import type {ReportRunOpts} from "./types.ts"
 
 export const refineReport: typeof declared.refineReport = async (opts) => {
     const {output, reportNames: requested, paths, log} = opts
@@ -29,8 +30,12 @@ export const refineReport: typeof declared.refineReport = async (opts) => {
         }
     }
 
+    // Select the in-project files once and share them across the reports, so
+    // the project scan runs a single time instead of per report.
+    const sourceFiles = selectSourceFiles(project, {paths})
+
     const report: TSR.ReportResult = {}
-    const reportOpts: ReportOpts = {project, output, paths, log}
+    const reportOpts: ReportRunOpts = {sourceFiles, output, log}
 
     if (requested.includes("semicolons")) {
         report.semicolons = await runReportSemicolons(reportOpts)

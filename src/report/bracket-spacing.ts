@@ -6,9 +6,9 @@
 import {Node} from "ts-morph"
 import type {TSR} from "ts-refine"
 import {logging} from "../lib/logging.ts"
-import {displayPath, selectSourceFiles} from "../lib/source-files.ts"
+import {displayPath} from "../lib/source-files.ts"
 import {pickRecommendByFiles} from "../recommend/pick-recommend.ts"
-import type {ReportOpts} from "./types.ts"
+import type {ReportRunOpts} from "./types.ts"
 
 type Style = "on" | "off"
 
@@ -21,9 +21,7 @@ const STYLE_LABEL: Record<Style, string> = {
 
 type Bucket = {lines: number; files: number; topPath: string; topLines: number}
 
-export async function runReportBracketSpacing({project, output, paths, log}: ReportOpts): Promise<Partial<TSR.BracketSpacingOpts>> {
-    const sourceFiles = selectSourceFiles(project, {paths})
-
+export async function runReportBracketSpacing({sourceFiles, output, log}: ReportRunOpts): Promise<Partial<TSR.BracketSpacingOpts>> {
     type PerFile = {path: string; counts: Map<Style, number>; primary: Style}
     const perFile: PerFile[] = []
 
