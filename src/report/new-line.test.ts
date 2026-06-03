@@ -21,7 +21,7 @@ describe("runReportNewLine (sample/newlines-mixed)", () => {
         // Two LF files + one CRLF file + one empty (skipped).
         assert.match(out, /\| `\\n` \| 6 \| 2 \| /)
         assert.match(out, /\| `\\r\\n` \| 3 \| 1 \| /)
-        assert.match(out, /\| total \| 9 \| 3 \| \|/)
+        assert.match(out, /\| total \| 9 \| 3 \| *\|/)
 
         // Recommendation comes back as action params; LF wins on file count.
         assert.deepEqual(ret, {newLine: "lf"})
@@ -58,6 +58,6 @@ describe("runReportNewLine (sample/newlines-mixed)", () => {
         const lines: string[] = []
         const ret = await runReportNewLine({sourceFiles: selectSourceFiles(project, {paths: []}), log, output: {write: (l) => lines.push(l)}})
         assert.deepEqual(ret, {})
-        assert.match(lines.join(""), /\| total \| 2 \| 2 \| \|/)
+        assert.match(lines.join(""), /\| total \| 2 \| 2 \| *\|/)
     })
 })

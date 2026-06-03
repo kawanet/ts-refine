@@ -32,7 +32,7 @@ describe("runReportIndent (sample/indents-mixed)", () => {
         // start so the "8" inside the 4-bucket's lines column does not
         // accidentally satisfy this check.
         assert.equal(/^\| 8 \|/m.test(out), false)
-        assert.match(out, /\| total \| 17 \| 4 \| \|/)
+        assert.match(out, /\| total \| 17 \| 4 \| *\|/)
 
         // Recommendation is no longer inlined in the Markdown.
         assert.equal(/^recommendation:/m.test(out), false)
@@ -53,7 +53,7 @@ describe("runReportIndent (sample/indents-mixed)", () => {
         assert.deepEqual(ret, {width: 4})
 
         // No tab-indented file, but the tab row is still emitted at 0.
-        assert.match(lines.join(""), /\| tab \| 0 \| 0 \|\|/)
+        assert.match(lines.join(""), /\| tab \| 0 \| 0 \| *\|/)
     })
 
     it("returns an empty partial when files AND transition counts tie", async () => {

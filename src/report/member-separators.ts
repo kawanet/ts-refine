@@ -14,7 +14,7 @@ import {Node} from "ts-morph"
 import type {TSR} from "ts-refine"
 import {logging} from "../common/logging.ts"
 import {displayPath} from "../lib/source-files.ts"
-import {pickRecommendByFiles} from "../recommend/pick-recommend.ts"
+import {pickRecommendByFiles} from "./pick-recommend.ts"
 import type {ReportRunOpts} from "./types.ts"
 
 type Separator = "none" | "," | ";"
@@ -94,10 +94,10 @@ export async function runReportMemberSeparators({sourceFiles, output, log}: Repo
             if (b) {
                 output.write(`| ${SEP_LABEL[s]} | ${b.lines} | ${b.files} | ${b.topPath} |\n`)
             } else if (s !== ",") {
-                output.write(`| ${SEP_LABEL[s]} | 0 | 0 ||\n`)
+                output.write(`| ${SEP_LABEL[s]} | 0 | 0 |  |\n`)
             }
         }
-        output.write(`| total | ${totalLines} | ${perFile.length} | |\n`)
+        output.write(`| total | ${totalLines} | ${perFile.length} |  |\n`)
         output.write("\n")
     }
     logging(log, `report member-separators: ${perFile.length} files counted / ${sourceFiles.length} files total`)

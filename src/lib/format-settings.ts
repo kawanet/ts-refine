@@ -7,8 +7,8 @@ import type {TSR} from "ts-refine"
 // the apply entry from the report, not carried here. refineImports reuses the
 // formatSettings field for its organize pass and ignores newLineNormalize.
 interface FormatSettings {
-    formatSettings: FormatCodeSettings
-    newLineNormalize: "\n" | "\r\n" | undefined
+    settings: FormatCodeSettings
+    newLine: "\n" | "\r\n" | undefined
 }
 
 // A run's `format` is one style for everyone, or a per-file resolver. Returns a
@@ -27,40 +27,40 @@ type MutableFormatSettings = {-readonly [K in keyof FormatCodeSettings]: FormatC
 
 // FormatStyle → the settings refineFormat hands to ts-morph.
 export function formatStyleToSettings(options: TSR.FormatStyle): FormatSettings {
-    const formatSettings: MutableFormatSettings = {}
+    const settings: MutableFormatSettings = {}
 
     // "tab" turns convertTabsToSpaces off (LS then indents with tabs);
     // a number pins space indentation at that width.
     if (options.indent === "tab") {
-        formatSettings.convertTabsToSpaces = false
+        settings.convertTabsToSpaces = false
     } else if (typeof options.indent === "number") {
-        formatSettings.indentSize = options.indent
-        formatSettings.tabSize = options.indent
-        formatSettings.convertTabsToSpaces = true
+        settings.indentSize = options.indent
+        settings.tabSize = options.indent
+        settings.convertTabsToSpaces = true
     }
 
     if (options.semicolons === "on") {
-        formatSettings.semicolons = ts.SemicolonPreference.Insert
+        settings.semicolons = ts.SemicolonPreference.Insert
     } else if (options.semicolons === "off") {
-        formatSettings.semicolons = ts.SemicolonPreference.Remove
+        settings.semicolons = ts.SemicolonPreference.Remove
     }
 
     if (options.bracketSpacing === "on") {
-        formatSettings.insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces = true
+        settings.insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces = true
     } else if (options.bracketSpacing === "off") {
-        formatSettings.insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces = false
+        settings.insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces = false
     }
 
-    let newLineNormalize: "\n" | "\r\n" | undefined
+    let newLine: "\n" | "\r\n" | undefined
     if (options.newLine === "lf") {
-        formatSettings.newLineCharacter = "\n"
-        newLineNormalize = "\n"
+        settings.newLineCharacter = "\n"
+        newLine = "\n"
     } else if (options.newLine === "crlf") {
-        formatSettings.newLineCharacter = "\r\n"
-        newLineNormalize = "\r\n"
+        settings.newLineCharacter = "\r\n"
+        newLine = "\r\n"
     }
 
-    return {formatSettings, newLineNormalize}
+    return {settings, newLine}
 }
 
 // Normalizes pre-existing terminators that the LS won't touch.

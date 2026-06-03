@@ -5,7 +5,7 @@
 import type {TSR} from "ts-refine"
 import {logging} from "../common/logging.ts"
 import {displayPath} from "../lib/source-files.ts"
-import {pickRecommendByFiles} from "../recommend/pick-recommend.ts"
+import {pickRecommendByFiles} from "./pick-recommend.ts"
 import type {ReportRunOpts} from "./types.ts"
 
 type NewLine = "lf" | "crlf" | "cr"

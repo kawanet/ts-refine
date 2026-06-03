@@ -11,9 +11,9 @@ import {Node, type Project, type SourceFile} from "ts-morph"
 import type * as declared from "ts-refine"
 import {resolveProject} from "../common/init-project.ts"
 import {logging} from "../common/logging.ts"
+import {organizeChangedImports, resolveFormatByFile} from "../lib/organize-changed.ts"
 import {parseTarget, resolveInProjectAnchors} from "../lib/resolve-target.ts"
 import {displayPath} from "../lib/source-files.ts"
-import {organizeChangedImports, resolveFormatByFile} from "../recommend/organize-changed.ts"
 
 export const refineRename: typeof declared.refineRename = async (opts) => {
     const {from, to, file, dryRun, format, log} = opts

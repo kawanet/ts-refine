@@ -20,8 +20,8 @@ import {type ExportDeclaration, type ImportDeclaration, Node, type Project, type
 import type * as declared from "ts-refine"
 import {resolveProject} from "../common/init-project.ts"
 import {logging} from "../common/logging.ts"
+import {organizeChangedImports, resolveFormatByFile} from "../lib/organize-changed.ts"
 import {displayPath, inProjectSourceFiles} from "../lib/source-files.ts"
-import {organizeChangedImports, resolveFormatByFile} from "../recommend/organize-changed.ts"
 
 // One captured module specifier whose target is moving. Held by AST node
 // reference so it stays valid across sf.move() and can be patched in place.

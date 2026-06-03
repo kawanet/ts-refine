@@ -7,8 +7,8 @@ import fs from "node:fs/promises"
 import type * as declared from "ts-refine"
 import {resolveProject} from "../common/init-project.ts"
 import {logging} from "../common/logging.ts"
+import {normalizeNewLines, perFileSettings} from "../lib/format-settings.ts"
 import {selectSourceFiles} from "../lib/source-files.ts"
-import {normalizeNewLines, perFileSettings} from "../recommend/format-settings.ts"
 
 export const refineFormat: typeof declared.refineFormat = async (opts) => {
     const {dryRun, paths, format, log} = opts
@@ -33,16 +33,16 @@ export const refineFormat: typeof declared.refineFormat = async (opts) => {
         // Resolve this file's settings (per-file under a resolver; the shared
         // precomputed value otherwise). format does not repath files, so the
         // current path is enough.
-        const {formatSettings, newLineNormalize} = await resolveSettings(filePath)
+        const {settings, newLine} = await resolveSettings(filePath)
 
-        sf.formatText(formatSettings)
+        sf.formatText(settings)
 
         // LS `newLineCharacter` only governs inserted text; existing
         // terminators are normalized here. Push the result back into the
         // SourceFile so in-memory state matches what gets written.
         let after = sf.getFullText()
-        if (newLineNormalize !== undefined) {
-            const normalized = normalizeNewLines(after, newLineNormalize)
+        if (newLine !== undefined) {
+            const normalized = normalizeNewLines(after, newLine)
             if (normalized !== after) {
                 sf.replaceWithText(normalized)
                 after = normalized

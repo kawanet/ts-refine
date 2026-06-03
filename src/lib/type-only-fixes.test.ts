@@ -8,9 +8,9 @@ import {strict as assert} from "node:assert"
 import path from "node:path"
 import {describe, it} from "node:test"
 import {Project} from "ts-morph"
-import {applyTypeOnlyFixes} from "../lib/type-only-fixes.ts"
+import {refineImports} from "../imports/refine-imports.ts"
 import {initTestProject} from "../test-utils/init-test-project.ts"
-import {refineImports} from "./refine-imports.ts"
+import {applyTypeOnlyFixes} from "./type-only-fixes.ts"
 
 const SAMPLE = path.resolve(import.meta.dirname, "../../sample")
 const VERBATIM_TSCONFIG = path.join(SAMPLE, "type-only-mixed/tsconfig.json")

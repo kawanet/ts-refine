@@ -24,7 +24,7 @@ describe("runReportBracketSpacing (sample/braces-mixed)", () => {
         // no-object.ts: skipped
         assert.match(out, /\| `\{ x \}` \| 6 \| 2 \| /)
         assert.match(out, /\| `\{x\}` \| 4 \| 1 \| /)
-        assert.match(out, /\| total \| 10 \| 3 \| \|/)
+        assert.match(out, /\| total \| 10 \| 3 \| *\|/)
         assert.equal(/no-object\.ts/.test(out), false)
         assert.deepEqual(ret, {bracketSpacing: "on"})
     })
@@ -38,11 +38,11 @@ describe("runReportBracketSpacing (sample/braces-mixed)", () => {
 
         // None of the three forms speak to the bracketSpacing convention,
         // so the file should not appear in any bucket.
-        assert.match(out, /\| total \| 0 \| 0 \| \|/)
+        assert.match(out, /\| total \| 0 \| 0 \| *\|/)
 
         // Both styles still get a 0-row so the comparison stays visible.
-        assert.match(out, /\| `\{ x \}` \| 0 \| 0 \|\|/)
-        assert.match(out, /\| `\{x\}` \| 0 \| 0 \|\|/)
+        assert.match(out, /\| `\{ x \}` \| 0 \| 0 \| *\|/)
+        assert.match(out, /\| `\{x\}` \| 0 \| 0 \| *\|/)
         assert.deepEqual(ret, {})
     })
 
@@ -56,7 +56,7 @@ describe("runReportBracketSpacing (sample/braces-mixed)", () => {
         project.createSourceFile("crlf.ts", "export const b = {\r\n    p: 1,\r\n}\r\n")
         const lines: string[] = []
         const ret = await runReportBracketSpacing({sourceFiles: selectSourceFiles(project, {paths: []}), log, output: {write: (l) => lines.push(l)}})
-        assert.match(lines.join(""), /\| total \| 0 \| 0 \| \|/)
+        assert.match(lines.join(""), /\| total \| 0 \| 0 \| *\|/)
         assert.deepEqual(ret, {})
     })
 
@@ -69,7 +69,7 @@ describe("runReportBracketSpacing (sample/braces-mixed)", () => {
         const lines: string[] = []
         const ret = await runReportBracketSpacing({sourceFiles: selectSourceFiles(project, {paths: []}), log, output: {write: (l) => lines.push(l)}})
         assert.deepEqual(ret, {bracketSpacing: "on"})
-        assert.match(lines.join(""), /\| total \| 4 \| 2 \| \|/)
+        assert.match(lines.join(""), /\| total \| 4 \| 2 \| *\|/)
     })
 
     it("returns no recommendation when files AND nodes tie", async () => {
@@ -105,7 +105,7 @@ describe("runReportBracketSpacing (sample/braces-mixed)", () => {
         // Each file: import attributes + type literal + interface + enum = 4 nodes.
         assert.match(out, /\| `\{ x \}` \| 4 \| 1 \| /)
         assert.match(out, /\| `\{x\}` \| 4 \| 1 \| /)
-        assert.match(out, /\| total \| 8 \| 2 \| \|/)
+        assert.match(out, /\| total \| 8 \| 2 \| *\|/)
     })
 
     it("counts named bindings of import / export declarations", async () => {
@@ -121,7 +121,7 @@ describe("runReportBracketSpacing (sample/braces-mixed)", () => {
         const out = lines.join("")
         assert.match(out, /\| `\{ x \}` \| 2 \| 1 \| /)
         assert.match(out, /\| `\{x\}` \| 2 \| 1 \| /)
-        assert.match(out, /\| total \| 4 \| 2 \| \|/)
+        assert.match(out, /\| total \| 4 \| 2 \| *\|/)
         assert.deepEqual(ret, {})
     })
 
@@ -137,7 +137,7 @@ describe("runReportBracketSpacing (sample/braces-mixed)", () => {
         const out = lines.join("")
 
         assert.match(out, /\| `\{x\}` \| 1 \| 1 \| /)
-        assert.match(out, /\| total \| 1 \| 1 \| \|/)
+        assert.match(out, /\| total \| 1 \| 1 \| *\|/)
         assert.deepEqual(ret, {bracketSpacing: "off"})
     })
 })

@@ -10,8 +10,8 @@
 import type {TSR} from "ts-refine"
 import {logging} from "../common/logging.ts"
 import {displayPath} from "../lib/source-files.ts"
-import {pickRecommendByFiles} from "../recommend/pick-recommend.ts"
 import {detectIndent, type IndentCounts, type IndentWidth, primaryIndentWidth} from "./detect-indent.ts"
+import {pickRecommendByFiles} from "./pick-recommend.ts"
 import type {ReportRunOpts} from "./types.ts"
 
 type Bucket = {lines: number; files: number; topPath: string; topLines: number}
@@ -72,10 +72,10 @@ export async function runReportIndent({sourceFiles, output, log}: ReportRunOpts)
             if (b) {
                 output.write(`| ${w} | ${b.lines} | ${b.files} | ${b.topPath} |\n`)
             } else {
-                output.write(`| ${w} | 0 | 0 ||\n`)
+                output.write(`| ${w} | 0 | 0 |  |\n`)
             }
         }
-        output.write(`| total | ${totalLines} | ${perFile.length} | |\n`)
+        output.write(`| total | ${totalLines} | ${perFile.length} |  |\n`)
         output.write("\n")
     }
     logging(log, `report indent: ${perFile.length} files counted / ${sourceFiles.length} files total`)

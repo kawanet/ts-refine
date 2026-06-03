@@ -9,7 +9,7 @@ import {Node, SyntaxKind} from "ts-morph"
 import type {TSR} from "ts-refine"
 import {logging} from "../common/logging.ts"
 import {displayPath} from "../lib/source-files.ts"
-import {pickRecommendByFiles} from "../recommend/pick-recommend.ts"
+import {pickRecommendByFiles} from "./pick-recommend.ts"
 import type {ReportRunOpts} from "./types.ts"
 
 type Style = "on" | "off"
@@ -84,10 +84,10 @@ export async function runReportBracketSpacing({sourceFiles, output, log, imports
             if (b) {
                 output.write(`| ${STYLE_LABEL[k]} | ${b.lines} | ${b.files} | ${b.topPath} |\n`)
             } else {
-                output.write(`| ${STYLE_LABEL[k]} | 0 | 0 ||\n`)
+                output.write(`| ${STYLE_LABEL[k]} | 0 | 0 |  |\n`)
             }
         }
-        output.write(`| total | ${totalLines} | ${perFile.length} | |\n`)
+        output.write(`| total | ${totalLines} | ${perFile.length} |  |\n`)
         output.write("\n")
     }
     logging(log, `report bracket-spacing: ${perFile.length} files counted / ${sourceFiles.length} files total`)

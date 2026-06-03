@@ -7,9 +7,9 @@ import fs from "node:fs/promises"
 import type * as declared from "ts-refine"
 import {resolveProject} from "../common/init-project.ts"
 import {logging} from "../common/logging.ts"
+import {perFileSettings} from "../lib/format-settings.ts"
 import {applyOrganizeImports} from "../lib/organize-imports.ts"
 import {selectSourceFiles} from "../lib/source-files.ts"
-import {perFileSettings} from "../recommend/format-settings.ts"
 
 export const refineImports: typeof declared.refineImports = async (opts) => {
     const {dryRun, paths, format, log} = opts
@@ -32,8 +32,8 @@ export const refineImports: typeof declared.refineImports = async (opts) => {
         const filePath = sf.getFilePath()
         const before = sf.getFullText()
 
-        const {formatSettings} = await resolveSettings(filePath)
-        applyOrganizeImports(sf, formatSettings)
+        const {settings} = await resolveSettings(filePath)
+        applyOrganizeImports(sf, settings)
 
         const after = sf.getFullText()
         if (before === after) continue
