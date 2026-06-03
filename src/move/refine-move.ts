@@ -20,7 +20,8 @@ import {type ExportDeclaration, type ImportDeclaration, Node, type Project, type
 import type * as declared from "ts-refine"
 import {resolveProject} from "../common/init-project.ts"
 import {logging} from "../common/logging.ts"
-import {organizeChangedImports, resolveImportSettings} from "../lib/organize-changed.ts"
+import {surveyImportStyles} from "../lib/organize-changed.ts"
+import {applyOrganizeImports} from "../lib/organize-imports.ts"
 import {displayPath, inProjectSourceFiles} from "../lib/source-files.ts"
 
 // One captured module specifier whose target is moving. Held by AST node
@@ -59,12 +60,11 @@ export const refineMove: typeof declared.refineMove = async (opts) => {
     const movingPaths = new Set(plan.map((p) => p.from))
     const records = snapshotSpecifiers(project, movingPaths)
 
-    // Sample each changed file's organize style from its pre-move state: a
-    // moved file must be reported at its original path, before relocation
-    // repaths it. Keyed by SourceFile so the map stays valid across move().
-    const importChangedFiles = new Set<SourceFile>()
-    for (const r of records) importChangedFiles.add(r.node.getSourceFile())
-    const stylesByFile = await resolveImportSettings(importChangedFiles)
+    // Sample each import-changed file's organize style from its pre-move state
+    // (a moved file is surveyed at its original path, before relocation repaths
+    // it). Deduped; `styleOf` is keyed by SourceFile so it survives move().
+    const targetFiles = new Set(records.map((r) => r.node.getSourceFile()))
+    const styleOf = await surveyImportStyles(targetFiles)
 
     // Apply each move in turn. ts-morph keeps cross-file references in sync
     // — including the moved file's own outgoing relative paths.
@@ -88,11 +88,14 @@ export const refineMove: typeof declared.refineMove = async (opts) => {
     }
     for (const r of records) touchedFiles.add(r.node.getSourceFile())
 
-    // organizeImports re-sorts each import-changed file's import block (a
-    // relocation can reorder specifiers), using the style sampled above.
-    // Restricted to the files whose specifiers actually changed — files with
-    // no import change stay untouched.
-    organizeChangedImports(stylesByFile)
+    // Re-sort each import-changed file's import block (a relocation can reorder
+    // specifiers), using the style sampled above. `targetFiles` is exactly the
+    // surveyed set, so a moved file with no in-project import is never in it and
+    // stays untouched; the `style` guard is a safety net for an unsurveyed file.
+    for (const sf of targetFiles) {
+        const style = styleOf(sf)
+        if (style) applyOrganizeImports(sf, style)
+    }
 
     // Dry-run: print planned moves + the importers that would change;
     // never touch disk. Otherwise persist only what we changed — call

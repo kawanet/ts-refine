@@ -6,11 +6,11 @@ import {NULL_SINK} from "../common/logging.ts"
 import {applyReportNames} from "../common/report-names.ts"
 import {runReports} from "../report/refine-report.ts"
 
-// Survey the given files (whole-file, or import/export statements only when
-// importsOnly) and convert the recommended style to ts-morph settings. The
-// write commands call this per file so each keeps its own existing conventions.
-export const formatSettingsForFiles = async (sourceFiles: SourceFile[], importsOnly: boolean): Promise<FormatCodeSettings> => {
-    const report = await runReports({sourceFiles, importsOnly, log: NULL_SINK}, applyReportNames)
+// Survey a single file's import/export statements and convert the recommended
+// style to ts-morph settings. The write commands call this per file so each
+// keeps its own existing conventions.
+export const formatSettingsForFile = async (sf: SourceFile): Promise<FormatCodeSettings> => {
+    const report = await runReports({sourceFiles: [sf], importsOnly: true, log: NULL_SINK}, applyReportNames)
     const style = reportToFormatStyle(report)
     return formatStyleToSettings(style)
 }

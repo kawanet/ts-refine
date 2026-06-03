@@ -7,7 +7,7 @@ import fs from "node:fs/promises"
 import type * as declared from "ts-refine"
 import {resolveProject} from "../common/init-project.ts"
 import {logging} from "../common/logging.ts"
-import {formatSettingsForFiles} from "../lib/format-settings.ts"
+import {formatSettingsForFile} from "../lib/format-settings.ts"
 import {applyOrganizeImports} from "../lib/organize-imports.ts"
 import {selectSourceFiles} from "../lib/source-files.ts"
 
@@ -29,7 +29,7 @@ export const refineImports: typeof declared.refineImports = async (opts) => {
 
         // Survey this file alone (imports-only) so it organizes in its own
         // existing style and the project's formatting barely shifts.
-        const settings = await formatSettingsForFiles([sf], true)
+        const settings = await formatSettingsForFile(sf)
         applyOrganizeImports(sf, settings)
 
         const after = sf.getFullText()

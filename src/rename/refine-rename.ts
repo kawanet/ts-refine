@@ -11,7 +11,8 @@ import {Node, type Project, type SourceFile} from "ts-morph"
 import type * as declared from "ts-refine"
 import {resolveProject} from "../common/init-project.ts"
 import {logging} from "../common/logging.ts"
-import {organizeChangedImports, resolveImportSettings} from "../lib/organize-changed.ts"
+import {surveyImportStyles} from "../lib/organize-changed.ts"
+import {applyOrganizeImports} from "../lib/organize-imports.ts"
 import {parseTarget, resolveInProjectAnchors} from "../lib/resolve-target.ts"
 import {displayPath} from "../lib/source-files.ts"
 
@@ -50,15 +51,17 @@ export const refineRename: typeof declared.refineRename = async (opts) => {
     }
 
     // Sample each file's organize style before the rename edits anything, so it
-    // reflects the file's pristine state — mirrors move's pre-move sampling.
-    // Keyed by SourceFile; applied after the rename.
-    const stylesByFile = await resolveImportSettings(targetFiles)
+    // reflects the file's pristine state — mirrors move's pre-edit sampling.
+    const styleOf = await surveyImportStyles(targetFiles)
 
     node.rename(toT.name)
 
     // Re-sort imports in every file the rename edited, so a changed import
     // binding leaves a tidy, conventionally-ordered block.
-    organizeChangedImports(stylesByFile)
+    for (const sf of targetFiles) {
+        const style = styleOf(sf)
+        if (style) applyOrganizeImports(sf, style)
+    }
 
     const touched = [...targetFiles]
     if (!dryRun) for (const sf of touched) await sf.save()
