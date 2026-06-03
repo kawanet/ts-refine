@@ -2,7 +2,7 @@
 // verbatimModuleSyntax/isolatedModules. Under verbatim all three LS fixes run;
 // under isolatedModules alone only the export side converts; with neither flag
 // the whole bundle is skipped (getCombinedCodeFix would otherwise force a
-// per-file semantic pass for nothing).
+// per-file semantic pass for nothing). Organizing now lives in refineImports.
 
 import {strict as assert} from "node:assert"
 import path from "node:path"
@@ -10,7 +10,7 @@ import {describe, it} from "node:test"
 import {Project} from "ts-morph"
 import {applyTypeOnlyFixes} from "../lib/type-only-fixes.ts"
 import {initTestProject} from "../test-utils/init-test-project.ts"
-import {refineFormat} from "./refine-format.ts"
+import {refineImports} from "./refine-imports.ts"
 
 const SAMPLE = path.resolve(import.meta.dirname, "../../sample")
 const VERBATIM_TSCONFIG = path.join(SAMPLE, "type-only-mixed/tsconfig.json")
@@ -24,11 +24,11 @@ function read(project: Project, tsconfig: string, rel: string): string {
 
 const log = {write: () => {}}
 
-describe("applyTypeOnlyFixes via refineFormat (verbatimModuleSyntax on)", () => {
+describe("applyTypeOnlyFixes via refineImports (verbatimModuleSyntax on)", () => {
     it("fires all three fixes end-to-end without touching disk", async () => {
         const project = initTestProject(VERBATIM_TSCONFIG)
 
-        await refineFormat({project, log, dryRun: true, paths: [], format: {}})
+        await refineImports({project, log, dryRun: true, paths: [], format: {}})
 
         // convertToTypeOnlyImport: Shape gets an inline `type` marker.
         const consume = read(project, VERBATIM_TSCONFIG, "src/consume.ts")
@@ -49,11 +49,11 @@ describe("applyTypeOnlyFixes via refineFormat (verbatimModuleSyntax on)", () => 
     })
 })
 
-describe("applyTypeOnlyFixes via refineFormat (isolatedModules only)", () => {
+describe("applyTypeOnlyFixes via refineImports (isolatedModules only)", () => {
     it("converts the export side but leaves imports (import fix needs verbatim)", async () => {
         const project = initTestProject(ISOLATED_TSCONFIG)
 
-        await refineFormat({project, log, dryRun: true, paths: [], format: {}})
+        await refineImports({project, log, dryRun: true, paths: [], format: {}})
 
         // The gate lets isolatedModules through; convertToTypeOnlyExport fires.
         const reexport = read(project, ISOLATED_TSCONFIG, "src/reexport.ts")

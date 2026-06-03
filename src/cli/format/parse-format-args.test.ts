@@ -71,14 +71,8 @@ describe("parseFormat", () => {
         assert.equal(parseFormatArgs(["--bracket-spacing", "off"], common())?.applyOverrides.bracketSpacing, "off")
     })
 
-    it("accepts --organize-imports on|off|only", () => {
-        assert.equal(parseFormatArgs(["--organize-imports", "on"], common())?.organizeImports, "on")
-        assert.equal(parseFormatArgs(["--organize-imports", "off"], common())?.organizeImports, "off")
-        assert.equal(parseFormatArgs(["--organize-imports", "only"], common())?.organizeImports, "only")
-    })
-
-    it("rejects bare --organize-imports without an on|off argument", () => {
-        assert.throws(() => parseFormatArgs(["--organize-imports"], common()), /--organize-imports expects/)
+    it("rejects --organize-imports with a redirect to the imports command", () => {
+        assert.throws(() => parseFormatArgs(["--organize-imports", "only"], common()), /--organize-imports was removed; use `ts-refine imports` instead/)
     })
 
     it("consumes a trailing --dry-run into the common args", () => {

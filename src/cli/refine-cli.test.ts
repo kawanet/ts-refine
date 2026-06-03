@@ -35,10 +35,10 @@ describe("refineCLI", () => {
             assert.match(r.stdout, /^  inspect /m)
             assert.match(r.stdout, /^  move /m)
             assert.match(r.stdout, /^  rename /m)
+            assert.match(r.stdout, /^  imports /m)
             assert.match(r.stdout, /--emit <name>/)
             assert.match(r.stdout, /--semicolons --indent --member-separators --new-line --bracket-spacing/)
             assert.match(r.stdout, /--exports --importers/)
-            assert.match(r.stdout, /--organize-imports on\|off/)
         }
     })
 
@@ -100,6 +100,18 @@ describe("refineCLI", () => {
         const r = await run(["rename", "--from", "usedFn", "-p", SAMPLE])
         assert.notEqual(r.status, 0)
         assert.match(r.stderr, /requires --from <name> and --to <name>/)
+    })
+
+    it("organizes imports via the imports subcommand (dry-run)", async () => {
+        const r = await run(["imports", "--dry-run", "-p", SAMPLE])
+        assert.equal(r.status, 0)
+        assert.match(r.stderr, /imports: would change/)
+    })
+
+    it("rejects style override flags on the imports subcommand", async () => {
+        const r = await run(["imports", "--semicolons", "off", "-p", SAMPLE])
+        assert.notEqual(r.status, 0)
+        assert.match(r.stderr, /unknown option/)
     })
 
     it("lists files via the list subcommand", async () => {

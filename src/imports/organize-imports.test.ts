@@ -1,19 +1,20 @@
-// organize-imports coverage retargeted at refineFormat. The {A} style test
-// pins the outcome via `--bracket-spacing off`; the old action
-// hard-coded it.
+// organize-imports coverage for refineImports against the sample/basic project.
+// The {A} style test pins the outcome via a `bracketSpacing: "off"` style;
+// sorting and brace style both come from the settings refineImports hands the
+// organize pass.
 
 import {strict as assert} from "node:assert"
 import path from "node:path"
 import {describe, it} from "node:test"
 import {initTestProject} from "../test-utils/init-test-project.ts"
-import {refineFormat} from "./refine-format.ts"
+import {refineImports} from "./refine-imports.ts"
 
 const SAMPLE_TSCONFIG = path.resolve(import.meta.dirname, "../../sample/basic/tsconfig.json")
 const INDEX = path.resolve(import.meta.dirname, "../../sample/basic/src/index.ts")
 
 const log = {write: () => {}}
 
-describe("refineFormat (organize-imports path, dry-run, sample/basic)", () => {
+describe("refineImports (dry-run, sample/basic)", () => {
     it("alphabetises imports in-memory without touching disk", async () => {
         const project = initTestProject(SAMPLE_TSCONFIG)
 
@@ -22,7 +23,7 @@ describe("refineFormat (organize-imports path, dry-run, sample/basic)", () => {
         const before = project.getSourceFile(INDEX)!.getFullText()
         assert.ok(before.indexOf("./used.js") < before.indexOf("./partial.js"), "fixture should start with ./used.js before ./partial.js")
 
-        await refineFormat({project, log, dryRun: true, paths: [], format: {}})
+        await refineImports({project, log, dryRun: true, paths: [], format: {}})
 
         const after = project.getSourceFile(INDEX)!.getFullText()
         const pPos = after.indexOf("./partial.js")
@@ -34,9 +35,8 @@ describe("refineFormat (organize-imports path, dry-run, sample/basic)", () => {
     it("uses braces without surrounding spaces (`{A}` style) when bracket-spacing off is in effect", async () => {
         const project = initTestProject(SAMPLE_TSCONFIG)
 
-        // Old action hard-coded brace-spacing off; refineFormat drives it via
-        // the merged settings, so pin the override here.
-        await refineFormat({project, log, dryRun: true, paths: [], format: {bracketSpacing: "off"}})
+        // Brace style is driven by the supplied format settings; pin it off here.
+        await refineImports({project, log, dryRun: true, paths: [], format: {bracketSpacing: "off"}})
 
         const text = project.getSourceFile(INDEX)!.getFullText()
 

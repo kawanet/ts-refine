@@ -9,16 +9,11 @@ import {type CommonArgs, parseCommonArgs} from "../parse-common-args.ts"
 export interface FormatArgs {
     paths: string[]
     applyOverrides: TSR.FormatStyle
-
-    // Behavior flag, kept off FormatStyle: the runner forwards it to refineFormat
-    // separately rather than merging it with the surveyed style.
-    organizeImports?: "on" | "off" | "only"
     check: boolean
 }
 
 export function parseFormatArgs(sub: string[], common: CommonArgs): FormatArgs | undefined {
     const overrides: TSR.FormatStyle = {}
-    let organizeImports: FormatArgs["organizeImports"]
     const paths: string[] = []
     let check = false
     let i = 0
@@ -32,12 +27,9 @@ export function parseFormatArgs(sub: string[], common: CommonArgs): FormatArgs |
 
         const a = sub[i]
         if (a === "--organize-imports") {
-            const v = sub[i + 1]
-            if (v !== "on" && v !== "off" && v !== "only") {
-                throw new Error(`--organize-imports expects 'on', 'off', or 'only'; got: ${v ?? "(missing)"}`)
-            }
-            organizeImports = v
-            i += 2
+            // Removed: organizing imports is now its own command. Named back
+            // explicitly so existing scripts get a redirect, not "unknown option".
+            throw new Error("--organize-imports was removed; use `ts-refine imports` instead")
         } else if (a === "--semicolons") {
             const v = sub[i + 1]
             if (v !== "on" && v !== "off") {
@@ -88,5 +80,5 @@ export function parseFormatArgs(sub: string[], common: CommonArgs): FormatArgs |
         }
     }
 
-    return {paths, applyOverrides: overrides, organizeImports, check}
+    return {paths, applyOverrides: overrides, check}
 }

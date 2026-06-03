@@ -11,6 +11,7 @@
 
 import type {CLI} from "./cli-io.ts"
 import {formatCLI} from "./format/format-cli.ts"
+import {importsCLI} from "./imports/imports-cli.ts"
 import {inspectCLI} from "./inspect/inspect-cli.ts"
 import {listCLI} from "./list/list-cli.ts"
 import {moveCLI} from "./move/move-cli.ts"
@@ -27,6 +28,7 @@ const COMMAND_TABLE = new Map<string, CLI>([
     ["inspect", inspectCLI],
     ["move", moveCLI],
     ["rename", renameCLI],
+    ["imports", importsCLI],
     ["report", reportCLI],
     ["format", formatCLI],
 ])

@@ -25,9 +25,7 @@ function stripCommentDeferredSemicolons(sf: SourceFile, settings: FormatCodeSett
         if (!Node.isImportDeclaration(stmt) && !Node.isExportDeclaration(stmt)) continue
         const semicolon = stmt.getLastChild()
         if (!semicolon || semicolon.getKind() !== ts.SyntaxKind.SemicolonToken) continue
-        const trailedByLineComment = semicolon
-            .getTrailingCommentRanges()
-            .some((range) => range.getKind() === ts.SyntaxKind.SingleLineCommentTrivia)
+        const trailedByLineComment = semicolon.getTrailingCommentRanges().some((range) => range.getKind() === ts.SyntaxKind.SingleLineCommentTrivia)
         if (trailedByLineComment) semicolon.replaceWithText("")
     }
 }

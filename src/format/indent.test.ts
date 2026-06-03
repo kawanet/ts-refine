@@ -9,11 +9,10 @@ import type {TSR} from "ts-refine"
 import {initInMemoryTestProject} from "../test-utils/init-test-project.ts"
 import {refineFormat} from "./refine-format.ts"
 
-// Builds FormatOpts with the indent override pinned and unrelated
-// passes (organize-imports) silenced so the test exercises only the
-// indent dimension.
+// Builds FormatOpts with the indent override pinned so the test exercises
+// only the indent dimension.
 function opts(project: Project, width: number): TSR.FormatOpts {
-    return {project, dryRun: true, paths: [], organizeImports: "off", format: {indent: width}, log}
+    return {project, dryRun: true, paths: [], format: {indent: width}, log}
 }
 
 const log = {write: () => {}}
@@ -36,7 +35,7 @@ describe("refineFormat --indent (dry-run, in-memory)", () => {
     it("converts space indent to a tab when indent=tab", async () => {
         const project = initInMemoryTestProject()
         const sf = project.createSourceFile("tab.ts", ["function f() {", "    return 1", "}", ""].join("\n"))
-        await refineFormat({project, log, dryRun: true, paths: [], organizeImports: "off", format: {indent: "tab"}})
+        await refineFormat({project, log, dryRun: true, paths: [], format: {indent: "tab"}})
         assert.match(sf.getFullText(), /\n\treturn 1\n/)
     })
 

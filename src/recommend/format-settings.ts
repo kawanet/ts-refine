@@ -4,11 +4,21 @@ import type {TSR} from "ts-refine"
 
 // LS settings + the newline post-pass refineFormat runs after formatText.
 // Local-ish shape — refineFormat reads it; the CR diagnostic is computed at
-// the apply entry from the report, not carried here. The organize-imports
-// gate lives on FormatOpts now, so it is resolved separately by the caller.
+// the apply entry from the report, not carried here. refineImports reuses the
+// formatSettings field for its organize pass and ignores newLineNormalize.
 interface FormatSettings {
     formatSettings: FormatCodeSettings
     newLineNormalize: "\n" | "\r\n" | undefined
+}
+
+// A run's `format` is one style for everyone, or a per-file resolver. Returns a
+// per-file accessor so callers loop uniformly: a static style is converted once
+// here, a resolver is surveyed lazily inside the loop. Shared by refineFormat
+// (per-file under `format`) and refineImports.
+export function perFileSettings(format: TSR.FormatStyle | ((file: string) => Promise<TSR.FormatStyle>)): (file: string) => Promise<FormatSettings> {
+    if (typeof format === "function") return (file) => format(file).then(formatStyleToSettings)
+    const settings = formatStyleToSettings(format)
+    return () => Promise.resolve(settings)
 }
 
 // FormatCodeSettings is readonly; build mutably and cast at the return.

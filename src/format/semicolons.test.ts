@@ -28,10 +28,9 @@ function semiLineCount(text: string) {
     return {total, withSemi}
 }
 
-// organize-imports is unrelated to these fixtures and would dirty the
-// in-memory text comparison; turning it off keeps the assertions focused
-// on semicolons.
-const SEMI_OFF = {dryRun: true, paths: [] as string[], organizeImports: "off" as const}
+// Shared dry-run options for the semicolons fixtures (format no longer
+// organizes imports, so the comparison stays focused on semicolons).
+const SEMI_OFF = {dryRun: true, paths: [] as string[]}
 
 const log = {write: () => {}}
 

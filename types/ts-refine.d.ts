@@ -63,9 +63,9 @@ export declare namespace TSR {
         reportNames: ReportName[]
 
         // Restrict the brace/semicolon tallies to import/export statements
-        // (default false = whole file). The per-file move/rename/`format
-        // --organize-imports only` surveys set this so the recommendation
-        // reflects only the lines those commands actually rewrite.
+        // (default false = whole file). The per-file imports/move/rename surveys
+        // set this so the recommendation reflects only the lines those commands
+        // actually rewrite.
         importsOnly?: boolean
     }
 
@@ -91,14 +91,12 @@ export declare namespace TSR {
     }
 
     // Input to `refineFormat`: the style to apply (survey recommendation + CLI
-    // overrides). `organizeImports` is a behavior flag: "on" (default) re-sorts
-    // imports after formatting, "off" skips it, "only" organizes without
-    // reformatting the rest. `format` is one style, or a per-file resolver —
-    // the `only` CLI path uses the latter so each file keeps its conventions.
+    // overrides). Reformats the surrounding text only; organizing imports is the
+    // separate `imports` command. `format` is one style for the whole run, or a
+    // per-file resolver so each file can follow its own conventions.
     interface FormatOpts extends CommonOpts {
         paths: string[]
         dryRun: boolean
-        organizeImports?: "on" | "off" | "only"
         format: FormatStyle | ((file: string) => Promise<FormatStyle>)
     }
 
@@ -106,6 +104,23 @@ export declare namespace TSR {
     // caller can report a dry-run summary or decide an exit status without
     // re-reading the files.
     interface FormatResult {
+        touched: string[]
+    }
+
+    // Input to `refineImports`: organize each file's import/export block (sort,
+    // merge, drop unused, settle type-only markers) without reformatting the
+    // surrounding text. `format` supplies the sort settings — one style, or a
+    // per-file resolver so each file keeps its own conventions and the project's
+    // existing style barely shifts.
+    interface ImportsOpts extends CommonOpts {
+        paths: string[]
+        dryRun: boolean
+        format: FormatStyle | ((file: string) => Promise<FormatStyle>)
+    }
+
+    // refineImports returns the in-project files whose import block was rewritten,
+    // mirroring FormatResult so callers handle a dry-run summary the same way.
+    interface ImportsResult {
         touched: string[]
     }
 
@@ -221,6 +236,8 @@ export declare namespace TSR {
 export declare function refineReport(opts: TSR.ReportOpts): Promise<TSR.ReportResult>
 
 export declare function refineFormat(opts: TSR.FormatOpts): Promise<TSR.FormatResult>
+
+export declare function refineImports(opts: TSR.ImportsOpts): Promise<TSR.ImportsResult>
 
 export declare function refineList(opts: TSR.ListOpts): Promise<TSR.ListEntry[]>
 

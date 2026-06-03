@@ -38,14 +38,14 @@ npx ts-refine move fileA.ts fileB.ts --dry-run
 # rename an export across the whole project
 npx ts-refine rename --from funcA --to funcB --dry-run
 
+# organize imports: sort, merge, and drop unused declarations
+npx ts-refine imports --dry-run
+
 # survey the code style and print recommendations
 npx ts-refine report
 
-# apply the surveyed style and organize imports
+# apply the surveyed formatting style
 npx ts-refine format --dry-run
-
-# organize imports only, leaving the rest of formatting to another tool
-npx ts-refine format --organize-imports only
 ```
 
 ## Install
@@ -81,15 +81,16 @@ ts-refine help
 | `inspect` | Show per-file exports and importer details                        |
 | `move`   | Move `.ts` files and rewrite every import that references them      |
 | `rename` | Rename an exported identifier and every reference across the project |
+| `imports` | Organize imports — sort, merge, and drop unused declarations       |
 | `report` | Survey the codebase and print Markdown reports + recommendations   |
-| `format` | Apply the surveyed style to disk and organize imports              |
+| `format` | Apply the surveyed formatting style to disk                        |
 
 Global options may appear on either side of the command:
 
 - `-p, --project <path>` — a `tsconfig.json` or a directory containing one
   (defaults to `-p .`).
-- `--dry-run` — for `format` / `move` / `rename`, print what would change
-  instead of writing.
+- `--dry-run` — for `format` / `imports` / `move` / `rename`, print what would
+  change instead of writing.
 - `-h, --help` — show usage.
 
 ## List
@@ -178,6 +179,29 @@ npx ts-refine rename --from typeA.propB --to typeA.propC
 npx ts-refine rename --from nsA.typeB.propC --to nsA.typeB.propD
 ```
 
+## Imports
+
+`imports` organizes each file's import and export declarations without
+reformatting the surrounding code. Each file is sorted by its own surveyed
+style, so a project with mixed formatting keeps each file's conventions and
+shifts the least — use `format` to unify the surrounding style instead.
+
+```sh
+# organize imports across every file
+npx ts-refine imports
+
+# preview the changes without writing
+npx ts-refine imports --dry-run
+
+# organize only the given files
+npx ts-refine imports src/foo.ts src/bar.ts
+```
+
+Organizing imports sorts and combines declarations and drops unused ones. Under
+`verbatimModuleSyntax` it also adds `type` markers to imports and exports that
+are only used as types; `isolatedModules` alone applies this to type-only
+re-exports only. Projects with neither flag see no type-only change.
+
 ## Report
 
 `report` surveys the code style and prints a recommendation per dimension —
@@ -199,11 +223,12 @@ npx ts-refine report --emit ts-refine
 
 ## Format
 
-`format` rewrites every file to the surveyed conventions and organizes imports.
-Any field can be pinned instead of following the survey.
+`format` rewrites every file's surrounding code to the surveyed conventions.
+Organizing imports is the separate `imports` command. Any field can be pinned
+instead of following the survey.
 
 ```sh
-# apply the surveyed style and organize imports
+# apply the surveyed formatting style
 npx ts-refine format
 
 # preview the changes without writing
@@ -223,18 +248,7 @@ npx ts-refine format --new-line lf
 
 # pin inner-brace spacing
 npx ts-refine format --bracket-spacing off
-
-# skip organizing imports (on by default)
-npx ts-refine format --organize-imports off
-
-# organize imports only, leaving the rest of formatting to another tool
-npx ts-refine format --organize-imports only
 ```
-
-Organizing imports sorts and combines declarations and drops unused ones. Under
-`verbatimModuleSyntax` it also adds `type` markers to imports and exports that
-are only used as types; `isolatedModules` alone applies this to type-only
-re-exports only. Projects with neither flag see no type-only change.
 
 ## FAQ
 

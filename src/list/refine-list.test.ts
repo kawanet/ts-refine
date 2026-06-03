@@ -198,10 +198,7 @@ describe("refineList --ref", () => {
         project.createSourceFile("/a.ts", "export const dup = 1\n")
         project.createSourceFile("/b.ts", "export const dup = 2\n")
         const entries = await refineList({project, log, paths: [], filters: {ref: "dup"}})
-        assert.deepEqual(
-            entries.map((e) => e.file).sort(),
-            ["a.ts", "b.ts"],
-        )
+        assert.deepEqual(entries.map((e) => e.file).sort(), ["a.ts", "b.ts"])
     })
 
     it("falls back to an import binding for a symbol the project only imports (e.g. a dependency type)", async () => {
@@ -215,10 +212,7 @@ describe("refineList --ref", () => {
         project.createSourceFile("/nouse.ts", "export const z = 1\n")
 
         const entries = await refineList({project, log, paths: [], filters: {ref: "Widget"}})
-        assert.deepEqual(
-            entries.map((e) => e.file).sort(),
-            ["main.ts", "other.ts", "shims.d.ts"],
-        )
+        assert.deepEqual(entries.map((e) => e.file).sort(), ["main.ts", "other.ts", "shims.d.ts"])
     })
 
     it("resolves a member of an imported (dependency) type — e.g. Project.getSourceFiles", async () => {
