@@ -72,10 +72,10 @@ export async function runReportIndent({sourceFiles, output, log}: ReportRunOpts)
             if (b) {
                 output.write(`| ${w} | ${b.lines} | ${b.files} | ${b.topPath} |\n`)
             } else {
-                output.write(`| ${w} | 0 | 0 ||\n`)
+                output.write(`| ${w} | 0 | 0 |  |\n`)
             }
         }
-        output.write(`| total | ${totalLines} | ${perFile.length} | |\n`)
+        output.write(`| total | ${totalLines} | ${perFile.length} |  |\n`)
         output.write("\n")
     }
     logging(log, `report indent: ${perFile.length} files counted / ${sourceFiles.length} files total`)

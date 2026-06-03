@@ -23,7 +23,7 @@ describe("runReportSemicolons (sample/semicolons-mixed)", () => {
         // Columns are now `label | lines | files | example`.
         assert.match(out, /\| 0% \| \d+ \| 1 \| /)
         assert.match(out, /\| 100% \| \d+ \| 1 \| /)
-        assert.match(out, /\| total \| \d+ \| 3 \| \|/)
+        assert.match(out, /\| total \| \d+ \| 3 \| *\|/)
 
         // Empty file should not appear anywhere.
         assert.equal(/empty\.ts/.test(out), false)
@@ -80,7 +80,7 @@ describe("runReportSemicolons (sample/semicolons-mixed)", () => {
         const out = lines.join("")
 
         // 3 members counted (comma member excluded), 2 with `;`.
-        assert.match(out, /\| total \| 3 \| 1 \| \|/)
+        assert.match(out, /\| total \| 3 \| 1 \| *\|/)
         assert.deepEqual(ret, {semicolons: "on"})
     })
 
@@ -93,7 +93,7 @@ describe("runReportSemicolons (sample/semicolons-mixed)", () => {
 
         const out = lines.join("")
         assert.match(out, /\| 0% \| \d+ \| 1 \| /)
-        assert.match(out, /\| total \| \d+ \| 1 \| \|/)
+        assert.match(out, /\| total \| \d+ \| 1 \| *\|/)
     })
 
     it("with importsOnly, weighs only import/export statement semicolons", async () => {

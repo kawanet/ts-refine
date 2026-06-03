@@ -82,7 +82,7 @@ export async function runReportSemicolons({sourceFiles, output, log, importsOnly
             const bucketStmts = files.reduce((s, f) => s + f.total, 0)
             totalStmts += bucketStmts
             if (files.length === 0) {
-                output.write(`| ${BUCKET_LABELS[i]} | 0 | 0 ||\n`)
+                output.write(`| ${BUCKET_LABELS[i]} | 0 | 0 |  |\n`)
             } else {
                 // The example column shows the file with the largest statement count
                 // in the bucket; ties resolved lexicographically by path.
@@ -90,7 +90,7 @@ export async function runReportSemicolons({sourceFiles, output, log, importsOnly
                 output.write(`| ${BUCKET_LABELS[i]} | ${bucketStmts} | ${files.length} | ${example.path} |\n`)
             }
         }
-        output.write(`| total | ${totalStmts} | ${perFile.length} | |\n`)
+        output.write(`| total | ${totalStmts} | ${perFile.length} |  |\n`)
         output.write("\n")
     }
     logging(log, `report semicolons: ${perFile.length} files counted / ${sourceFiles.length} files total`)

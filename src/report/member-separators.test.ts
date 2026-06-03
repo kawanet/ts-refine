@@ -27,7 +27,7 @@ describe("runReportMemberSeparators (sample/members-mixed)", () => {
         assert.match(out, /\| `\\n` \| 5 \| 2 \| sample\/members-mixed\/src\/all-none\.ts \|/)
         assert.match(out, /\| `,` \| 3 \| 1 \| sample\/members-mixed\/src\/all-comma\.ts \|/)
         assert.match(out, /\| `;` \| 5 \| 2 \| sample\/members-mixed\/src\/all-semi\.ts \|/)
-        assert.match(out, /\| total \| 13 \| 5 \| \|/)
+        assert.match(out, /\| total \| 13 \| 5 \| *\|/)
 
         // The newline-only and semi buckets both hold 2 files, so the
         // tie produces no recommendation — the choice is the user's.
@@ -79,11 +79,11 @@ describe("runReportMemberSeparators (sample/members-mixed)", () => {
 
         // No members remain after the `}`-trailing skip; the file should
         // not be counted.
-        assert.match(out, /\| total \| 0 \| 0 \| \|/)
+        assert.match(out, /\| total \| 0 \| 0 \| *\|/)
 
         // `\n` and `;` keep a 0-row; `,` is omitted when absent.
-        assert.match(out, /\| `\\n` \| 0 \| 0 \|\|/)
-        assert.match(out, /\| `;` \| 0 \| 0 \|\|/)
+        assert.match(out, /\| `\\n` \| 0 \| 0 \| *\|/)
+        assert.match(out, /\| `;` \| 0 \| 0 \| *\|/)
         assert.equal(/\| `,` \|/.test(out), false)
     })
 
@@ -95,6 +95,6 @@ describe("runReportMemberSeparators (sample/members-mixed)", () => {
         const out = lines.join("")
 
         assert.match(out, /\| `\\n` \| 2 \| 1 \| props\.ts \|/)
-        assert.match(out, /\| total \| 2 \| 1 \| \|/)
+        assert.match(out, /\| total \| 2 \| 1 \| *\|/)
     })
 })

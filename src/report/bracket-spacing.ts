@@ -84,10 +84,10 @@ export async function runReportBracketSpacing({sourceFiles, output, log, imports
             if (b) {
                 output.write(`| ${STYLE_LABEL[k]} | ${b.lines} | ${b.files} | ${b.topPath} |\n`)
             } else {
-                output.write(`| ${STYLE_LABEL[k]} | 0 | 0 ||\n`)
+                output.write(`| ${STYLE_LABEL[k]} | 0 | 0 |  |\n`)
             }
         }
-        output.write(`| total | ${totalLines} | ${perFile.length} | |\n`)
+        output.write(`| total | ${totalLines} | ${perFile.length} |  |\n`)
         output.write("\n")
     }
     logging(log, `report bracket-spacing: ${perFile.length} files counted / ${sourceFiles.length} files total`)
