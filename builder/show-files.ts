@@ -12,7 +12,7 @@ import type {Plugin} from "rollup"
  * be mistaken for noise and removed.
  */
 export const showFiles = (test?: {test: (path: string) => boolean}): Plugin => {
-    const projectRoot = path.join(import.meta.dirname, "../../_").replace(/_$/, "")
+    const projectRoot = path.join(import.meta.dirname, "../_").replace(/_$/, "")
 
     return {
         name: "show-files",
