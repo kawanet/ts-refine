@@ -98,4 +98,21 @@ describe("applyTrailingComma", () => {
         const once = run("const a = [\n    1,\n    2\n]\n", "on")
         assert.equal(run(once, "on"), once)
     })
+
+    it("importsOnly: touches only import/export specifier lists, not the body", () => {
+        const project = initInMemoryProject()
+        // An import and a body array, both multi-line without a trailing comma.
+        const src = "import {\n    a,\n    b\n} from './m.ts'\nconst xs = [\n    a,\n    b\n]\n"
+        const sf = project.createSourceFile("/a.ts", src, {overwrite: true})
+        applyTrailingComma(sf, "on", {importsOnly: true})
+        // Only the import gains the comma; the body array is left as written.
+        assert.equal(sf.getFullText(), "import {\n    a,\n    b,\n} from './m.ts'\nconst xs = [\n    a,\n    b\n]\n")
+    })
+
+    it("importsOnly: reasserts the comma on a multi-line local export too", () => {
+        const project = initInMemoryProject()
+        const sf = project.createSourceFile("/a.ts", "const a = 1\nconst b = 2\nexport {\n    a,\n    b\n}\n", {overwrite: true})
+        applyTrailingComma(sf, "on", {importsOnly: true})
+        assert.equal(sf.getFullText(), "const a = 1\nconst b = 2\nexport {\n    a,\n    b,\n}\n")
+    })
 })

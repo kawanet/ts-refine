@@ -73,11 +73,14 @@ export function trailingCommaToken(lastElement: Node): Node | undefined {
     return lastElement.getNextSiblingIfKind(SyntaxKind.CommaToken)
 }
 
-export function applyTrailingComma(sf: SourceFile, mode: "on" | "off"): void {
+// importsOnly narrows the walk to import/export specifier lists, so the
+// imports/move/rename commands reassert the comma style without touching any
+// other list in the file. The format command omits it and walks the whole file.
+export function applyTrailingComma(sf: SourceFile, mode: "on" | "off", opts?: {importsOnly?: boolean}): void {
     const full = sf.getFullText()
     const edits: {start: number; end: number; text: string}[] = []
 
-    sf.forEachDescendant((node) => {
+    const visit = (node: Node) => {
         const list = listOf(node)
         if (list == null || list.elements.length === 0) return
         const last = list.elements[list.elements.length - 1]
@@ -101,7 +104,14 @@ export function applyTrailingComma(sf: SourceFile, mode: "on" | "off"): void {
         } else if (commaTok) {
             edits.push({start: commaTok.getStart(), end: commaTok.getEnd(), text: ""}) // drop the trailing comma
         }
-    })
+    }
+
+    if (opts?.importsOnly) {
+        sf.getImportDeclarations().forEach((d) => d.forEachDescendant(visit))
+        sf.getExportDeclarations().forEach((d) => d.forEachDescendant(visit))
+    } else {
+        sf.forEachDescendant(visit)
+    }
 
     if (edits.length === 0) return
 
