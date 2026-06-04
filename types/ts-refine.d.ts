@@ -50,9 +50,13 @@ export declare namespace TSR {
         bracketSpacing: "on" | "off"
     }
 
+    interface TrailingCommaOpts {
+        trailingComma: "on" | "off"
+    }
+
     // Every report refineReport knows about. Pair with src/report/report-names.ts
     // (runtime list) and src/report/refine-report.ts (dispatch).
-    type ReportName = "semicolons" | "indent" | "member-separators" | "new-line" | "bracket-spacing"
+    type ReportName = "semicolons" | "indent" | "member-separators" | "new-line" | "bracket-spacing" | "trailing-comma"
 
     interface ReportOpts extends CommonOpts {
         paths: string[]
@@ -71,6 +75,7 @@ export declare namespace TSR {
         memberSeparators?: Partial<MemberSeparatorsOpts>
         newLine?: Partial<NewLineOpts>
         bracketSpacing?: Partial<BracketSpacingOpts>
+        trailingComma?: Partial<TrailingCommaOpts>
     }
 
     // Per-field format intent derived from a report recommendation, and what the
@@ -86,6 +91,12 @@ export declare namespace TSR {
         // Interface / class member separators. Applied by a self-pass (the LS
         // can't set these and can't emit `comma` at all); no LS/Prettier mapping.
         memberSeparators?: "semi" | "comma" | "none"
+
+        // Trailing comma on multi-line comma lists (arrays, objects, args, params,
+        // tuples, enums, import/export specifiers). `on` adds it on multi-line and
+        // strips it single-line; `off` strips it. A spread / rest last element is
+        // left as written (adding one is a syntax error). Applied by a self-pass.
+        trailingComma?: "on" | "off"
     }
 
     // Input to `refineFormat`: the style to apply (survey recommendation + CLI

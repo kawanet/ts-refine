@@ -73,6 +73,7 @@ export function usage(): string {
         "  --new-line lf|crlf          Override end-of-line",
         "  --bracket-spacing on|off    Override inner-brace spacing",
         "  --member-separators <v>     Override member separators (semi|comma|none)",
+        "  --trailing-comma on|off     Override trailing commas in multi-line lists",
         "  --check                     Report only; exit non-zero if any file would change",
         "",
         "Global options (may appear before or after the command):",

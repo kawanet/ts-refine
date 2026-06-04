@@ -23,7 +23,7 @@ NAMED_EXPORTS := $(shell sed -nE 's/^export declare function ([a-zA-Z_$$]+).*/\1
 # of a transitive dep (which would be hundreds of KB); fail the build so it
 # cannot slip in. Sized with headroom over the real bundle so ordinary feature
 # growth doesn't trip it — only a transitive dep would.
-MJS_MAX_BYTES := 90000
+MJS_MAX_BYTES := 100000
 CLI_MAX_BYTES := 50000
 
 ALL := $(MJS_DST) $(CLI_DST)

@@ -10,6 +10,7 @@ import {logging} from "../common/logging.ts"
 import {formatStyleToSettings, normalizeNewLines} from "../lib/format-settings.ts"
 import {selectSourceFiles} from "../lib/source-files.ts"
 import {applyMemberSeparators} from "./apply-member-separators.ts"
+import {applyTrailingComma} from "./apply-trailing-comma.ts"
 
 export const refineFormat: typeof declared.refineFormat = async (opts) => {
     const {dryRun, paths, format, log} = opts
@@ -36,6 +37,9 @@ export const refineFormat: typeof declared.refineFormat = async (opts) => {
         // The LS formatter can't set interface/class member separators (and
         // can't emit commas); apply the surveyed style on the formatted AST.
         if (format.memberSeparators != null) applyMemberSeparators(sf, format.memberSeparators)
+
+        // The LS formatter has no trailing-comma control either; apply it too.
+        if (format.trailingComma != null) applyTrailingComma(sf, format.trailingComma)
 
         // LS `newLineCharacter` only governs inserted text; existing
         // terminators are normalized here to the same target. Push the result

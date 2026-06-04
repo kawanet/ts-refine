@@ -19,6 +19,7 @@ const reportByOverride: {field: keyof TSR.FormatStyle; report: TSR.ReportName}[]
     {field: "memberSeparators", report: "member-separators"},
     {field: "newLine", report: "new-line"},
     {field: "bracketSpacing", report: "bracket-spacing"},
+    {field: "trailingComma", report: "trailing-comma"},
 ]
 
 export function reportNamesForFormat(overrides: TSR.FormatStyle): TSR.ReportName[] {
@@ -35,6 +36,7 @@ export function overridesToFormatStyle(overrides: TSR.FormatStyle): TSR.FormatSt
         newLine: overrides.newLine,
         bracketSpacing: overrides.bracketSpacing,
         memberSeparators: overrides.memberSeparators,
+        trailingComma: overrides.trailingComma,
     }
 }
 
@@ -46,5 +48,6 @@ export function mergeFormatStyles(base: TSR.FormatStyle, override: TSR.FormatSty
         newLine: override.newLine ?? base.newLine,
         bracketSpacing: override.bracketSpacing ?? base.bracketSpacing,
         memberSeparators: override.memberSeparators ?? base.memberSeparators,
+        trailingComma: override.trailingComma ?? base.trailingComma,
     }
 }

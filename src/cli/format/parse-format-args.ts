@@ -76,6 +76,13 @@ export function parseFormatArgs(sub: string[], common: CommonArgs): FormatArgs |
             }
             overrides.memberSeparators = v
             i += 2
+        } else if (a === "--trailing-comma") {
+            const v = sub[i + 1]
+            if (v !== "on" && v !== "off") {
+                throw new Error(`--trailing-comma expects 'on' or 'off'; got: ${v ?? "(missing)"}`)
+            }
+            overrides.trailingComma = v
+            i += 2
         } else if (a === "--check") {
             check = true
             i++

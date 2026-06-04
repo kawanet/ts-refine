@@ -35,6 +35,8 @@ function buildPrettierOptions(report: TSR.ReportResult): PrettierOptions {
     if (report.newLine?.newLine) opts.endOfLine = report.newLine.newLine
     if (report.bracketSpacing?.bracketSpacing === "on") opts.bracketSpacing = true
     else if (report.bracketSpacing?.bracketSpacing === "off") opts.bracketSpacing = false
+    if (report.trailingComma?.trailingComma === "on") opts.trailingComma = "all"
+    else if (report.trailingComma?.trailingComma === "off") opts.trailingComma = "none"
     return opts
 }
 

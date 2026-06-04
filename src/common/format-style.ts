@@ -11,5 +11,6 @@ export function reportToFormatStyle(report: TSR.ReportResult): TSR.FormatStyle {
     if (newLine === "lf" || newLine === "crlf") options.newLine = newLine
     if (report.bracketSpacing?.bracketSpacing) options.bracketSpacing = report.bracketSpacing.bracketSpacing
     if (report.memberSeparators?.separator) options.memberSeparators = report.memberSeparators.separator
+    if (report.trailingComma?.trailingComma) options.trailingComma = report.trailingComma.trailingComma
     return options
 }

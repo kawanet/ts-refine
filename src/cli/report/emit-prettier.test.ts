@@ -72,6 +72,11 @@ describe("getPrettierConfig", () => {
         const json = JSON.parse(capture({bracketSpacing: {bracketSpacing: "off"}}))
         assert.equal(json.bracketSpacing, false)
     })
+
+    it("maps trailingComma.trailingComma=on → trailingComma: all, off → none", () => {
+        assert.equal(JSON.parse(capture({trailingComma: {trailingComma: "on"}})).trailingComma, "all")
+        assert.equal(JSON.parse(capture({trailingComma: {trailingComma: "off"}})).trailingComma, "none")
+    })
 })
 
 describe("writePrettierMarkdown", () => {

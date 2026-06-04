@@ -40,12 +40,17 @@ describe("getTsRefineFormat", () => {
         assert.equal(getTsRefineFormat({bracketSpacing: {bracketSpacing: "on"}}), "--bracket-spacing on")
     })
 
+    it("maps trailingComma.trailingComma → --trailing-comma V", () => {
+        assert.equal(getTsRefineFormat({trailingComma: {trailingComma: "on"}}), "--trailing-comma on")
+        assert.equal(getTsRefineFormat({trailingComma: {trailingComma: "off"}}), "--trailing-comma off")
+    })
+
     it("combines all recommendations in a fixed order", () => {
         const out = getTsRefineFormat(
             // Input keys are intentionally reversed; the output order is fixed.
-            {bracketSpacing: {bracketSpacing: "on"}, newLine: {newLine: "lf"}, memberSeparators: {separator: "none"}, indent: {width: 4}, semicolons: {semicolons: "off"}},
+            {trailingComma: {trailingComma: "on"}, bracketSpacing: {bracketSpacing: "on"}, newLine: {newLine: "lf"}, memberSeparators: {separator: "none"}, indent: {width: 4}, semicolons: {semicolons: "off"}},
         )
-        assert.equal(out, "--semicolons off --indent 4 --member-separators none --new-line lf --bracket-spacing on")
+        assert.equal(out, "--semicolons off --indent 4 --member-separators none --new-line lf --bracket-spacing on --trailing-comma on")
     })
 
     it("returns an empty string when nothing was recommended", () => {

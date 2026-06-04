@@ -16,6 +16,7 @@ export function buildFormatTokens(options: TSR.FormatStyle): string[] {
     if (options.memberSeparators) flags.push("--member-separators", options.memberSeparators)
     if (options.newLine) flags.push("--new-line", options.newLine)
     if (options.bracketSpacing) flags.push("--bracket-spacing", options.bracketSpacing)
+    if (options.trailingComma) flags.push("--trailing-comma", options.trailingComma)
     return flags
 }
 

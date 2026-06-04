@@ -80,6 +80,15 @@ describe("parseFormat", () => {
         assert.throws(() => parseFormatArgs(["--member-separators", "semicolon"], common()), /--member-separators expects 'semi', 'comma' or 'none'/)
     })
 
+    it("accepts --trailing-comma on|off", () => {
+        assert.equal(parseFormatArgs(["--trailing-comma", "on"], common())?.applyOverrides.trailingComma, "on")
+        assert.equal(parseFormatArgs(["--trailing-comma", "off"], common())?.applyOverrides.trailingComma, "off")
+    })
+
+    it("rejects --trailing-comma with an invalid value", () => {
+        assert.throws(() => parseFormatArgs(["--trailing-comma", "all"], common()), /--trailing-comma expects 'on' or 'off'/)
+    })
+
     it("rejects --organize-imports with a redirect to the imports command", () => {
         assert.throws(() => parseFormatArgs(["--organize-imports", "only"], common()), /--organize-imports was removed; use `ts-refine imports` instead/)
     })

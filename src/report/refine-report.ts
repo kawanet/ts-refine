@@ -16,6 +16,7 @@ import {runReportIndent} from "./indent.ts"
 import {runReportMemberSeparators} from "./member-separators.ts"
 import {runReportNewLine} from "./new-line.ts"
 import {runReportSemicolons} from "./semicolons.ts"
+import {runReportTrailingComma} from "./trailing-comma.ts"
 import type {ReportRunOpts} from "./types.ts"
 
 export const refineReport: typeof declared.refineReport = async (opts) => {
@@ -57,6 +58,9 @@ export const runReports = async (reportOpts: ReportRunOpts, requested: readonly 
     }
     if (requested.includes("bracket-spacing")) {
         report.bracketSpacing = await runReportBracketSpacing(reportOpts)
+    }
+    if (requested.includes("trailing-comma")) {
+        report.trailingComma = await runReportTrailingComma(reportOpts)
     }
 
     return report
