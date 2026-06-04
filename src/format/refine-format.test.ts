@@ -2,6 +2,7 @@ import {strict as assert} from "node:assert"
 import {describe, it} from "node:test"
 import {ts} from "ts-morph"
 import {initInMemoryProject} from "../common/init-project.ts"
+import {refineReport} from "../report/refine-report.ts"
 import {refineFormat} from "./refine-format.ts"
 
 const log = {write: () => {}}
@@ -53,6 +54,18 @@ describe("refineFormat", () => {
         const sf = project.createSourceFile("a.ts", "const a = 1;\nconst b = 2;\n")
         await refineFormat({project, log, dryRun: true, paths: [], format: {semicolons: "off"}})
         assert.match(sf.getFullText(), /const a = 1\nconst b = 2\n/)
+    })
+
+    it("formats after a survey that already navigated the file (semicolons off)", async () => {
+        // Regression: `format` surveys the file first, caching ts-morph node
+        // wrappers. Dropping the abstract method's trailing `;` changes a child
+        // count, and formatText's incremental reparse used to throw against the
+        // stale wrappers ("old and new trees ... same count").
+        const project = initInMemoryProject()
+        const sf = project.createSourceFile("a.ts", "export abstract class Foo {\n  protected abstract bar(): Promise<number>;\n}\n")
+        await refineReport({project, paths: [], reportNames: ["trailing-comma"], log})
+        await refineFormat({project, log, dryRun: true, paths: [], format: {semicolons: "off"}})
+        assert.match(sf.getFullText(), /protected abstract bar\(\): Promise<number>\n/)
     })
 
     it("does not organize imports (that is the separate `imports` command)", async () => {

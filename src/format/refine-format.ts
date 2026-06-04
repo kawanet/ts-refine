@@ -32,6 +32,11 @@ export const refineFormat: typeof declared.refineFormat = async (opts) => {
         const filePath = sf.getFilePath()
         const before = sf.getFullText()
 
+        // The survey navigated this file and left ts-morph node wrappers cached.
+        // formatText's incremental reparse diffs the new tree against those
+        // wrappers and throws when a structural edit (e.g. removing a trailing
+        // `;`) changes a child count, so drop them and reparse from clean text.
+        sf.forgetDescendants()
         sf.formatText(settings)
 
         // The LS formatter can't set interface/class member separators (and
