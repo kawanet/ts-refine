@@ -82,6 +82,10 @@ export declare namespace TSR {
         semicolons?: "on" | "off"
         newLine?: "lf" | "crlf"
         bracketSpacing?: "on" | "off"
+
+        // Interface / class member separators. Applied by a self-pass (the LS
+        // can't set these and can't emit `comma` at all); no LS/Prettier mapping.
+        memberSeparators?: "semi" | "comma" | "none"
     }
 
     // Input to `refineFormat`: the style to apply (survey recommendation + CLI

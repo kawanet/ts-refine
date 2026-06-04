@@ -10,6 +10,13 @@ const SAMPLE_TSCONFIG = path.resolve(import.meta.dirname, "../../sample/members-
 const log = {write: () => {}}
 
 describe("runReportMemberSeparators (sample/members-mixed)", () => {
+    it("returns empty under importsOnly (import/export statements carry no members)", async () => {
+        const project = initInMemoryTestProject()
+        project.createSourceFile("/a.ts", "interface I {\n    a: number;\n    b: string;\n}\n")
+        const r = await runReportMemberSeparators({sourceFiles: project.getSourceFiles(), log, importsOnly: true})
+        assert.deepEqual(r, {})
+    })
+
     it("groups files by primary separator and recommends the file-count majority", async () => {
         const project = initTestProject(SAMPLE_TSCONFIG)
         const lines: string[] = []

@@ -8,7 +8,7 @@
 // and buildFormatTokens renders the same FormatStyle back to argv.
 
 import type {TSR} from "ts-refine"
-import {applyReportNames} from "../../common/report-names.ts"
+import {formatReportNames} from "../../common/report-names.ts"
 
 // A CLI override pins a field, so surveying the matching report is redundant.
 // reportNamesForFormat trims the apply set to the reports still worth running —
@@ -16,13 +16,14 @@ import {applyReportNames} from "../../common/report-names.ts"
 const reportByOverride: {field: keyof TSR.FormatStyle; report: TSR.ReportName}[] = [
     {field: "semicolons", report: "semicolons"},
     {field: "indent", report: "indent"},
+    {field: "memberSeparators", report: "member-separators"},
     {field: "newLine", report: "new-line"},
     {field: "bracketSpacing", report: "bracket-spacing"},
 ]
 
 export function reportNamesForFormat(overrides: TSR.FormatStyle): TSR.ReportName[] {
     const skip = new Set(reportByOverride.filter((m) => overrides[m.field] !== undefined).map((m) => m.report))
-    return applyReportNames.filter((name) => !skip.has(name))
+    return formatReportNames.filter((name) => !skip.has(name))
 }
 
 // CLI overrides → FormatStyle. A typed seam keeping parseArgs decoupled from
@@ -33,6 +34,7 @@ export function overridesToFormatStyle(overrides: TSR.FormatStyle): TSR.FormatSt
         semicolons: overrides.semicolons,
         newLine: overrides.newLine,
         bracketSpacing: overrides.bracketSpacing,
+        memberSeparators: overrides.memberSeparators,
     }
 }
 
@@ -43,5 +45,6 @@ export function mergeFormatStyles(base: TSR.FormatStyle, override: TSR.FormatSty
         semicolons: override.semicolons ?? base.semicolons,
         newLine: override.newLine ?? base.newLine,
         bracketSpacing: override.bracketSpacing ?? base.bracketSpacing,
+        memberSeparators: override.memberSeparators ?? base.memberSeparators,
     }
 }

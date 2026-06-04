@@ -71,6 +71,15 @@ describe("parseFormat", () => {
         assert.equal(parseFormatArgs(["--bracket-spacing", "off"], common())?.applyOverrides.bracketSpacing, "off")
     })
 
+    it("accepts --member-separators semi|comma|none", () => {
+        assert.equal(parseFormatArgs(["--member-separators", "comma"], common())?.applyOverrides.memberSeparators, "comma")
+        assert.equal(parseFormatArgs(["--member-separators", "none"], common())?.applyOverrides.memberSeparators, "none")
+    })
+
+    it("rejects --member-separators with an invalid value", () => {
+        assert.throws(() => parseFormatArgs(["--member-separators", "semicolon"], common()), /--member-separators expects 'semi', 'comma' or 'none'/)
+    })
+
     it("rejects --organize-imports with a redirect to the imports command", () => {
         assert.throws(() => parseFormatArgs(["--organize-imports", "only"], common()), /--organize-imports was removed; use `ts-refine imports` instead/)
     })

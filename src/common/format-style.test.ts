@@ -22,8 +22,8 @@ describe("reportToFormatStyle", () => {
         assert.equal(o.newLine, undefined)
     })
 
-    it("ignores member-separators (no actionable mapping)", () => {
+    it("maps member-separators through (the format command applies it via a self-pass)", () => {
         const o = reportToFormatStyle({memberSeparators: {separator: "comma"}})
-        assert.deepEqual(o, {})
+        assert.deepEqual(o, {memberSeparators: "comma"})
     })
 })

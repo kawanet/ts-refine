@@ -69,6 +69,13 @@ export function parseFormatArgs(sub: string[], common: CommonArgs): FormatArgs |
             }
             overrides.bracketSpacing = v
             i += 2
+        } else if (a === "--member-separators") {
+            const v = sub[i + 1]
+            if (v !== "semi" && v !== "comma" && v !== "none") {
+                throw new Error(`--member-separators expects 'semi', 'comma' or 'none'; got: ${v ?? "(missing)"}`)
+            }
+            overrides.memberSeparators = v
+            i += 2
         } else if (a === "--check") {
             check = true
             i++

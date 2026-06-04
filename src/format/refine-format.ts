@@ -9,6 +9,7 @@ import {resolveProject} from "../common/init-project.ts"
 import {logging} from "../common/logging.ts"
 import {formatStyleToSettings, normalizeNewLines} from "../lib/format-settings.ts"
 import {selectSourceFiles} from "../lib/source-files.ts"
+import {applyMemberSeparators} from "./apply-member-separators.ts"
 
 export const refineFormat: typeof declared.refineFormat = async (opts) => {
     const {dryRun, paths, format, log} = opts
@@ -31,6 +32,10 @@ export const refineFormat: typeof declared.refineFormat = async (opts) => {
         const before = sf.getFullText()
 
         sf.formatText(settings)
+
+        // The LS formatter can't set interface/class member separators (and
+        // can't emit commas); apply the surveyed style on the formatted AST.
+        if (format.memberSeparators != null) applyMemberSeparators(sf, format.memberSeparators)
 
         // LS `newLineCharacter` only governs inserted text; existing
         // terminators are normalized here to the same target. Push the result

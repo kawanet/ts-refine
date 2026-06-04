@@ -34,12 +34,11 @@ describe("selectOutput", () => {
         const {writer, out} = makeStdout()
         const f = selectEmitter("ts-refine", writer)
         assert.equal(f.reportStream, undefined)
-        f.finalize({semicolons: {semicolons: "off"}, indent: {width: 4}, memberSeparators: {separator: "none"}})
+        f.finalize({semicolons: {semicolons: "off"}, indent: {width: 4}, memberSeparators: {separator: "comma"}})
 
         // Two-line form: `ts-refine \` continuation, then the flags
         // indented by two spaces so `grep '^ +--'` picks them up.
-        // member-separators is report-only, so it never reaches the command.
-        assert.equal(out(), "ts-refine format \\\n  --semicolons off --indent 4\n")
+        assert.equal(out(), "ts-refine format \\\n  --semicolons off --indent 4 --member-separators comma\n")
     })
 
     it("throws on an unknown output name", () => {

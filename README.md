@@ -251,6 +251,9 @@ npx ts-refine format --new-line lf
 
 # pin inner-brace spacing
 npx ts-refine format --bracket-spacing off
+
+# pin interface/class member separators (`semi`, `comma`, or `none`)
+npx ts-refine format --member-separators semi
 ```
 
 ## FAQ

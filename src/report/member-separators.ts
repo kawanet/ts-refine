@@ -4,10 +4,10 @@
 // accessors, constructors) are skipped because the separator choice isn't
 // theirs to make.
 //
-// This report is diagnostic only: it has no formatter mapping. Comma
-// members can't be produced by the LS or Prettier, and the `;`/none
-// choice is already governed by the semicolons report, so the
-// recommendation is not emitted to either output.
+// The recommendation drives the `format` command's memberSeparators apply
+// pass (src/format/apply-member-separators.ts). It still has no Prettier
+// mapping (comma members are unreachable there), so the .prettierrc emitter
+// omits it.
 
 import type {ClassMemberTypes, TypeElementTypes} from "ts-morph"
 import {Node} from "ts-morph"
@@ -39,7 +39,11 @@ const SEP_FLAG_VALUE: Record<Separator, TSR.MemberSeparatorsOpts["separator"]> =
 
 type Bucket = {lines: number; files: number; topPath: string; topLines: number}
 
-export async function runReportMemberSeparators({sourceFiles, output, log}: ReportRunOpts): Promise<Partial<TSR.MemberSeparatorsOpts>> {
+export async function runReportMemberSeparators({sourceFiles, output, log, importsOnly}: ReportRunOpts): Promise<Partial<TSR.MemberSeparatorsOpts>> {
+    // import/export statements carry no interface/class members, so an
+    // imports-only survey has nothing to weigh — skip the whole-file scan.
+    if (importsOnly) return {}
+
     type PerFile = {path: string; counts: Map<Separator, number>; primary: Separator}
     const perFile: PerFile[] = []
 
@@ -108,13 +112,20 @@ export async function runReportMemberSeparators({sourceFiles, output, log}: Repo
     return recommendSep !== undefined ? {separator: SEP_FLAG_VALUE[recommendSep]} : {}
 }
 
+// A member "owns" a trailing separator only when it isn't body-bearing: a
+// method / accessor / constructor / static block ends in its own `}`, not a
+// separator. Property / index / call / construct signatures and class fields
+// do. Shared with the apply pass so report and format agree on the scope.
+export function isSeparableMember(member: ClassMemberTypes | TypeElementTypes): boolean {
+    if (Node.isClassStaticBlockDeclaration(member)) return false
+    return memberBody(member) === undefined
+}
+
 // Reads the member AST and returns the trailing separator. Only members with
 // their own executable body are skipped; properties whose initializer ends in
 // `}` still have a trailing punctuation style to count.
 function classify(member: ClassMemberTypes | TypeElementTypes): Separator | null {
-    if (Node.isClassStaticBlockDeclaration(member) || memberBody(member) !== undefined) {
-        return null
-    }
+    if (!isSeparableMember(member)) return null
     const last = member.getText().trimEnd().slice(-1)
     if (last === ";") return ";"
     if (last === ",") return ","

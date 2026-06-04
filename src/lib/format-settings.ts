@@ -3,14 +3,14 @@ import {ts} from "ts-morph"
 import type {TSR} from "ts-refine"
 import {reportToFormatStyle} from "../common/format-style.ts"
 import {NULL_SINK} from "../common/logging.ts"
-import {applyReportNames} from "../common/report-names.ts"
+import {importReportNames} from "../common/report-names.ts"
 import {runReports} from "../report/refine-report.ts"
 
 // Survey a single file's import/export statements and convert the recommended
 // style to ts-morph settings. The write commands call this per file so each
 // keeps its own existing conventions.
 export const formatSettingsForFile = async (sf: SourceFile): Promise<FormatCodeSettings> => {
-    const report = await runReports({sourceFiles: [sf], importsOnly: true, log: NULL_SINK}, applyReportNames)
+    const report = await runReports({sourceFiles: [sf], importsOnly: true, log: NULL_SINK}, importReportNames)
     const style = reportToFormatStyle(report)
     return formatStyleToSettings(style)
 }

@@ -68,8 +68,8 @@ describe("refineCLI", () => {
         assert.equal(r.status, 0)
         assert.match(r.stderr, /format: would change/)
 
-        // format never consumes member-separators, so it is not surveyed.
-        assert.doesNotMatch(r.stderr, /report member-separators:/)
+        // format now applies member-separators, so it is surveyed too.
+        assert.match(r.stderr, /report member-separators:/)
     })
 
     it("skips surveying a field that a format override already pins", async () => {
