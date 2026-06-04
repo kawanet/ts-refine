@@ -3,7 +3,7 @@ import {describe, it} from "node:test"
 import {getPrettierConfig, writePrettierMarkdown} from "./emit-prettier.ts"
 
 function capture(report: Parameters<typeof getPrettierConfig>[0]): string {
-    return getPrettierConfig(report, {write: () => {}})
+    return getPrettierConfig(report)
 }
 
 describe("getPrettierConfig", () => {
