@@ -30,8 +30,8 @@ const rollupConfig: RollupOptions = {
             preferBuiltins: true,
         }),
 
-        // show files imported from outside /cli/
-        showFiles({test: (path) => !path.includes("/cli")}),
+        // show files imported from outside /cli/, /common/ or has .test. extension
+        showFiles({test: (path) => !(path.includes("/cli") || path.includes("/common/")) || path.includes(".test.")}),
 
         sucrase({
             exclude: ["node_modules/**"],

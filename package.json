@@ -1,7 +1,7 @@
 {
   "name": "ts-refine",
   "description": "LS-based semantic refactoring for TypeScript: move files, rename exports, rewrite imports, and format to local conventions.",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "author": "Kawanet",
   "bin": {
     "ts-refine": "./dist/ts-refine.cli.mjs"
