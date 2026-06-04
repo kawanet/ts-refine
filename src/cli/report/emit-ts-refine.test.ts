@@ -8,41 +8,39 @@ function capture(fn: (s: {write: (chunk: string) => void}) => void): string {
     return out
 }
 
-// The framing (`ts-refine format \`) that getTsRefineFormat feeds is
-// covered by select-emitter.test.ts.
+// getTsRefineFormat takes a FormatStyle (the format command's apply value),
+// so these pin the FormatStyle → flag-string mapping. The ReportResult →
+// FormatStyle conversion is covered by format-style.test.ts; the framing
+// (`ts-refine format \`) is covered by select-emitter.test.ts.
 describe("getTsRefineFormat", () => {
-    it("maps semicolons.semicolons=off → --semicolons off", () => {
-        assert.equal(getTsRefineFormat({semicolons: {semicolons: "off"}}), "--semicolons off")
+    it("maps semicolons=off → --semicolons off", () => {
+        assert.equal(getTsRefineFormat({semicolons: "off"}), "--semicolons off")
     })
 
-    it("maps semicolons.semicolons=on → --semicolons on", () => {
-        assert.equal(getTsRefineFormat({semicolons: {semicolons: "on"}}), "--semicolons on")
+    it("maps semicolons=on → --semicolons on", () => {
+        assert.equal(getTsRefineFormat({semicolons: "on"}), "--semicolons on")
     })
 
-    it("maps indent.width → --indent N", () => {
-        assert.equal(getTsRefineFormat({indent: {width: 4}}), "--indent 4")
+    it("maps indent → --indent N", () => {
+        assert.equal(getTsRefineFormat({indent: 4}), "--indent 4")
     })
 
-    it("maps indent.width=tab → --indent tab", () => {
-        assert.equal(getTsRefineFormat({indent: {width: "tab"}}), "--indent tab")
+    it("maps indent=tab → --indent tab", () => {
+        assert.equal(getTsRefineFormat({indent: "tab"}), "--indent tab")
     })
 
-    it("omits memberSeparators (report-only; the format command does not consume it)", () => {
-        assert.equal(getTsRefineFormat({memberSeparators: {separator: "none"}}), "")
+    it("maps newLine → --new-line V", () => {
+        assert.equal(getTsRefineFormat({newLine: "lf"}), "--new-line lf")
     })
 
-    it("maps newLine.newLine → --new-line V", () => {
-        assert.equal(getTsRefineFormat({newLine: {newLine: "lf"}}), "--new-line lf")
+    it("maps bracketSpacing → --bracket-spacing V", () => {
+        assert.equal(getTsRefineFormat({bracketSpacing: "on"}), "--bracket-spacing on")
     })
 
-    it("maps bracketSpacing.bracketSpacing → --bracket-spacing V", () => {
-        assert.equal(getTsRefineFormat({bracketSpacing: {bracketSpacing: "on"}}), "--bracket-spacing on")
-    })
-
-    it("combines all recommendations in a fixed order, omitting member-separators", () => {
+    it("combines all fields in a fixed order regardless of input key order", () => {
         const out = getTsRefineFormat(
             // Input keys are intentionally reversed; the output order is fixed.
-            {bracketSpacing: {bracketSpacing: "on"}, newLine: {newLine: "lf"}, memberSeparators: {separator: "none"}, indent: {width: 4}, semicolons: {semicolons: "off"}},
+            {bracketSpacing: "on", newLine: "lf", indent: 4, semicolons: "off"},
         )
         assert.equal(out, "--semicolons off --indent 4 --new-line lf --bracket-spacing on")
     })
