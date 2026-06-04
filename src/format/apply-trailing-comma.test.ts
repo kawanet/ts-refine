@@ -3,9 +3,9 @@ import {describe, it} from "node:test"
 import {initInMemoryProject} from "../common/init-project.ts"
 import {applyTrailingComma} from "./apply-trailing-comma.ts"
 
-function run(src: string, mode: "on" | "off"): string {
+function run(src: string, mode: "on" | "off", filePath = "/a.ts"): string {
     const project = initInMemoryProject()
-    const sf = project.createSourceFile("/a.ts", src, {overwrite: true})
+    const sf = project.createSourceFile(filePath, src, {overwrite: true})
     applyTrailingComma(sf, mode)
     return sf.getFullText()
 }
@@ -29,6 +29,7 @@ describe("applyTrailingComma", () => {
             ["enum E {\n    A,\n    B\n}\n", "enum E {\n    A,\n    B,\n}\n"],
             ["type T = [\n    number,\n    string\n]\n", "type T = [\n    number,\n    string,\n]\n"],
             ["import {\n    a,\n    b\n} from './m.ts'\n", "import {\n    a,\n    b,\n} from './m.ts'\n"],
+            ["export {\n    a,\n    b\n} from './m.ts'\n", "export {\n    a,\n    b,\n} from './m.ts'\n"],
         ] as const) {
             assert.equal(run(src, "on"), expected)
         }
@@ -39,6 +40,12 @@ describe("applyTrailingComma", () => {
         assert.equal(run(arr, "on"), arr)
         const rest = "function f(\n    ...args\n) {}\n"
         assert.equal(run(rest, "on"), rest)
+        // Rest also as the last element of an object binding and a tuple type:
+        // `getText().startsWith("...")` catches both, so no comma is added.
+        const objRest = "const {\n    a,\n    ...rest\n} = o\n"
+        assert.equal(run(objRest, "on"), objRest)
+        const tupleRest = "type T = [\n    A,\n    ...B[]\n]\n"
+        assert.equal(run(tupleRest, "on"), tupleRest)
         // `off` must not strip an existing spread trailing comma: honoring
         // remove but not add (a syntax error after rest) would be lopsided, so
         // the position is excluded in both directions, not handled one-way.
@@ -47,12 +54,18 @@ describe("applyTrailingComma", () => {
     })
 
     it("leaves angle-bracket lists untouched (type params / args, TSX)", () => {
+        // Intentional difference from Prettier `all`, which adds a comma to a
+        // multi-line type-parameter declaration: ts-refine never touches any
+        // angle list, keeping the output always syntactically valid.
         for (const src of [
             "class Foo<\n    A,\n    B\n> {}\n",
             "const x: Bar<\n    A,\n    B\n> = y\n",
         ]) {
             assert.equal(run(src, "on"), src)
         }
+        // TSX `<T,>`: the comma disambiguates the type-parameter list from a JSX
+        // tag, so stripping it would break parsing. Preserved (angle untouched).
+        assert.equal(run("const f = <T,>() => null\n", "on", "/a.tsx"), "const f = <T,>() => null\n")
     })
 
     it("leaves interface / type-literal members to the separators pass", () => {
