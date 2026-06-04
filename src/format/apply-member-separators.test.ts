@@ -134,4 +134,26 @@ describe("applyMemberSeparators", () => {
         assert.match(out, /x = a;/, "separator before the computed field stays")
         assert.match(out, /\/\/ keep me/, "comment is preserved")
     })
+
+    it("none drops the separator across an inline comment between members, keeping the comment", () => {
+        const src = "interface I {\n    a: number;\n    // note\n    b: string;\n}\n"
+        const out = run(src, "none")
+        assert.match(out, /a: number\n/, "separator dropped (typed members, no fusion)")
+        assert.ok(out.includes("// note"), "inline comment preserved")
+        assert.ok(!out.includes(";"), "no separators remain")
+    })
+
+    it("none drops the separator across a multi-line block comment, keeping the comment", () => {
+        const src = "interface I {\n    a: number;\n    /* multi\n       line */\n    b: string;\n}\n"
+        const out = run(src, "none")
+        assert.match(out, /a: number\n/, "separator dropped")
+        assert.ok(out.includes("/* multi") && out.includes("line */"), "multi-line comment preserved verbatim")
+    })
+
+    it("none keeps `;` between same-line members separated only by a block comment", () => {
+        // Removing the `;` would fuse `a` and `b` — the block comment is trivia.
+        const src = "interface I { a: number; /* c */ b: string; }\n"
+        const out = run(src, "none")
+        assert.ok(out.includes("a: number; /* c */ b: string"), "same-line separator kept across the comment")
+    })
 })
