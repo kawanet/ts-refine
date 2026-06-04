@@ -109,6 +109,25 @@ describe("applyMemberSeparators", () => {
         assert.equal(run(lit, "comma"), lit)
     })
 
+    it("leaves an empty interface / class untouched (no members)", () => {
+        assert.equal(run("interface E {}\n", "semi"), "interface E {}\n")
+        assert.equal(run("class E {}\n", "none"), "class E {}\n")
+    })
+
+    it("handles a single-member interface (separator added and removed)", () => {
+        assert.equal(run("interface S {\n    a: number\n}\n", "semi"), "interface S {\n    a: number;\n}\n")
+        assert.equal(run("interface S {\n    a: number;\n}\n", "none"), "interface S {\n    a: number\n}\n")
+    })
+
+    it("comma leaves a lone class field alone (commas are invalid on class members)", () => {
+        const cls = "class C {\n    x = 1\n}\n"
+        assert.equal(run(cls, "comma"), cls)
+    })
+
+    it("none removes the separator from a lone bare member (nothing to fuse with before `}`)", () => {
+        assert.equal(run("interface S {\n    foo;\n}\n", "none"), "interface S {\n    foo\n}\n")
+    })
+
     it("formats every interface/class in a multi-declaration file", () => {
         // Regression: edits must be applied after the whole-file walk, not
         // mid-traversal — otherwise the second declaration is skipped/corrupted.
