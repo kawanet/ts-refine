@@ -14,7 +14,7 @@
 import type {Node, SourceFile} from "ts-morph"
 import {Node as N, SyntaxKind} from "ts-morph"
 
-type List = {elements: Node[]; close: Node}
+export type List = {elements: Node[]; close: Node}
 
 // Function-like nodes whose parameter list carries a trailing comma.
 const PARAMETER_KINDS = new Set<SyntaxKind>([
@@ -35,7 +35,7 @@ const PARAMETER_KINDS = new Set<SyntaxKind>([
 // The comma-separated list a node owns (elements + its closing bracket token),
 // or undefined for nodes this pass doesn't touch. Angle-bracket lists and
 // interface/type/class member lists are intentionally absent.
-function listOf(node: Node): List | undefined {
+export function listOf(node: Node): List | undefined {
     if (N.isArrayLiteralExpression(node) || N.isArrayBindingPattern(node) || N.isTupleTypeNode(node)) {
         const close = node.getFirstChildByKind(SyntaxKind.CloseBracketToken)
         return close && {elements: node.getElements(), close}
