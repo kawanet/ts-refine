@@ -75,6 +75,22 @@ describe("applyMemberSeparators", () => {
         assert.match(out, /x = 1; m\(\) \{\}/)
     })
 
+    it("none keeps `;` before a class computed field (removing it fuses the expression)", () => {
+        // `x = foo` + `[y] = 1` reparses as `x = foo[y] = 1` without the `;`.
+        const src = "class C {\n    x = foo;\n    [y] = 1;\n}\n"
+        const out = run(src, "none")
+        assert.match(out, /x = foo;\n/, "separator before the computed field is kept")
+        // Re-parsing keeps two distinct members.
+        const project = initInMemoryTestProject()
+        assert.equal(project.createSourceFile("/c.ts", out, {overwrite: true}).getClasses()[0].getMembers().length, 2)
+    })
+
+    it("none drops the separator before an interface index signature (type context, no fusion)", () => {
+        const src = "interface I {\n    x: number;\n    [k: string]: unknown;\n}\n"
+        const out = run(src, "none")
+        assert.match(out, /x: number\n/, "interface index signatures don't continue the prior member")
+    })
+
     it("none keeps `;` between same-line members (removing it would be a syntax error)", () => {
         const inline = "interface S { a: number; b: string; }\n"
         const out = run(inline, "none")

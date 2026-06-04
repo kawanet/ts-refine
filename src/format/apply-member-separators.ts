@@ -31,15 +31,21 @@ function isBareMember(member: Member): boolean {
 
 // For `none`, the separator can only be removed when a newline already splits
 // this member from the next one in source order (a same-line gap needs a
-// separator) and removing it can't fuse a bare member into the next. `next` is
-// the next member of any kind, including body-bearing ones the apply skips —
-// otherwise a field followed by an inline method would look like the last
-// member and lose a required separator.
-function droppableNone(member: Member, all: Member[], i: number): boolean {
+// separator) and removing it can't fuse the two members. `next` is the next
+// member of any kind, including body-bearing ones the apply skips — otherwise a
+// field followed by an inline method would look like the last member and lose a
+// required separator.
+function droppableNone(member: Member, all: Member[], i: number, isClass: boolean): boolean {
     const next = all[i + 1]
     if (next == null) return true // last member: nothing to separate from `}`
     if (member.getEndLineNumber() >= next.getStartLineNumber()) return false
-    return !isBareMember(member)
+    if (isBareMember(member)) return false
+    // A class field's initializer is an expression, so a following computed
+    // member continues it once the separator is gone: `x = foo` + `[y] = 1`
+    // reparses as `x = foo[y] = 1`. Keep the `;` before a class `[` member.
+    // (Interface `[k]: V` index signatures are type context and don't fuse.)
+    if (isClass && next.getText().startsWith("[")) return false
+    return true
 }
 
 export function applyMemberSeparators(sf: SourceFile, style: TSR.MemberSeparatorsOpts["separator"]): void {
@@ -56,7 +62,7 @@ export function applyMemberSeparators(sf: SourceFile, style: TSR.MemberSeparator
             // syntax error), so leave them untouched in comma mode.
             if (style === "comma" && isClass) return
 
-            const sep = style === "semi" ? ";" : style === "comma" ? "," : droppableNone(member, all, i) ? "" : ";"
+            const sep = style === "semi" ? ";" : style === "comma" ? "," : droppableNone(member, all, i, isClass) ? "" : ";"
             const text = member.getText()
             const next = stripSeparator(text) + sep
             if (next !== text) edits.push({start: member.getStart(), end: member.getEnd(), text: next})
