@@ -1,14 +1,6 @@
 import {strict as assert} from "node:assert"
 import {describe, it} from "node:test"
-import {mergeFormatStyles, overridesToFormatStyle, reportNamesForFormat} from "./format-options.ts"
-
-describe("overridesToFormatStyle", () => {
-    it("copies the override fields into options", () => {
-        const o = overridesToFormatStyle({indent: "tab", semicolons: "off"})
-        assert.equal(o.indent, "tab")
-        assert.equal(o.semicolons, "off")
-    })
-})
+import {mergeFormatStyles, reportNamesForFormat} from "./format-options.ts"
 
 describe("mergeFormatStyles", () => {
     it("lets the override win per field, falling back to the base", () => {

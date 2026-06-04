@@ -1,10 +1,10 @@
-// FormatStyle is the canonical per-field formatting intent. Both the
-// report recommendation and the CLI overrides are funneled into it, so
-// the ts-refine command output and the actual apply derive from one
-// value — guaranteeing they agree. The pipeline is:
-//   ReportResult ── reportToFormatStyle────┐
-//                                          ├─ mergeFormatStyles ── formatStyleToSettings ─▶ FormatCodeSettings
-//   FormatStyle ── overridesToFormatStyle──┘
+// FormatStyle is the canonical per-field formatting intent. Both the report
+// recommendation and the CLI overrides are FormatStyle values, so the ts-refine
+// command output and the actual apply derive from one value — guaranteeing they
+// agree. The pipeline is:
+//   ReportResult ── reportToFormatStyle──┐
+//                                        ├─ mergeFormatStyles ── formatStyleToSettings ─▶ FormatCodeSettings
+//   CLI overrides (already FormatStyle) ─┘
 // and buildFormatTokens renders the same FormatStyle back to argv.
 
 import type {TSR} from "ts-refine"
@@ -25,19 +25,6 @@ const reportByOverride: {field: keyof TSR.FormatStyle; report: TSR.ReportName}[]
 export function reportNamesForFormat(overrides: TSR.FormatStyle): TSR.ReportName[] {
     const skip = new Set(reportByOverride.filter((m) => overrides[m.field] !== undefined).map((m) => m.report))
     return formatReportNames.filter((name) => !skip.has(name))
-}
-
-// CLI overrides → FormatStyle. A typed seam keeping parseArgs decoupled from
-// the FormatStyle vocabulary; the shapes happen to line up today.
-export function overridesToFormatStyle(overrides: TSR.FormatStyle): TSR.FormatStyle {
-    return {
-        indent: overrides.indent,
-        semicolons: overrides.semicolons,
-        newLine: overrides.newLine,
-        bracketSpacing: overrides.bracketSpacing,
-        memberSeparators: overrides.memberSeparators,
-        trailingComma: overrides.trailingComma,
-    }
 }
 
 // Per-field precedence: override wins over base, else base, else unset.

@@ -9,7 +9,7 @@ import {refineFormat, refineReport} from "../../index.ts"
 import type {CLI} from "../cli-io.ts"
 import {buildFormatTokens} from "../report/emit-ts-refine.ts"
 import {resolvePaths} from "../resolve-paths.ts"
-import {mergeFormatStyles, overridesToFormatStyle, reportNamesForFormat} from "./format-options.ts"
+import {mergeFormatStyles, reportNamesForFormat} from "./format-options.ts"
 import {parseFormatArgs} from "./parse-format-args.ts"
 
 export const formatCLI: CLI = async (ctx) => {
@@ -23,11 +23,11 @@ export const formatCLI: CLI = async (ctx) => {
     // Skip surveying any field the CLI already pinned; a fully-pinned run
     // makes this an empty set and refineReport does no work.
     const reportNames = reportNamesForFormat(args.applyOverrides)
-    const overrides = overridesToFormatStyle(args.applyOverrides)
 
-    // format unifies the project: survey once and apply one merged style.
+    // format unifies the project: survey once and apply one merged style. CLI
+    // overrides are already a FormatStyle, so they merge in directly.
     const report = await refineReport({project, paths, reportNames, log})
-    const format = mergeFormatStyles(reportToFormatStyle(report), overrides)
+    const format = mergeFormatStyles(reportToFormatStyle(report), args.applyOverrides)
 
     // `cr` is dropped from FormatStyle, so flag it from the report: the survey
     // recommended CR-only newlines but no override forced an applicable value.
