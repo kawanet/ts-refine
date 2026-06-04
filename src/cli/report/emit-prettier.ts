@@ -55,12 +55,12 @@ export function writePrettierConfig(report: TSR.ReportResult, output: TSR.Writer
 // fired — an empty `{}` block would be pure noise. The trailing blank
 // line matches the convention every other report block follows.
 export function writePrettierMarkdown(report: TSR.ReportResult, output: TSR.Writer): void {
-    const opts = buildPrettierOptions(report)
-    if (Object.keys(opts).length === 0) return
+    const config = getPrettierConfig(report)
+    if (config === "{}") return
     output.write("### .prettierrc\n")
     output.write("\n")
     output.write("```json\n")
-    output.write(JSON.stringify(opts, null, 4) + "\n")
+    output.write(config + "\n")
     output.write("```\n")
     output.write("\n")
 }
