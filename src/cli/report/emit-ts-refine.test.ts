@@ -27,8 +27,9 @@ describe("getTsRefineFormat", () => {
         assert.equal(getTsRefineFormat({indent: {width: "tab"}}), "--indent tab")
     })
 
-    it("omits memberSeparators (report-only; the format command does not consume it)", () => {
-        assert.equal(getTsRefineFormat({memberSeparators: {separator: "none"}}), "")
+    it("maps memberSeparators.separator → --member-separators V (the format command applies it)", () => {
+        assert.equal(getTsRefineFormat({memberSeparators: {separator: "none"}}), "--member-separators none")
+        assert.equal(getTsRefineFormat({memberSeparators: {separator: "comma"}}), "--member-separators comma")
     })
 
     it("maps newLine.newLine → --new-line V", () => {
@@ -39,12 +40,12 @@ describe("getTsRefineFormat", () => {
         assert.equal(getTsRefineFormat({bracketSpacing: {bracketSpacing: "on"}}), "--bracket-spacing on")
     })
 
-    it("combines all recommendations in a fixed order, omitting member-separators", () => {
+    it("combines all recommendations in a fixed order", () => {
         const out = getTsRefineFormat(
             // Input keys are intentionally reversed; the output order is fixed.
             {bracketSpacing: {bracketSpacing: "on"}, newLine: {newLine: "lf"}, memberSeparators: {separator: "none"}, indent: {width: 4}, semicolons: {semicolons: "off"}},
         )
-        assert.equal(out, "--semicolons off --indent 4 --new-line lf --bracket-spacing on")
+        assert.equal(out, "--semicolons off --indent 4 --member-separators none --new-line lf --bracket-spacing on")
     })
 
     it("returns an empty string when nothing was recommended", () => {
