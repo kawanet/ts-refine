@@ -11,19 +11,19 @@ describe("parseInspect", () => {
     it("defaults to the full inspector registry", () => {
         const r = parseInspectArgs([], common())
         assert.ok(r)
-        assert.deepEqual(r.inspectorNames, ["exports", "importers"])
+        assert.deepEqual(r.inspectors, ["exports", "importers"])
     })
 
     it("collects inspector selectors and dedupes", () => {
         const r = parseInspectArgs(["--exports", "--importers", "--exports"], common())
         assert.ok(r)
-        assert.deepEqual(r.inspectorNames, ["exports", "importers"])
+        assert.deepEqual(r.inspectors, ["exports", "importers"])
     })
 
     it("passes unknown inspector selectors through (refineInspect validates)", () => {
         const r = parseInspectArgs(["--typo"], common())
         assert.ok(r)
-        assert.deepEqual(r.inspectorNames, ["typo"])
+        assert.deepEqual(r.inspectors, ["typo"])
     })
 
     it("keeps positional files raw for the runner to resolve", () => {

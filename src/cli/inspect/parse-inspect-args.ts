@@ -12,7 +12,7 @@ export interface InspectArgs {
     paths: string[]
 
     // The requested inspector selectors, or the full registry.
-    inspectorNames: string[]
+    inspectors: string[]
 }
 
 export function parseInspectArgs(sub: string[], common: CommonArgs): InspectArgs | undefined {
@@ -46,5 +46,5 @@ export function parseInspectArgs(sub: string[], common: CommonArgs): InspectArgs
     }
 
     const effective = inspectorNames.length > 0 ? inspectorNames : [...knownInspectorNames]
-    return {paths, inspectorNames: effective}
+    return {paths, inspectors: effective}
 }

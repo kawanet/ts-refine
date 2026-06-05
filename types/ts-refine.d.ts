@@ -192,7 +192,7 @@ export declare namespace TSR {
 
     interface InspectOpts extends CommonOpts {
         paths: string[]
-        inspectorNames: InspectorName[]
+        inspectors: InspectorName[]
     }
 
     // Input to `refineMove`. `sources` are absolute paths of existing project

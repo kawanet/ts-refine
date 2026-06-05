@@ -16,8 +16,8 @@ export const inspectCLI: CLI = async (ctx) => {
     if (common.help) throw new Error("--help is not supported for the inspect command")
     const {tsConfigFilePath, paths} = resolvePaths(common.tsconfigPath, args.paths)
     const project = initProject({tsConfigFilePath})
-    const inspectorNames = args.inspectorNames as TSR.InspectorName[]
-    const files = await refineInspect({project, paths, inspectorNames, log})
+    const inspectors = args.inspectors as TSR.InspectorName[]
+    const files = await refineInspect({project, paths, inspectors, log})
     for (const file of files) writeInspectFile(file, output)
     return 0
 }
