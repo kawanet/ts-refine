@@ -63,7 +63,7 @@ describe("refineFormat", () => {
         // stale wrappers ("old and new trees ... same count").
         const project = initInMemoryProject()
         const sf = project.createSourceFile("a.ts", "export abstract class Foo {\n  protected abstract bar(): Promise<number>;\n}\n")
-        await refineReport({project, paths: [], reportNames: ["trailing-comma"], log})
+        await refineReport({project, paths: [], reports: ["trailing-comma"], log})
         await refineFormat({project, log, dryRun: true, paths: [], format: {semi: "off"}})
         assert.match(sf.getFullText(), /protected abstract bar\(\): Promise<number>\n/)
     })

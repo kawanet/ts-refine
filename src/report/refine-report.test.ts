@@ -22,7 +22,7 @@ describe("refineReport", () => {
                     // Intentional typo. The typed surface narrows to known
                     // names, so the cast lets the test reach the runtime
                     // validation that the production CLI also relies on.
-                    reportNames: ["typo-name" as unknown as TSR.ReportName],
+                    reports: ["typo-name" as unknown as TSR.ReportName],
                     output: {write: (l) => lines.push(l)},
                     paths: [],
                 }),
@@ -39,7 +39,7 @@ describe("refineReport", () => {
 
             // Input deliberately in reverse of registry order to confirm the
             // router re-orders. indent precedes semicolons in the registry.
-            reportNames: ["semi", "indent"],
+            reports: ["semi", "indent"],
             output: {write: (l) => lines.push(l)},
             paths: [],
         })

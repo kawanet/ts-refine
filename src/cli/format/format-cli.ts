@@ -26,7 +26,7 @@ export const formatCLI: CLI = async (ctx) => {
 
     // format unifies the project: survey once and apply one merged style. CLI
     // overrides are already a FormatStyle, so they merge in directly.
-    const report = await refineReport({project, paths, reportNames, log})
+    const report = await refineReport({project, paths, reports, log})
     const format = mergeFormatStyles(reportToFormatStyle(report), args.applyOverrides)
 
     // `cr` is dropped from FormatStyle, so flag it from the report: the survey

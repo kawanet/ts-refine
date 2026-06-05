@@ -20,10 +20,10 @@ import {runReportSemi} from "./semicolons.ts"
 import {runReportTrailingComma} from "./trailing-comma.ts"
 
 export const refineReport: typeof declared.refineReport = async (opts) => {
-    const {output, reportNames: requested, paths, log} = opts
+    const {output, reports: requested, paths, log} = opts
     const project = resolveProject(opts)
 
-    // Validate every requested name up-front so a typo fails before any
+    // Validate every requested report name up-front so a typo fails before any
     // report runs. `reportNames` is the source of truth for what exists.
     for (const name of requested) {
         if (!(reportNames as readonly string[]).includes(name)) {

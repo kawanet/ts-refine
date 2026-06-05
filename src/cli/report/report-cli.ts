@@ -24,7 +24,7 @@ export const reportCLI: CLI = async (ctx) => {
     const reportNames = args.reportNames as TSR.ReportName[]
     const emitter = selectEmitter(args.emit, output)
 
-    const report = await refineReport({project, paths, reportNames, output: emitter.reportStream, log})
+    const report = await refineReport({project, paths, reports, output: emitter.reportStream, log})
     if (args.surveyDefault) {
         writeFormatMarkdown(report, output)
         writePrettierMarkdown(report, output)

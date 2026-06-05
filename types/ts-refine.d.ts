@@ -63,7 +63,7 @@ export declare namespace TSR {
         // Markdown sink for the per-report tables. Omit it to compute the
         // recommendations only (callers that just want the ReportResult).
         output?: Writer
-        reportNames: ReportName[]
+        reports: ReportName[]
     }
 
     // Per-report recommendations. A missing key means the report didn't run
