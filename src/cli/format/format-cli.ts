@@ -22,7 +22,7 @@ export const formatCLI: CLI = async (ctx) => {
 
     // Skip surveying any field the CLI already pinned; a fully-pinned run
     // makes this an empty set and refineReport does no work.
-    const reportNames = reportNamesForFormat(args.applyOverrides)
+    const reports = reportNamesForFormat(args.applyOverrides)
 
     // format unifies the project: survey once and apply one merged style. CLI
     // overrides are already a FormatStyle, so they merge in directly.

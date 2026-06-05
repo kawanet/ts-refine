@@ -12,7 +12,7 @@ export interface ReportArgs {
     paths: string[]
 
     // The requested selectors, or the full registry when none are given.
-    reportNames: string[]
+    reports: string[]
 
     // Suppress Markdown and emit the named output instead.
     emit: string | null
@@ -62,5 +62,5 @@ export function parseReportArgs(sub: string[], common: CommonArgs): ReportArgs |
 
     const surveyDefault = reportNames.length === 0 && emit === null
     const effectiveReports = reportNames.length > 0 ? reportNames : [...knownReportNames]
-    return {paths, reportNames: effectiveReports, emit, surveyDefault}
+    return {paths, reports: effectiveReports, emit, surveyDefault}
 }

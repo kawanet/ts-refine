@@ -21,7 +21,7 @@ export const reportCLI: CLI = async (ctx) => {
     const project = initProject({tsConfigFilePath})
 
     // Report-name validation lives in refineReport so typos surface there.
-    const reportNames = args.reportNames as TSR.ReportName[]
+    const reports = args.reports as TSR.ReportName[]
     const emitter = selectEmitter(args.emit, output)
 
     const report = await refineReport({project, paths, reports, output: emitter.reportStream, log})
