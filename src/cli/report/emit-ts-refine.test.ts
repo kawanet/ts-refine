@@ -1,6 +1,6 @@
 import {strict as assert} from "node:assert"
 import {describe, it} from "node:test"
-import {emitTsRefineFormat, getTsRefineFormat, writeFormatMarkdown} from "./emit-ts-refine.ts"
+import {getTsRefineFormat, writeFormatMarkdown} from "./emit-ts-refine.ts"
 
 function capture(fn: (s: {write: (chunk: string) => void}) => void): string {
     let out = ""
@@ -56,21 +56,6 @@ describe("getTsRefineFormat", () => {
     it("returns an empty string when nothing was recommended", () => {
         // Symmetric with `--emit prettier` emitting an empty `{}` for the same case.
         assert.equal(getTsRefineFormat({}), "")
-    })
-})
-
-// The flag mapping is covered above; these pin the framing emitTsRefineFormat
-// feeds — most importantly the empty branch, which select-emitter.test.ts
-// (non-empty only) does not exercise.
-describe("emitTsRefineFormat", () => {
-    it("emits nothing when nothing was recommended", () => {
-        const out = capture((s) => emitTsRefineFormat({}, s))
-        assert.equal(out, "")
-    })
-
-    it("frames the flags on a continued second line", () => {
-        const out = capture((s) => emitTsRefineFormat({semi: {semi: "off"}}, s))
-        assert.equal(out, "--semi off\n")
     })
 })
 

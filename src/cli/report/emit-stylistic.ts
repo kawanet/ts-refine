@@ -10,10 +10,6 @@ type StylisticRules = {
     [K in keyof RuleOptions]?: Linter.RuleEntry<RuleOptions[K]>
 }
 
-interface StylisticConfig {
-    rules: StylisticRules
-}
-
 const compactJSON = (value: unknown): string =>
     JSON.stringify(value, null, 2).replace(/\[.*?\]/gs, (match) => match.replace(/([\[{]?)\n *([\]}]?)/g, (_, open: string, close: string) => open || close || " "))
 
@@ -78,12 +74,8 @@ function buildStylisticRules(report: TSR.ReportResult): StylisticRules {
 }
 
 export function getStylisticConfig(report: TSR.ReportResult): string {
-    const config: StylisticConfig = {rules: buildStylisticRules(report)}
+    const config: Linter.Config = {rules: buildStylisticRules(report)}
     return compactJSON(config)
-}
-
-export function emitStylisticConfig(report: TSR.ReportResult, output: TSR.Writer): void {
-    output.write(getStylisticConfig(report) + "\n")
 }
 
 export function writeStylisticMarkdown(report: TSR.ReportResult, output: TSR.Writer): void {

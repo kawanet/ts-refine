@@ -1,6 +1,6 @@
 import {strict as assert} from "node:assert"
 import {describe, it} from "node:test"
-import {emitStylisticConfig, getStylisticConfig, writeStylisticMarkdown} from "./emit-stylistic.ts"
+import {getStylisticConfig, writeStylisticMarkdown} from "./emit-stylistic.ts"
 
 function capture(report: Parameters<typeof getStylisticConfig>[0]): string {
     return getStylisticConfig(report)
@@ -84,15 +84,6 @@ describe("getStylisticConfig", () => {
         const out = capture({semi: {semi: "off"}, indent: {width: 2}})
         assert.match(out, /"@stylistic\/semi": \["error", "never"\]/)
         assert.match(out, /"@stylistic\/indent": \["error", 2\]/)
-    })
-})
-
-describe("emitStylisticConfig", () => {
-    it("writes the config with one trailing newline", () => {
-        let out = ""
-        emitStylisticConfig({semi: {semi: "off"}}, {write: (s) => (out += s)})
-        assert.match(out, /\n$/)
-        assert.equal(JSON.parse(out).rules["@stylistic/semi"][1], "never")
     })
 })
 

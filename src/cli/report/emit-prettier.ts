@@ -40,16 +40,10 @@ function buildPrettierOptions(report: TSR.ReportResult): PrettierOptions {
     return opts
 }
 
-// Renders the recommendation as the `.prettierrc` JSON body. Returns
-// plain text (`{}` when nothing fired), so the caller picks its own
-// framing; writePrettierConfig just adds the newline.
+// Renders the recommendation as the `.prettierrc` JSON body.
 export function getPrettierConfig(report: TSR.ReportResult): string {
     const opts = buildPrettierOptions(report)
     return JSON.stringify(opts, null, 4)
-}
-
-export function emitPrettierConfig(report: TSR.ReportResult, output: TSR.Writer): void {
-    output.write(getPrettierConfig(report) + "\n")
 }
 
 // The `.prettierrc` fence appended at the end of the default-survey
