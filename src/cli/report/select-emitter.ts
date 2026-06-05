@@ -10,8 +10,8 @@
 // keeping it out of the rendered output.
 
 import type {TSR} from "ts-refine"
-import {writePrettierConfig} from "./emit-prettier.ts"
-import {writeFormatCommand} from "./emit-ts-refine.ts"
+import {emitPrettierConfig} from "./emit-prettier.ts"
+import {emitTsRefineFormat} from "./emit-ts-refine.ts"
 
 export const emitNames = ["prettier", "ts-refine"] as const
 
@@ -29,12 +29,12 @@ export function selectEmitter(name: string | null, output: TSR.Writer): EmitterD
     }
     if (name === "prettier") {
         return {
-            finalize: (report) => writePrettierConfig(report, output),
+            finalize: (report) => emitPrettierConfig(report, output),
         }
     }
     if (name === "ts-refine") {
         return {
-            finalize: (report) => writeFormatCommand(report, output),
+            finalize: (report) => emitTsRefineFormat(report, output),
         }
     }
 

@@ -38,7 +38,7 @@ describe("selectOutput", () => {
 
         // Two-line form: `ts-refine \` continuation, then the flags
         // indented by two spaces so `grep '^ +--'` picks them up.
-        assert.equal(out(), "ts-refine format \\\n  --semi off --indent 4 --member-delimiter comma\n")
+        assert.equal(out(), "--semi off --indent 4 --member-delimiter comma\n")
     })
 
     it("throws on an unknown output name", () => {

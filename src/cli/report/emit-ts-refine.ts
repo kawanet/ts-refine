@@ -21,7 +21,7 @@ export function buildFormatTokens(options: TSR.FormatStyle): string[] {
 }
 
 // Renders the recommendation as the flag string the `format` command
-// consumes — the value writeFormatCommand frames and the Markdown survey
+// consumes — the value emitTsRefineFormat frames and the Markdown survey
 // embeds. Returns plain text (empty when nothing fired), so the caller
 // picks its own framing.
 export function getTsRefineFormat(report: TSR.ReportResult): string {
@@ -29,17 +29,10 @@ export function getTsRefineFormat(report: TSR.ReportResult): string {
     return flags.join(" ")
 }
 
-// Always starts with the `format` command (the verb the recommendation
-// translates to). Empty recommendations still emit `ts-refine format`,
-// paralleling `--emit prettier`'s empty `{}`.
-export function writeFormatCommand(report: TSR.ReportResult, output: TSR.Writer): void {
+export function emitTsRefineFormat(report: TSR.ReportResult, output: TSR.Writer): void {
     const format = getTsRefineFormat(report)
-    if (!format) {
-        output.write("ts-refine format\n")
-        return
-    }
-    output.write("ts-refine format \\\n")
-    output.write(`  ${format}\n`)
+    if (!format) return
+    output.write(`${format}\n`)
 }
 
 // `## recommendation` block in the default-survey Markdown. Skipped

@@ -48,7 +48,7 @@ export function getPrettierConfig(report: TSR.ReportResult): string {
     return JSON.stringify(opts, null, 4)
 }
 
-export function writePrettierConfig(report: TSR.ReportResult, output: TSR.Writer): void {
+export function emitPrettierConfig(report: TSR.ReportResult, output: TSR.Writer): void {
     output.write(getPrettierConfig(report) + "\n")
 }
 

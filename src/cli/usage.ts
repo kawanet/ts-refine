@@ -64,7 +64,7 @@ export function usage(): string {
         "  --emit <name>               Suppress Markdown and emit the named output instead",
         `                              ${emitFlags}`,
         `                              "prettier": .prettierrc JSON`,
-        `                              "ts-refine": runnable format command`,
+        `                              "ts-refine": ts-refine format's CLI arguments`,
         "",
         "format (write; follows inferred conventions):",
         "  format                      Apply the recommended formatting settings",
