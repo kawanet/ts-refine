@@ -10,6 +10,7 @@ import {logging} from "../common/logging.ts"
 import {formatStyleToSettings, normalizeNewLines} from "../lib/format-settings.ts"
 import {selectSourceFiles} from "../lib/source-files.ts"
 import {applyMemberDelimiter} from "./apply-member-delimiter.ts"
+import {applySingleLineTypeLiteralTail} from "./apply-single-line-type-literal.ts"
 import {applyTrailingComma} from "./apply-trailing-comma.ts"
 
 export const refineFormat: typeof declared.refineFormat = async (opts) => {
@@ -42,6 +43,10 @@ export const refineFormat: typeof declared.refineFormat = async (opts) => {
         // The LS formatter can't set interface/class member delimiter (and
         // can't emit commas); apply the surveyed style on the formatted AST.
         if (format.memberDelimiter != null) applyMemberDelimiter(sf, format.memberDelimiter)
+
+        // Prettier keeps the last member of a single-line type literal bare
+        // even when the surrounding type alias receives a statement `;`.
+        if (format.semi === "on") applySingleLineTypeLiteralTail(sf)
 
         // The LS formatter has no trailing-comma control either; apply it too.
         if (format.trailingComma != null) applyTrailingComma(sf, format.trailingComma)

@@ -31,6 +31,37 @@ describe("refineFormat", () => {
         assert.match(sf.getFullText(), /const a = 1;\nconst b = 2;\n/)
     })
 
+    it("keeps single-line type literal tails bare when semicolons are on", async () => {
+        const project = initInMemoryProject()
+        const sf = project.createSourceFile("a.ts", "type X = { [key: string]: boolean }\nconst x = (): { [key: string]: boolean } => ({})\n")
+        await refineFormat({project, log, dryRun: true, paths: [], format: {semi: "on"}})
+
+        // TS LS inserts member `;` eagerly; trim only the final single-line type
+        // literal delimiter so common inline types stay close to Prettier.
+        assert.equal(sf.getFullText(), "type X = { [key: string]: boolean };\nconst x = (): { [key: string]: boolean } => ({});\n")
+    })
+
+    it("leaves multiline type literal member semicolons when semicolons are on", async () => {
+        const project = initInMemoryProject()
+        const sf = project.createSourceFile("a.ts", "type X = {\n    [key: string]: boolean\n}\nconst x = (): {\n    [key: string]: boolean\n} => ({})\n")
+        await refineFormat({project, log, dryRun: true, paths: [], format: {semi: "on"}})
+
+        assert.equal(sf.getFullText(), "type X = {\n    [key: string]: boolean;\n};\nconst x = (): {\n    [key: string]: boolean;\n} => ({});\n")
+    })
+
+    it("trims only the last single-line type literal member across delimiter styles", async () => {
+        for (const memberDelimiter of [undefined, "semi", "comma", "none"] as const) {
+            const project = initInMemoryProject()
+            const sf = project.createSourceFile("a.ts", "type A = { a: number, b: number }\ntype B = { a: number; b: number }\n")
+            await refineFormat({project, log, dryRun: true, paths: [], format: {semi: "on", memberDelimiter}})
+
+            // `memberDelimiter` currently owns interface/class members. For
+            // type literals this pass only removes the final LS-inserted `;`;
+            // existing between-member `,` / `;` choices are preserved.
+            assert.equal(sf.getFullText(), "type A = { a: number, b: number };\ntype B = { a: number; b: number };\n")
+        }
+    })
+
     it("leaves JSON modules untouched instead of corrupting them with semicolons", async () => {
         // A semicolon injected into the JSON object literal is a syntax error and
         // used to crash the whole command; JSON must not be a format target.
