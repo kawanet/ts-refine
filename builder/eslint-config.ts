@@ -27,6 +27,10 @@ const rules: StylisticRules = {
 // the TypeScript parser so .ts files can be read, but enable no lint
 // rules beyond the @stylistic formatting rules above.
 const eslintConfig: Linter.Config[] = [
+    // Run as `eslint .` and let files/ignores below pick the targets.
+    // dist holds generated output; without this, default JS linting of
+    // its .mjs files would pull build artifacts into the run.
+    {ignores: ["dist/**"]},
     {
         files: ["builder/**/*.ts", "src/**/*.ts", "types/**/*.ts"],
         plugins: {

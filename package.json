@@ -60,8 +60,8 @@
   },
   "scripts": {
     "build": "make -C builder",
-    "eslint": "eslint 'builder/**/*.ts' 'src/**/*.ts' 'types/**/*.ts'",
-    "eslint:fix": "eslint --fix 'builder/**/*.ts' 'src/**/*.ts' 'types/**/*.ts'",
+    "eslint": "eslint .",
+    "eslint:fix": "eslint --fix .",
     "fixpack": "fixpack",
     "format": "node src/cli.ts format",
     "prepack": "make -C builder is-buildable",
