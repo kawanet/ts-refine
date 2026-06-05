@@ -32,9 +32,9 @@ export async function runReportBracketSpacing({sourceFiles, output, log, imports
         const counts = new Map<Style, number>()
         const visit = (node: Node) => {
             const braces = braceSpan(node)
-            if (braces === null) return
+            if (braces == null) return
             const style = classifyBraces(braces)
-            if (style === null) return
+            if (style == null) return
             counts.set(style, (counts.get(style) ?? 0) + 1)
         }
         // importsOnly: only the import/export statements are rewritten by

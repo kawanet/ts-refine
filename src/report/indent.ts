@@ -27,7 +27,7 @@ export async function runReportIndent({sourceFiles, output, log}: ReportRunOpts)
         const counts = detectIndent(sf.getFullText())
         if (counts.size === 0) continue
         const primary = primaryIndentWidth(counts)
-        if (primary === undefined) continue
+        if (primary == null) continue
         perFile.push({path: displayPath(sf.getFilePath()), counts, primary})
     }
 

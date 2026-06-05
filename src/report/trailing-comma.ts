@@ -46,7 +46,7 @@ export async function runReportTrailingComma({sourceFiles, output, log, importsO
         const counts = new Map<Style, number>()
         const visit = (node: Node) => {
             const style = classify(node)
-            if (style === null) return
+            if (style == null) return
             counts.set(style, (counts.get(style) ?? 0) + 1)
         }
         // importsOnly: organizeImports only rewrites the import/export

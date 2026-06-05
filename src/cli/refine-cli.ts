@@ -59,12 +59,12 @@ export const refineCLI: CLI = async (ctx) => {
     // subcommand all print usage. Globals without a subcommand fall through to
     // "expected a subcommand"; a subcommand combined with --help is left to the
     // handler, which currently throws to reject it.
-    if (command === "help" || tokens.length === 0 || (command === undefined && common.help)) {
+    if (command === "help" || tokens.length === 0 || (command == null && common.help)) {
         output.write(usage() + "\n")
         return 0
     }
 
-    const handler = command === undefined ? undefined : COMMAND_TABLE.get(command)
+    const handler = command == null ? undefined : COMMAND_TABLE.get(command)
     if (!handler) {
         // Only globals and no subcommand reads as "expected a subcommand";
         // anything else — including a leading-dash token — is named back as an

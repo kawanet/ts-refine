@@ -66,7 +66,7 @@ export async function runReportNewLine({sourceFiles, output, log}: ReportRunOpts
         output.write("\n")
     }
     logging(log, `report new-line: ${perFile.length} files counted / ${sourceFiles.length} files total`)
-    return recommend !== undefined ? {newLine: recommend} : {}
+    return recommend != null ? {newLine: recommend} : {}
 }
 
 // Single pass over the text to split LF, CRLF, and lone CR. `\r\n` is one

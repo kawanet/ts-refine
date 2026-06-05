@@ -6,7 +6,7 @@ import type {TSR} from "ts-refine"
 export function reportToFormatStyle(report: TSR.ReportResult): TSR.FormatStyle {
     const options: TSR.FormatStyle = {}
     if (report.semi?.semi) options.semi = report.semi.semi
-    if (report.indent?.width !== undefined) options.indent = report.indent.width
+    if (report.indent?.width != null) options.indent = report.indent.width
     const newLine = report.newLine?.newLine
     if (newLine === "lf" || newLine === "crlf") options.newLine = newLine
     if (report.bracketSpacing?.bracketSpacing) options.bracketSpacing = report.bracketSpacing.bracketSpacing

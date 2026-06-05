@@ -81,7 +81,7 @@ export function primaryIndentWidth(counts: IndentCounts): IndentWidth | undefine
             continue
         }
         if (v !== bestCount) continue
-        if (best === undefined) {
+        if (best == null) {
             best = k
             continue
         }

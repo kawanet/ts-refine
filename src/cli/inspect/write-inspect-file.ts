@@ -7,8 +7,8 @@ import type {TSR} from "ts-refine"
 export function writeInspectFile(file: TSR.InspectFile, output: TSR.Writer): void {
     output.write(`## ${file.file}\n`)
     output.write("\n")
-    if (file.exports !== undefined) writeExports(file.exports, output)
-    if (file.importers !== undefined) writeImporters(file.importers, output)
+    if (file.exports != null) writeExports(file.exports, output)
+    if (file.importers != null) writeImporters(file.importers, output)
 }
 
 function writeExports(rows: TSR.InspectExport[], output: TSR.Writer): void {

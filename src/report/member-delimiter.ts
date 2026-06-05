@@ -49,7 +49,7 @@ export async function runReportMemberDelimiter({sourceFiles, output, log, import
             if (!Node.isInterfaceDeclaration(node) && !Node.isClassDeclaration(node)) return
             for (const member of node.getMembers()) {
                 const kind = classify(member)
-                if (kind === null) continue
+                if (kind == null) continue
                 counts.set(kind, (counts.get(kind) ?? 0) + 1)
             }
         })
@@ -113,7 +113,7 @@ export async function runReportMemberDelimiter({sourceFiles, output, log, import
 // do. Shared with the apply pass so report and format agree on the scope.
 export function isSeparableMember(member: ClassMemberTypes | TypeElementTypes): boolean {
     if (Node.isClassStaticBlockDeclaration(member)) return false
-    return memberBody(member) === undefined
+    return memberBody(member) == null
 }
 
 // Reads the member AST and returns the trailing separator. Only members with

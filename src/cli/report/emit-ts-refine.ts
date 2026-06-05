@@ -12,7 +12,7 @@ import {reportToFormatStyle} from "../../common/format-style.ts"
 export function buildFormatTokens(options: TSR.FormatStyle): string[] {
     const flags: string[] = []
     if (options.semi) flags.push("--semi", options.semi)
-    if (options.indent !== undefined) flags.push("--indent", String(options.indent))
+    if (options.indent != null) flags.push("--indent", String(options.indent))
     if (options.memberDelimiter) flags.push("--member-delimiter", options.memberDelimiter)
     if (options.newLine) flags.push("--new-line", options.newLine)
     if (options.bracketSpacing) flags.push("--bracket-spacing", options.bracketSpacing)
