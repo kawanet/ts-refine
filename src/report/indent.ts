@@ -16,7 +16,7 @@ import type {ReportRunOpts} from "./report-run-opts.ts"
 
 type Bucket = {lines: number; files: number; topPath: string; topLines: number}
 
-export async function runReportIndent({sourceFiles, output, log}: ReportRunOpts): Promise<Partial<TSR.IndentOpts>> {
+export async function runReportIndent({sourceFiles, output, log}: ReportRunOpts): Promise<Partial<TSR.IndentReport>> {
     // Per-file: detect leading-width distribution, then collapse to one
     // "primary" width (the line-count mode). Files with no leading
     // whitespace at all are excluded.

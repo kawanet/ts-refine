@@ -16,7 +16,7 @@ import {isSemiEligibleStatement, isTypeMember} from "./statement-kinds.ts"
 // too sparse to be useful — every middle bucket was empty for typical files.
 const BUCKET_LABELS = ["0%", "1-10%", "11-49%", "50%", "51-89%", "90-99%", "100%"] as const
 
-export async function runReportSemi({sourceFiles, output, log, importsOnly}: ReportRunOpts): Promise<Partial<TSR.SemiOpts>> {
+export async function runReportSemi({sourceFiles, output, log, importsOnly}: ReportRunOpts): Promise<Partial<TSR.SemiReport>> {
     type PerFile = {path: string; total: number; withSemi: number}
     const perFile: PerFile[] = []
 

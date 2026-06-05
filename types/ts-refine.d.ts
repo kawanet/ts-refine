@@ -28,29 +28,29 @@ export declare namespace TSR {
     // Recommendation shapes. Not runtime inputs — they describe the value
     // type of each `ReportResult` slot.
 
-    interface SemiOpts {
+    interface SemiReport {
         semi: "on" | "off"
     }
 
     // "tab" recommends tab indentation (LS convertTabsToSpaces:false /
     // Prettier useTabs); a number recommends that many spaces.
-    interface IndentOpts {
+    interface IndentReport {
         width: number | "tab"
     }
 
-    interface MemberDelimiterOpts {
+    interface MemberDelimiterReport {
         delimiter: "semi" | "comma" | "none"
     }
 
-    interface NewLineOpts {
+    interface NewLineReport {
         newLine: "lf" | "crlf" | "cr"
     }
 
-    interface BracketSpacingOpts {
+    interface BracketSpacingReport {
         bracketSpacing: "on" | "off"
     }
 
-    interface TrailingCommaOpts {
+    interface TrailingCommaReport {
         trailingComma: "on" | "off"
     }
 
@@ -69,12 +69,12 @@ export declare namespace TSR {
     // Per-report recommendations. A missing key means the report didn't run
     // or had nothing to recommend.
     interface ReportResult {
-        semi?: Partial<SemiOpts>
-        indent?: Partial<IndentOpts>
-        memberDelimiter?: Partial<MemberDelimiterOpts>
-        newLine?: Partial<NewLineOpts>
-        bracketSpacing?: Partial<BracketSpacingOpts>
-        trailingComma?: Partial<TrailingCommaOpts>
+        semi?: Partial<SemiReport>
+        indent?: Partial<IndentReport>
+        memberDelimiter?: Partial<MemberDelimiterReport>
+        newLine?: Partial<NewLineReport>
+        bracketSpacing?: Partial<BracketSpacingReport>
+        trailingComma?: Partial<TrailingCommaReport>
     }
 
     // Per-field format intent derived from a report recommendation, and what the

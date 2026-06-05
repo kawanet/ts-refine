@@ -20,7 +20,7 @@ const NL_LABEL: Record<NewLine, string> = {
 
 type Bucket = {lines: number; files: number; topPath: string; topLines: number}
 
-export async function runReportNewLine({sourceFiles, output, log}: ReportRunOpts): Promise<Partial<TSR.NewLineOpts>> {
+export async function runReportNewLine({sourceFiles, output, log}: ReportRunOpts): Promise<Partial<TSR.NewLineReport>> {
     type PerFile = {path: string; counts: Map<NewLine, number>; primary: NewLine}
     const perFile: PerFile[] = []
 

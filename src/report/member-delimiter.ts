@@ -26,7 +26,7 @@ const SEP_LABEL: Record<Separator, string> = {
 
 // Maps internal Separator symbols to MemberSeparatorsOpts.separator's
 // value space (semi / comma / none).
-const SEP_FLAG_VALUE: Record<Separator, TSR.MemberDelimiterOpts["delimiter"]> = {
+const SEP_FLAG_VALUE: Record<Separator, TSR.MemberDelimiterReport["delimiter"]> = {
     none: "none",
     ",": "comma",
     ";": "semi",
@@ -34,7 +34,7 @@ const SEP_FLAG_VALUE: Record<Separator, TSR.MemberDelimiterOpts["delimiter"]> = 
 
 type Bucket = {lines: number; files: number; topPath: string; topLines: number}
 
-export async function runReportMemberDelimiter({sourceFiles, output, log, importsOnly}: ReportRunOpts): Promise<Partial<TSR.MemberDelimiterOpts>> {
+export async function runReportMemberDelimiter({sourceFiles, output, log, importsOnly}: ReportRunOpts): Promise<Partial<TSR.MemberDelimiterReport>> {
     // import/export statements carry no interface/class members, so an
     // imports-only survey has nothing to weigh — skip the whole-file scan.
     if (importsOnly) return {}

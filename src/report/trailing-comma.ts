@@ -37,7 +37,7 @@ function classify(node: Node): Style | null {
     return trailingCommaToken(last) != null ? "on" : "off"
 }
 
-export async function runReportTrailingComma({sourceFiles, output, log, importsOnly}: ReportRunOpts): Promise<Partial<TSR.TrailingCommaOpts>> {
+export async function runReportTrailingComma({sourceFiles, output, log, importsOnly}: ReportRunOpts): Promise<Partial<TSR.TrailingCommaReport>> {
     type PerFile = {path: string; counts: Map<Style, number>; primary: Style}
     const perFile: PerFile[] = []
 
