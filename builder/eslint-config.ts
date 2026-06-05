@@ -28,7 +28,7 @@ const rules: StylisticRules = {
 // rules beyond the @stylistic formatting rules above.
 const eslintConfig: Linter.Config[] = [
     {
-        files: ["src/**/*.ts", "types/**/*.ts"],
+        files: ["builder/**/*.ts", "src/**/*.ts", "types/**/*.ts"],
         plugins: {
             "@stylistic": stylistic,
         },

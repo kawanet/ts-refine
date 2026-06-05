@@ -60,13 +60,14 @@
   },
   "scripts": {
     "build": "make -C builder",
+    "eslint": "eslint 'builder/**/*.ts' 'src/**/*.ts' 'types/**/*.ts'",
+    "eslint:fix": "eslint --fix 'builder/**/*.ts' 'src/**/*.ts' 'types/**/*.ts'",
     "fixpack": "fixpack",
     "format": "node src/cli.ts format",
-    "lint": "eslint 'src/**/*.ts' 'types/**/*.ts'",
-    "lint:fix": "eslint --fix 'src/**/*.ts' 'types/**/*.ts'",
     "prepack": "make -C builder is-buildable",
     "prepare": "make -C builder is-not-buildable 2> /dev/null || make -C builder clean all test",
-    "prettier": "prettier --write 'src/**/*.ts' 'types/**/*.ts'",
+    "prettier": "prettier --check 'builder/**/*.ts' 'src/**/*.ts' 'types/**/*.ts'",
+    "prettier:write": "prettier --write 'builder/**/*.ts' 'src/**/*.ts' 'types/**/*.ts'",
     "test": "make -C builder test"
   },
   "type": "module",
