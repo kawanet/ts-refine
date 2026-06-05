@@ -58,7 +58,7 @@ export async function runReportIndent({sourceFiles, output, log}: ReportRunOpts)
     // Recommendation: file-count majority, with line count breaking ties.
     // An empty "tab" bucket is skipped inside pickRecommendByFiles.
     const recommendWidth = pickRecommendByFiles(widths, (w) => buckets.get(w))
-    const report: Partial<TSR.IndentReport> = recommendWidth ? {width: recommendWidth} : {}
+    const report: TSR.IndentReport = recommendWidth ? {width: recommendWidth} : {}
 
     // The Markdown table is for display only; skip it (and its formatting)
     // when no output sink is given — the recommendation above is the result.

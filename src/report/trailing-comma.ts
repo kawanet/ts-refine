@@ -79,7 +79,7 @@ export async function runReportTrailingComma({sourceFiles, output, log, importsO
     }
 
     const recommend = pickRecommendByFiles(DISPLAY_ORDER, (k) => buckets.get(k))
-    const report: Partial<TSR.TrailingCommaReport> = recommend ? {trailingComma: recommend} : {}
+    const report: TSR.TrailingCommaReport = recommend ? {trailingComma: recommend} : {}
 
     // The Markdown table is for display only; skip it when no sink is given —
     // the recommendation above is the result.

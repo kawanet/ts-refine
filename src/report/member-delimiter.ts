@@ -75,7 +75,7 @@ export async function runReportMemberDelimiter({sourceFiles, output, log, import
 
     // Recommendation: file-count majority, line count breaks ties.
     const recommendSep = pickRecommendByFiles(DISPLAY_ORDER, (s) => buckets.get(s))
-    const report: Partial<TSR.MemberDelimiterReport> = recommendSep ? {delimiter: SEP_FLAG_VALUE[recommendSep]} : {}
+    const report: TSR.MemberDelimiterReport = recommendSep ? {delimiter: SEP_FLAG_VALUE[recommendSep]} : {}
 
     // The Markdown table is for display only; skip it (and its formatting)
     // when no output sink is given — the recommendation above is the result.

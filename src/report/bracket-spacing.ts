@@ -67,7 +67,7 @@ export async function runReportBracketSpacing({sourceFiles, output, log, imports
     }
 
     const recommend = pickRecommendByFiles(DISPLAY_ORDER, (k) => buckets.get(k))
-    const report: Partial<TSR.BracketSpacingReport> = recommend ? {bracketSpacing: recommend} : {}
+    const report: TSR.BracketSpacingReport = recommend ? {bracketSpacing: recommend} : {}
 
     // The Markdown table is for display only; skip it (and its formatting)
     // when no output sink is given — the recommendation above is the result.

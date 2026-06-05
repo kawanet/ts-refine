@@ -66,7 +66,7 @@ export async function runReportSemi({sourceFiles, output, log, importsOnly}: Rep
     const belowStmts = below.reduce((s, f) => s + f.total, 0)
     const aboveStmts = above.reduce((s, f) => s + f.total, 0)
     const recommend: "on" | "off" | undefined = belowFiles > aboveFiles ? "off" : aboveFiles > belowFiles ? "on" : belowStmts > aboveStmts ? "off" : aboveStmts > belowStmts ? "on" : undefined
-    const report: Partial<TSR.SemiReport> = recommend ? {semi: recommend} : {}
+    const report: TSR.SemiReport = recommend ? {semi: recommend} : {}
 
     // The Markdown table is for display only; skip it (and its formatting)
     // when no output sink is given — the recommendation above is the result.

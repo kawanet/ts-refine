@@ -28,29 +28,29 @@ export declare namespace TSR {
     // type of each `ReportResult` slot.
 
     interface SemiReport {
-        semi: "on" | "off"
+        semi?: "on" | "off"
     }
 
     // "tab" recommends tab indentation (LS convertTabsToSpaces:false /
     // Prettier useTabs); a number recommends that many spaces.
     interface IndentReport {
-        width: number | "tab"
+        width?: number | "tab"
     }
 
     interface MemberDelimiterReport {
-        delimiter: "semi" | "comma" | "none"
+        delimiter?: "semi" | "comma" | "none"
     }
 
     interface NewLineReport {
-        newLine: "lf" | "crlf" | "cr"
+        newLine?: "lf" | "crlf" | "cr"
     }
 
     interface BracketSpacingReport {
-        bracketSpacing: "on" | "off"
+        bracketSpacing?: "on" | "off"
     }
 
     interface TrailingCommaReport {
-        trailingComma: "on" | "off"
+        trailingComma?: "on" | "off"
     }
 
     // Every report refineReport supports.
@@ -68,12 +68,12 @@ export declare namespace TSR {
     // Per-report recommendations. A missing key means the report didn't run
     // or had nothing to recommend.
     interface ReportResult {
-        semi?: Partial<SemiReport>
-        indent?: Partial<IndentReport>
-        memberDelimiter?: Partial<MemberDelimiterReport>
-        newLine?: Partial<NewLineReport>
-        bracketSpacing?: Partial<BracketSpacingReport>
-        trailingComma?: Partial<TrailingCommaReport>
+        semi?: SemiReport
+        indent?: IndentReport
+        memberDelimiter?: MemberDelimiterReport
+        newLine?: NewLineReport
+        bracketSpacing?: BracketSpacingReport
+        trailingComma?: TrailingCommaReport
     }
 
     // Per-field format intent derived from a report recommendation, and what the
