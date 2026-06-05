@@ -40,6 +40,7 @@ const TRAILING_SEPARATOR = /([;,]?)$/
 function survey(scratch: Project, probePath: string, containerText: string): {kinds: string; errors: number} {
     const sf = scratch.createSourceFile(probePath, containerText, {overwrite: true})
     const container = sf.getInterfaces()[0] ?? sf.getClasses()[0]
+    // prettier-ignore
     const kinds = container ? container.getMembers().map((m) => m.getKindName()).join(",") : ""
     const errors = (sf.compilerNode as {parseDiagnostics?: unknown[]}).parseDiagnostics?.length ?? 0
     return {kinds, errors}

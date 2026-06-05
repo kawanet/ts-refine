@@ -57,6 +57,7 @@ describe("applyTrailingComma", () => {
         // Intentional difference from Prettier `all`, which adds a comma to a
         // multi-line type-parameter declaration: ts-refine never touches any
         // angle list, keeping the output always syntactically valid.
+        // prettier-ignore
         for (const src of [
             "class Foo<\n    A,\n    B\n> {}\n",
             "const x: Bar<\n    A,\n    B\n> = y\n",

@@ -4,6 +4,7 @@ import {builtinModules} from "node:module"
 // never bundle them. Cover both bare and `node:` prefixed forms so the
 // result does not depend on which form a source uses. The package's own
 // name is included so its self-reference stays external.
+// prettier-ignore
 const externals = new Set<string>([
     ...builtinModules,
     ...builtinModules.map((m) => `node:${m}`),
