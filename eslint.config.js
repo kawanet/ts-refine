@@ -19,9 +19,12 @@ export default [
         },
         // Each rule mirrors a .prettierrc option. `printWidth` has no
         // equivalent here because ESLint does not re-wrap long lines.
+        // quotes avoidEscape mirrors Prettier picking the quote style
+        // that minimizes escapes, so strings holding `"` may stay single
+        // or backtick.
         rules: {
             "@stylistic/semi": ["error", "never"],
-            "@stylistic/quotes": ["error", "double"],
+            "@stylistic/quotes": ["error", "double", {avoidEscape: true, allowTemplateLiterals: "avoidEscape"}],
             "@stylistic/indent": ["error", 4],
             "@stylistic/comma-dangle": ["error", "always-multiline"],
             "@stylistic/object-curly-spacing": ["error", "never"],
