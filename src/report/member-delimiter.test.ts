@@ -55,7 +55,7 @@ describe("runReportMemberSeparators (sample/members-mixed)", () => {
 
         // Recommendation is no longer inlined in the Markdown.
         assert.equal(/^recommendation:/m.test(out), false)
-        assert.deepEqual(ret, {separator: "semi"})
+        assert.deepEqual(ret, {delimiter: "semi"})
     })
 
     it("breaks a file-count tie by the higher member count and emits a recommendation", async () => {
@@ -66,7 +66,7 @@ describe("runReportMemberSeparators (sample/members-mixed)", () => {
         project.createSourceFile("b.ts", "export interface B {\n    a: number,\n}\n")
         const lines: string[] = []
         const ret = await runReportMemberDelimiter({sourceFiles: selectSourceFiles(project, {paths: []}), log, output: {write: (l) => lines.push(l)}})
-        assert.deepEqual(ret, {separator: "semi"})
+        assert.deepEqual(ret, {delimiter: "semi"})
     })
 
     it("returns an empty partial when files AND member counts both tie", async () => {

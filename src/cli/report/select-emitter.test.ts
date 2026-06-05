@@ -34,7 +34,7 @@ describe("selectOutput", () => {
         const {writer, out} = makeStdout()
         const f = selectEmitter("ts-refine", writer)
         assert.equal(f.reportStream, undefined)
-        f.finalize({semicolons: {semicolons: "off"}, indent: {width: 4}, memberDelimiter: {separator: "comma"}})
+        f.finalize({semicolons: {semicolons: "off"}, indent: {width: 4}, memberDelimiter: {delimiter: "comma"}})
 
         // Two-line form: `ts-refine \` continuation, then the flags
         // indented by two spaces so `grep '^ +--'` picks them up.

@@ -39,7 +39,7 @@ export declare namespace TSR {
     }
 
     interface MemberDelimiterOpts {
-        separator: "semi" | "comma" | "none"
+        delimiter: "semi" | "comma" | "none"
     }
 
     interface NewLineOpts {

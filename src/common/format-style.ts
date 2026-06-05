@@ -10,7 +10,7 @@ export function reportToFormatStyle(report: TSR.ReportResult): TSR.FormatStyle {
     const newLine = report.newLine?.newLine
     if (newLine === "lf" || newLine === "crlf") options.newLine = newLine
     if (report.bracketSpacing?.bracketSpacing) options.bracketSpacing = report.bracketSpacing.bracketSpacing
-    if (report.memberDelimiter?.separator) options.memberDelimiter = report.memberDelimiter.separator
+    if (report.memberDelimiter?.delimiter) options.memberDelimiter = report.memberDelimiter.delimiter
     if (report.trailingComma?.trailingComma) options.trailingComma = report.trailingComma.trailingComma
     return options
 }

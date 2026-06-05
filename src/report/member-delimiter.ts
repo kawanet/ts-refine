@@ -26,7 +26,7 @@ const SEP_LABEL: Record<Separator, string> = {
 
 // Maps internal Separator symbols to MemberSeparatorsOpts.separator's
 // value space (semi / comma / none).
-const SEP_FLAG_VALUE: Record<Separator, TSR.MemberDelimiterOpts["separator"]> = {
+const SEP_FLAG_VALUE: Record<Separator, TSR.MemberDelimiterOpts["delimiter"]> = {
     none: "none",
     ",": "comma",
     ";": "semi",
@@ -104,7 +104,7 @@ export async function runReportMemberDelimiter({sourceFiles, output, log, import
     // The recommendation is rendered in the trailing `## recommendation`
     // section, so all we return is the action params shape. An ambiguous
     // file-count majority (no strict winner) returns an empty partial.
-    return recommendSep !== undefined ? {separator: SEP_FLAG_VALUE[recommendSep]} : {}
+    return recommendSep !== undefined ? {delimiter: SEP_FLAG_VALUE[recommendSep]} : {}
 }
 
 // A member "owns" a trailing separator only when it isn't body-bearing: a
