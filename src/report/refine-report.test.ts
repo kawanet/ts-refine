@@ -42,7 +42,7 @@ describe("refineReport", () => {
                 output: {write: (l) => lines.push(l)},
                 paths: [],
             })
-            return lines.filter(v => /^#/.test(v)).join("")
+            return lines.filter((v) => /^#/.test(v)).join("")
         }
 
         // Input deliberately in reverse of registry order to confirm the
