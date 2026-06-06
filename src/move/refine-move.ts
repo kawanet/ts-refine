@@ -231,7 +231,7 @@ function snapshotSpecifiers(project: Project, movingPaths: Set<string>): SpecRec
         }
         for (const decl of sf.getExportDeclarations()) {
             const specifier = decl.getModuleSpecifierValue()
-            if (specifier === undefined) continue
+            if (specifier == null) continue
             const target = decl.getModuleSpecifierSourceFile()
             if (!target) continue
             if (!isMoving && !movingPaths.has(target.getFilePath())) continue
@@ -258,7 +258,7 @@ function restoreOriginalExtension(r: SpecRecord): void {
         if (next !== spec) r.node.setModuleSpecifier(next)
     } else if (r.kind === "export") {
         const spec = r.node.getModuleSpecifierValue()
-        if (spec === undefined) return
+        if (spec == null) return
         const next = withExtension(spec, r.originalExt)
         if (next !== spec) r.node.setModuleSpecifier(next)
     } else {

@@ -7,7 +7,7 @@
 
 import type {Node} from "ts-morph"
 import type {TSR} from "ts-refine"
-import {getTsRefineFormat} from "../cli/report/emit-ts-refine.ts"
+import {getTsRefineFormat} from "../common/emit/emit-ts-refine.ts"
 import {logging} from "../common/logging.ts"
 import {listOf, trailingCommaToken} from "../format/apply-trailing-comma.ts"
 import {displayPath} from "../lib/source-files.ts"
@@ -46,7 +46,7 @@ export async function runReportTrailingComma({sourceFiles, output, log, importsO
         const counts = new Map<Style, number>()
         const visit = (node: Node) => {
             const style = classify(node)
-            if (style === null) return
+            if (style == null) return
             counts.set(style, (counts.get(style) ?? 0) + 1)
         }
         // importsOnly: organizeImports only rewrites the import/export
@@ -79,7 +79,7 @@ export async function runReportTrailingComma({sourceFiles, output, log, importsO
     }
 
     const recommend = pickRecommendByFiles(DISPLAY_ORDER, (k) => buckets.get(k))
-    const report: Partial<TSR.TrailingCommaReport> = recommend ? {trailingComma: recommend} : {}
+    const report: TSR.TrailingCommaReport = recommend ? {trailingComma: recommend} : {}
 
     // The Markdown table is for display only; skip it when no sink is given —
     // the recommendation above is the result.

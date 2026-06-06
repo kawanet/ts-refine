@@ -15,13 +15,15 @@ import {runReportBracketSpacing} from "./bracket-spacing.ts"
 import {runReportIndent} from "./indent.ts"
 import {runReportMemberDelimiter} from "./member-delimiter.ts"
 import {runReportNewLine} from "./new-line.ts"
+import {writeFormatMarkdown, writePrettierMarkdown, writeStylisticMarkdown} from "./recommend-markdown.ts"
 import type {ReportRunOpts} from "./report-run-opts.ts"
 import {runReportSemi} from "./semi.ts"
 import {runReportTrailingComma} from "./trailing-comma.ts"
 
 export const refineReport: typeof declared.refineReport = async (opts) => {
-    const {output, reports: requested, paths, log} = opts
+    const {output, reports, paths, log} = opts
     const project = resolveProject(opts)
+    const requested = reports ?? reportNames
 
     // Validate every requested report name up-front so a typo fails before any
     // report runs. `reportNames` is the source of truth for what exists.
@@ -38,7 +40,15 @@ export const refineReport: typeof declared.refineReport = async (opts) => {
     // the project scan runs a single time instead of per report.
     const sourceFiles = selectSourceFiles(project, {paths})
 
-    return runReports({sourceFiles, output, log}, requested)
+    const report = await runReports({sourceFiles, output, log}, requested)
+
+    if (!reports?.length && output) {
+        writeFormatMarkdown(report, output)
+        writePrettierMarkdown(report, output)
+        writeStylisticMarkdown(report, output)
+    }
+
+    return report
 }
 
 export const runReports = async (reportOpts: ReportRunOpts, requested: readonly TSR.ReportName[]): Promise<TSR.ReportResult> => {

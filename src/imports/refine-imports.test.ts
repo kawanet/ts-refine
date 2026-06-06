@@ -8,7 +8,7 @@ import {refineImports} from "./refine-imports.ts"
 const SAMPLE_TSCONFIG = path.resolve(import.meta.dirname, "../../sample/basic/tsconfig.json")
 const INDEX = path.resolve(import.meta.dirname, "../../sample/basic/src/index.ts")
 
-const log = {write: (): void => null}
+const log = {write: (): void => undefined}
 
 describe("refineImports", () => {
     it("sorts imports and drops unused ones", async () => {

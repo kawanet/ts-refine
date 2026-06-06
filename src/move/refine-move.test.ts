@@ -16,7 +16,7 @@ function newProject(): Project {
     })
 }
 
-const log = {write: (): void => null}
+const log = {write: (): void => undefined}
 
 describe("refineMove (in-memory, dry-run)", () => {
     it("rewrites every import form and preserves the `.ts` extension where it was present", async () => {

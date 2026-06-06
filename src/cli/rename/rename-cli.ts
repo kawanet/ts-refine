@@ -16,6 +16,6 @@ export const renameCLI: CLI = async (ctx) => {
     const {tsConfigFilePath, paths} = resolvePaths(common.tsconfigPath, args.paths)
     const project = initProject({tsConfigFilePath})
 
-    await refineRename({project, from: args.from, to: args.to, file: paths[0] ?? null, dryRun: common.dryRun, log})
+    await refineRename({project, from: args.from, to: args.to, file: paths[0], dryRun: common.dryRun, log})
     return 0
 }

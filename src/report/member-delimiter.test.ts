@@ -8,7 +8,7 @@ import {runReportMemberDelimiter} from "./member-delimiter.ts"
 
 const SAMPLE_TSCONFIG = path.resolve(import.meta.dirname, "../../sample/members-mixed/tsconfig.json")
 
-const log = {write: (): void => null}
+const log = {write: (): void => undefined}
 
 describe("runReportMemberSeparators (sample/members-mixed)", () => {
     it("returns empty under importsOnly (import/export statements carry no members)", async () => {

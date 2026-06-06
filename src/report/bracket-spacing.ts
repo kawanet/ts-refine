@@ -7,7 +7,7 @@
 
 import {Node, SyntaxKind} from "ts-morph"
 import type {TSR} from "ts-refine"
-import {getTsRefineFormat} from "../cli/report/emit-ts-refine.ts"
+import {getTsRefineFormat} from "../common/emit/emit-ts-refine.ts"
 import {logging} from "../common/logging.ts"
 import {displayPath} from "../lib/source-files.ts"
 import {pickRecommendByFiles} from "./pick-recommend.ts"
@@ -32,9 +32,9 @@ export async function runReportBracketSpacing({sourceFiles, output, log, imports
         const counts = new Map<Style, number>()
         const visit = (node: Node) => {
             const braces = braceSpan(node)
-            if (braces === null) return
+            if (braces == null) return
             const style = classifyBraces(braces)
-            if (style === null) return
+            if (style == null) return
             counts.set(style, (counts.get(style) ?? 0) + 1)
         }
         // importsOnly: only the import/export statements are rewritten by
@@ -67,7 +67,7 @@ export async function runReportBracketSpacing({sourceFiles, output, log, imports
     }
 
     const recommend = pickRecommendByFiles(DISPLAY_ORDER, (k) => buckets.get(k))
-    const report: Partial<TSR.BracketSpacingReport> = recommend ? {bracketSpacing: recommend} : {}
+    const report: TSR.BracketSpacingReport = recommend ? {bracketSpacing: recommend} : {}
 
     // The Markdown table is for display only; skip it (and its formatting)
     // when no output sink is given — the recommendation above is the result.

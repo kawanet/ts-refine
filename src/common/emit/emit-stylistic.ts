@@ -10,12 +10,12 @@ type StylisticRules = {
     [K in keyof RuleOptions]?: Linter.RuleEntry<RuleOptions[K]>
 }
 
-interface StylisticConfig {
-    rules: StylisticRules
+const compactJSON = (value: unknown): string => {
+    return JSON.stringify(value, null, 2).replace(/\[.*?]/gs, (match) => {
+        // Prettier-like compaction
+        return match.replace(/([\[{]?)\n *([\]}]?)/g, (_, open: string, close: string) => open || close || " ")
+    })
 }
-
-const compactJSON = (value: unknown): string =>
-    JSON.stringify(value, null, 2).replace(/\[.*?\]/gs, (match) => match.replace(/([\[{]?)\n *([\]}]?)/g, (_, open: string, close: string) => open || close || " "))
 
 function memberDelimiterConfig(delimiter: TSR.MemberDelimiterReport["delimiter"]): Linter.RuleEntry<RuleOptions["@stylistic/member-delimiter-style"]> {
     return [
@@ -78,23 +78,6 @@ function buildStylisticRules(report: TSR.ReportResult): StylisticRules {
 }
 
 export function getStylisticConfig(report: TSR.ReportResult): string {
-    const config: StylisticConfig = {rules: buildStylisticRules(report)}
+    const config: Linter.Config = {rules: buildStylisticRules(report)}
     return compactJSON(config)
-}
-
-export function emitStylisticConfig(report: TSR.ReportResult, output: TSR.Writer): void {
-    output.write(getStylisticConfig(report) + "\n")
-}
-
-export function writeStylisticMarkdown(report: TSR.ReportResult, output: TSR.Writer): void {
-    const config = getStylisticConfig(report)
-    if (config === "{\n  \"rules\": {}\n}") {
-        return
-    }
-    output.write("### @stylistic/eslint-plugin\n")
-    output.write("\n")
-    output.write("```json\n")
-    output.write(config + "\n")
-    output.write("```\n")
-    output.write("\n")
 }

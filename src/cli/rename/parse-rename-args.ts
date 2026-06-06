@@ -46,7 +46,7 @@ export function parseRenameArgs(sub: string[], common: CommonArgs): RenameArgs |
         }
     }
 
-    if (from === undefined || to === undefined) {
+    if (from == null || to == null) {
         throw new Error("rename requires --from <name> and --to <name>")
     }
     if (paths.length > 1) {

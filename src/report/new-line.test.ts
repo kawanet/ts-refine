@@ -8,7 +8,7 @@ import {runReportNewLine} from "./new-line.ts"
 
 const SAMPLE_TSCONFIG = path.resolve(import.meta.dirname, "../../sample/newlines-mixed/tsconfig.json")
 
-const log = {write: (): void => null}
+const log = {write: (): void => undefined}
 
 describe("runReportNewLine (sample/newlines-mixed)", () => {
     it("buckets files by primary terminator and returns the majority", async () => {

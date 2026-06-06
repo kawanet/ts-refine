@@ -23,7 +23,7 @@ const reportByOverride: {field: keyof TSR.FormatStyle; report: TSR.ReportName}[]
 ]
 
 export function reportNamesForFormat(overrides: TSR.FormatStyle): TSR.ReportName[] {
-    const skip = new Set(reportByOverride.filter((m) => overrides[m.field] !== undefined).map((m) => m.report))
+    const skip = new Set(reportByOverride.filter((m) => overrides[m.field] != null).map((m) => m.report))
     return formatReportNames.filter((name) => !skip.has(name))
 }
 

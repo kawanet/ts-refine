@@ -16,7 +16,7 @@ export interface ImportsStyle {
 // style to ts-morph settings. The write commands call this per file so each
 // keeps its own existing conventions.
 export const formatSettingsForFile = async (sf: SourceFile): Promise<ImportsStyle> => {
-    const log = {write: (): void => null}
+    const log = {write: (): void => undefined}
     const report = await runReports({sourceFiles: [sf], importsOnly: true, log}, importReportNames)
     const style = reportToFormatStyle(report)
     return {settings: formatStyleToSettings(style), trailingComma: style.trailingComma}

@@ -19,8 +19,9 @@ import {logging} from "../common/logging.ts"
 import {displayPath, inProjectSourceFiles, selectSourceFiles} from "../lib/source-files.ts"
 
 export const refineInspect: typeof declared.refineInspect = async (opts) => {
-    const {paths, inspectors: requested, log} = opts
+    const {paths, inspectors, log} = opts
     const project = resolveProject(opts)
+    const requested = inspectors ?? inspectorNames
 
     for (const name of requested) {
         if (!(inspectorNames as readonly string[]).includes(name)) {
@@ -165,7 +166,7 @@ function gatherExports(sf: SourceFile): TSR.InspectExport[] {
                 kind: kindLabel(decl),
                 name,
                 importers: sortedImporters.length,
-                example: sortedImporters[0] ?? null,
+                example: sortedImporters[0],
             })
         }
     }

@@ -28,52 +28,52 @@ export declare namespace TSR {
     // type of each `ReportResult` slot.
 
     interface SemiReport {
-        semi: "on" | "off"
+        semi?: "on" | "off"
     }
 
     // "tab" recommends tab indentation (LS convertTabsToSpaces:false /
     // Prettier useTabs); a number recommends that many spaces.
     interface IndentReport {
-        width: number | "tab"
+        width?: number | "tab"
     }
 
     interface MemberDelimiterReport {
-        delimiter: "semi" | "comma" | "none"
+        delimiter?: "semi" | "comma" | "none"
     }
 
     interface NewLineReport {
-        newLine: "lf" | "crlf" | "cr"
+        newLine?: "lf" | "crlf" | "cr"
     }
 
     interface BracketSpacingReport {
-        bracketSpacing: "on" | "off"
+        bracketSpacing?: "on" | "off"
     }
 
     interface TrailingCommaReport {
-        trailingComma: "on" | "off"
+        trailingComma?: "on" | "off"
     }
 
     // Every report refineReport supports.
     type ReportName = "semi" | "indent" | "member-delimiter" | "new-line" | "bracket-spacing" | "trailing-comma"
 
     interface ReportOpts extends CommonOpts {
-        paths: string[]
+        paths?: string[]
 
         // Markdown sink for the per-report tables. Omit it to compute the
         // recommendations only (callers that just want the ReportResult).
         output?: Writer
-        reports: ReportName[]
+        reports?: ReportName[]
     }
 
     // Per-report recommendations. A missing key means the report didn't run
     // or had nothing to recommend.
     interface ReportResult {
-        semi?: Partial<SemiReport>
-        indent?: Partial<IndentReport>
-        memberDelimiter?: Partial<MemberDelimiterReport>
-        newLine?: Partial<NewLineReport>
-        bracketSpacing?: Partial<BracketSpacingReport>
-        trailingComma?: Partial<TrailingCommaReport>
+        semi?: SemiReport
+        indent?: IndentReport
+        memberDelimiter?: MemberDelimiterReport
+        newLine?: NewLineReport
+        bracketSpacing?: BracketSpacingReport
+        trailingComma?: TrailingCommaReport
     }
 
     // Per-field format intent derived from a report recommendation, and what the
@@ -101,9 +101,9 @@ export declare namespace TSR {
     // overrides). Reformats the surrounding text only; organizing imports is the
     // separate `imports` command. `format` is one style applied to the whole run.
     interface FormatOpts extends CommonOpts {
-        paths: string[]
-        dryRun: boolean
-        format: FormatStyle
+        paths?: string[]
+        dryRun?: boolean
+        style: FormatStyle
     }
 
     // refineFormat returns the in-project files whose text was rewritten, so a
@@ -118,8 +118,8 @@ export declare namespace TSR {
     // surrounding text. Each file is surveyed on its own (import/export tallies)
     // and organized in that style, so the project's existing style barely shifts.
     interface ImportsOpts extends CommonOpts {
-        paths: string[]
-        dryRun: boolean
+        paths?: string[]
+        dryRun?: boolean
     }
 
     // refineImports returns the in-project files whose import block was rewritten,
@@ -171,7 +171,7 @@ export declare namespace TSR {
         kind: string
         name: string
         importers: number
-        example: string | null
+        example?: string
     }
 
     // One importer of the inspected file (collapsed to a single row even when
@@ -190,8 +190,8 @@ export declare namespace TSR {
     type InspectorName = "exports" | "importers"
 
     interface InspectOpts extends CommonOpts {
-        paths: string[]
-        inspectors: InspectorName[]
+        paths?: string[]
+        inspectors?: InspectorName[]
     }
 
     // Input to `refineMove`. `sources` are absolute paths of existing project
@@ -202,7 +202,7 @@ export declare namespace TSR {
     interface MoveOpts extends CommonOpts {
         sources: string[]
         dest: string
-        dryRun: boolean
+        dryRun?: boolean
     }
 
     // refineMove returns the planned moves (from → to) and the set of in-project
@@ -222,8 +222,8 @@ export declare namespace TSR {
     interface RenameOpts extends CommonOpts {
         from: string
         to: string
-        file: string | null
-        dryRun: boolean
+        file?: string
+        dryRun?: boolean
     }
 
     // refineRename returns the applied rename and the in-project files whose text

@@ -24,7 +24,7 @@ export function parseTarget(spec: string): {path: string[]; name: string} {
 // In-project anchors for `spec`: one name node per distinct symbol the project
 // declares under it (scoped to `file` when given). Throw-free — empty when the
 // project declares nothing matching. Shared by rename and list's in-project path.
-export function resolveInProjectAnchors(project: Project, spec: string, file: string | null): Identifier[] {
+export function resolveInProjectAnchors(project: Project, spec: string, file: string | null | undefined): Identifier[] {
     const {path, name} = parseTarget(spec)
     const segments = [...path, name]
     const files = file ? [inProjectSourceFileOrThrow(project, file)] : inProjectSourceFiles(project)

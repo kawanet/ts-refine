@@ -4,7 +4,7 @@ import type {CommonArgs} from "../parse-common-args.ts"
 import {parseImportsArgs} from "./parse-imports-args.ts"
 
 function common(): CommonArgs {
-    return {tsconfigPath: null, dryRun: false, help: false}
+    return {}
 }
 
 describe("parseImports", () => {
@@ -29,7 +29,7 @@ describe("parseImports", () => {
         // The parser stays side-effect free: --check must not flip common.dryRun.
         const c = common()
         parseImportsArgs(["--check"], c)
-        assert.equal(c.dryRun, false)
+        assert.equal(!!c.dryRun, false)
     })
 
     it("consumes a trailing --dry-run into the common args", () => {

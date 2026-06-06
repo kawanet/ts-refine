@@ -33,12 +33,12 @@ function semiLineCount(text: string) {
 // organizes imports, so the comparison stays focused on semicolons).
 const SEMI_OFF = {dryRun: true, paths: [] as string[]}
 
-const log = {write: (): void => null}
+const log = {write: (): void => undefined}
 
 describe("refineFormat --semi off (dry-run, sample/semicolons-mixed)", () => {
     it("strips every trailing `;` from ASI-eligible statements in-memory", async () => {
         const project = initTestProject(SAMPLE_TSCONFIG)
-        await refineFormat({project, log, ...SEMI_OFF, format: {semi: "off"}})
+        await refineFormat({project, log, ...SEMI_OFF, style: {semi: "off"}})
 
         // all-semi.ts and mixed.ts must end up with no trailing `;` on const lines.
         for (const suffix of ["/all-semi.ts", "/mixed.ts"]) {
@@ -58,7 +58,7 @@ describe("refineFormat --semi off (dry-run, sample/semicolons-mixed)", () => {
 describe("refineFormat --semi on (dry-run, sample/semicolons-mixed)", () => {
     it("appends `;` to every ASI-eligible statement lacking one", async () => {
         const project = initTestProject(SAMPLE_TSCONFIG)
-        await refineFormat({project, log, ...SEMI_OFF, format: {semi: "on"}})
+        await refineFormat({project, log, ...SEMI_OFF, style: {semi: "on"}})
 
         // no-semi.ts and mixed.ts must converge on full-`;` on const lines.
         for (const suffix of ["/no-semi.ts", "/mixed.ts"]) {
@@ -84,7 +84,7 @@ describe("refineFormat --semi off handles nested ASI-eligible statements", () =>
         const project = initInMemoryProject()
         const sf = project.createSourceFile("nest.ts", ["describe('outer', () => {", "  it('inner', () => {", "    const x = 1;", "    inner(x);", "  });", "});"].join("\n"))
 
-        await refineFormat({project, log, ...SEMI_OFF, format: {semi: "off"}})
+        await refineFormat({project, log, ...SEMI_OFF, style: {semi: "off"}})
 
         const text = sf.getFullText()
         assert.equal(text.includes("const x = 1;"), false, "inner const lost its ;")
@@ -112,7 +112,7 @@ describe("refineFormat --semi off keeps `;` at ASI-hazard sites", () => {
             ].join("\n"),
         )
 
-        await refineFormat({project, log, ...SEMI_OFF, format: {semi: "off"}})
+        await refineFormat({project, log, ...SEMI_OFF, style: {semi: "off"}})
 
         const text = sf.getFullText()
 
@@ -133,7 +133,7 @@ describe("refineFormat --semi off and do-while statements", () => {
         const project = initInMemoryProject()
         const sf = project.createSourceFile("do-while.ts", ["let x = 0;", "do {", "  x++", "} while (x < 2);", "const y = x;"].join("\n"))
 
-        await refineFormat({project, log, ...SEMI_OFF, format: {semi: "off"}})
+        await refineFormat({project, log, ...SEMI_OFF, style: {semi: "off"}})
 
         const text = sf.getFullText()
 

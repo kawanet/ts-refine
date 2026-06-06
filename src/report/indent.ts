@@ -8,7 +8,7 @@
 // the report just picks the per-file mode out of that map.
 
 import type {TSR} from "ts-refine"
-import {getTsRefineFormat} from "../cli/report/emit-ts-refine.ts"
+import {getTsRefineFormat} from "../common/emit/emit-ts-refine.ts"
 import {logging} from "../common/logging.ts"
 import {displayPath} from "../lib/source-files.ts"
 import {detectIndent, type IndentCounts, type IndentWidth, primaryIndentWidth} from "./detect-indent.ts"
@@ -27,7 +27,7 @@ export async function runReportIndent({sourceFiles, output, log}: ReportRunOpts)
         const counts = detectIndent(sf.getFullText())
         if (counts.size === 0) continue
         const primary = primaryIndentWidth(counts)
-        if (primary === undefined) continue
+        if (primary == null) continue
         perFile.push({path: displayPath(sf.getFilePath()), counts, primary})
     }
 
@@ -58,7 +58,7 @@ export async function runReportIndent({sourceFiles, output, log}: ReportRunOpts)
     // Recommendation: file-count majority, with line count breaking ties.
     // An empty "tab" bucket is skipped inside pickRecommendByFiles.
     const recommendWidth = pickRecommendByFiles(widths, (w) => buckets.get(w))
-    const report: Partial<TSR.IndentReport> = recommendWidth ? {width: recommendWidth} : {}
+    const report: TSR.IndentReport = recommendWidth ? {width: recommendWidth} : {}
 
     // The Markdown table is for display only; skip it (and its formatting)
     // when no output sink is given — the recommendation above is the result.

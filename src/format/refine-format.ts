@@ -14,11 +14,11 @@ import {applySingleLineTypeLiteralTail} from "./apply-single-line-type-literal.t
 import {applyTrailingComma} from "./apply-trailing-comma.ts"
 
 export const refineFormat: typeof declared.refineFormat = async (opts) => {
-    const {dryRun, paths, format, log} = opts
+    const {dryRun, paths, style, log} = opts
     const project = resolveProject(opts)
 
     // `format` is a single style applied to every file; convert it once.
-    const settings = formatStyleToSettings(format)
+    const settings = formatStyleToSettings(style)
     const newLine = settings.newLineCharacter
 
     const sourceFiles = selectSourceFiles(project, {paths})
@@ -42,14 +42,14 @@ export const refineFormat: typeof declared.refineFormat = async (opts) => {
 
         // The LS formatter can't set interface/class member delimiter (and
         // can't emit commas); apply the surveyed style on the formatted AST.
-        if (format.memberDelimiter != null) applyMemberDelimiter(sf, format.memberDelimiter)
+        if (style.memberDelimiter != null) applyMemberDelimiter(sf, style.memberDelimiter)
 
         // Prettier keeps the last member of a single-line type literal bare
         // even when the surrounding type alias receives a statement `;`.
-        if (format.semi === "on") applySingleLineTypeLiteralTail(sf)
+        if (style.semi === "on") applySingleLineTypeLiteralTail(sf)
 
         // The LS formatter has no trailing-comma control either; apply it too.
-        if (format.trailingComma != null) applyTrailingComma(sf, format.trailingComma)
+        if (style.trailingComma != null) applyTrailingComma(sf, style.trailingComma)
 
         // LS `newLineCharacter` only governs inserted text; existing
         // terminators are normalized here to the same target. Push the result

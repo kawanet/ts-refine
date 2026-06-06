@@ -4,7 +4,6 @@
 
 import path from "node:path"
 import {type Project, ScriptKind, type SourceFile} from "ts-morph"
-import type {TSR} from "ts-refine"
 
 // In-project command/refactor targets only. External declarations (TS lib,
 // @types/*, node_modules) are load-only; JSON modules aren't TypeScript and the
@@ -13,8 +12,8 @@ function isInProject(sf: SourceFile): boolean {
     return !sf.isFromExternalLibrary() && sf.getScriptKind() !== ScriptKind.JSON
 }
 
-export function selectSourceFiles(project: Project, {paths}: Pick<TSR.ReportOpts, "paths">): SourceFile[] {
-    if (paths.length > 0) {
+export function selectSourceFiles(project: Project, {paths}: {paths?: string[]}): SourceFile[] {
+    if (paths?.length) {
         const targets = project.getSourceFiles(paths).filter(isInProject)
 
         // A typo'd / non-project path would otherwise pass silently as "0

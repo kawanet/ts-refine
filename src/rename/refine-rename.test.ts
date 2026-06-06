@@ -12,14 +12,14 @@ function newProject(): Project {
     })
 }
 
-const log = {write: (): void => null}
+const log = {write: (): void => undefined}
 
 describe("refineRename", () => {
     it("renames an exported identifier across declaration, importer, and usage", async () => {
         const project = newProject()
         const libs = project.createSourceFile("/libs.ts", "export function funcA() { return 1 }\n")
         const imp = project.createSourceFile("/imp.ts", 'import {funcA} from "./libs.ts"\nconst _ = funcA()\n')
-        const result = await refineRename({project, log, from: "funcA", to: "funcB", file: null, dryRun: true})
+        const result = await refineRename({project, log, from: "funcA", to: "funcB", dryRun: true})
         assert.equal(libs.getFullText(), "export function funcB() { return 1 }\n")
         assert.equal(imp.getFullText(), 'import {funcB} from "./libs.ts"\nconst _ = funcB()\n')
         assert.deepEqual([...result.touched].sort(), ["/imp.ts", "/libs.ts"])
@@ -31,7 +31,7 @@ describe("refineRename", () => {
         const imp = project.createSourceFile("/imp.ts", 'import {funcA} from "./libs.ts"\nconst _ = funcA()\n')
 
         // No `format`: re-sorts touched imports with the TS language service defaults.
-        const result = await refineRename({project, log, from: "funcA", to: "funcB", file: null, dryRun: true})
+        const result = await refineRename({project, log, from: "funcA", to: "funcB", dryRun: true})
 
         assert.equal(libs.getFullText(), "export function funcB() { return 1 }\n")
         assert.match(imp.getFullText(), /import \{ ?funcB ?\} from "\.\/libs\.ts"/)
@@ -43,7 +43,7 @@ describe("refineRename", () => {
         const project = newProject()
         project.createSourceFile("/libs.ts", "export function funcA() { return 1 }\n")
         const imp = project.createSourceFile("/imp.ts", 'import {funcA as fx} from "./libs.ts"\nconst _ = fx()\n')
-        await refineRename({project, log, from: "funcA", to: "funcB", file: null, dryRun: true})
+        await refineRename({project, log, from: "funcA", to: "funcB", dryRun: true})
         assert.equal(imp.getFullText(), 'import {funcB as fx} from "./libs.ts"\nconst _ = fx()\n')
     })
 
@@ -66,7 +66,7 @@ describe("refineRename", () => {
         const project = newProject()
         project.createSourceFile("/libs.ts", "export default function main() {}\nexport function funcA() { return 1 }\n")
         const imp = project.createSourceFile("/imp.ts", 'import main, {funcA} from "./libs.ts"\nmain()\nconst _ = funcA()\n')
-        await refineRename({project, log, from: "funcA", to: "funcB", file: null, dryRun: true})
+        await refineRename({project, log, from: "funcA", to: "funcB", dryRun: true})
         assert.equal(imp.getFullText(), 'import main, {funcB} from "./libs.ts"\nmain()\nconst _ = funcB()\n')
     })
 
@@ -74,7 +74,7 @@ describe("refineRename", () => {
         const project = newProject()
         project.createSourceFile("/libs.ts", "export function funcA() { return 1 }\n")
         project.createSourceFile("/imp.ts", 'import {funcA} from "./libs.ts"\nconst funcB = () => null\nfuncA()\nfuncB()\n')
-        await assert.rejects(refineRename({project, log, from: "funcA", to: "funcB", file: null, dryRun: true}), /already exists/)
+        await assert.rejects(refineRename({project, log, from: "funcA", to: "funcB", dryRun: true}), /already exists/)
     })
 
     it("never touches files that do not reference the symbol", async () => {
@@ -82,7 +82,7 @@ describe("refineRename", () => {
         project.createSourceFile("/libs.ts", "export function funcA() { return 1 }\n")
         project.createSourceFile("/imp.ts", 'import {funcA} from "./libs.ts"\nconst _ = funcA()\n')
         const other = project.createSourceFile("/other.ts", "export const z = 3\n")
-        const result = await refineRename({project, log, from: "funcA", to: "funcB", file: null, dryRun: true})
+        const result = await refineRename({project, log, from: "funcA", to: "funcB", dryRun: true})
         assert.ok(!result.touched.includes("/other.ts"))
         assert.equal(other.getFullText(), "export const z = 3\n")
     })
@@ -91,27 +91,27 @@ describe("refineRename", () => {
         const project = newProject()
         project.createSourceFile("/a.ts", "export function funcA() { return 1 }\n")
         project.createSourceFile("/b.ts", "export function funcA() { return 2 }\n")
-        await assert.rejects(refineRename({project, log, from: "funcA", to: "funcB", file: null, dryRun: true}), /multiple places/)
+        await assert.rejects(refineRename({project, log, from: "funcA", to: "funcB", dryRun: true}), /multiple places/)
     })
 
     it("errors when the identifier is not exported", async () => {
         const project = newProject()
         project.createSourceFile("/libs.ts", "export function funcA() { return 1 }\n")
-        await assert.rejects(refineRename({project, log, from: "nope", to: "funcB", file: null, dryRun: true}), /no in-project identifier/)
+        await assert.rejects(refineRename({project, log, from: "nope", to: "funcB", dryRun: true}), /no in-project identifier/)
     })
 
     it("rejects an invalid target identifier and a no-op rename", async () => {
         const project = newProject()
         project.createSourceFile("/libs.ts", "export function funcA() { return 1 }\n")
-        await assert.rejects(refineRename({project, log, from: "funcA", to: "1bad", file: null, dryRun: true}), /valid identifier/)
-        await assert.rejects(refineRename({project, log, from: "funcA", to: "funcA", file: null, dryRun: true}), /same/)
+        await assert.rejects(refineRename({project, log, from: "funcA", to: "1bad", dryRun: true}), /valid identifier/)
+        await assert.rejects(refineRename({project, log, from: "funcA", to: "funcA", dryRun: true}), /same/)
     })
 
     it("re-sorts the touched file's imports after the rename", async () => {
         const project = newProject()
         project.createSourceFile("/libs.ts", "export const aaa = 1\nexport const mmm = 2\n")
         const imp = project.createSourceFile("/imp.ts", 'import {aaa, mmm} from "./libs.ts"\nconst _ = aaa + mmm\n')
-        await refineRename({project, log, from: "aaa", to: "zzz", file: null, dryRun: true})
+        await refineRename({project, log, from: "aaa", to: "zzz", dryRun: true})
 
         // aaa -> zzz pushes it past mmm, so organizeImports re-sorts the
         // named specifiers to {mmm, zzz}.
@@ -122,7 +122,7 @@ describe("refineRename", () => {
         const project = newProject()
         const types = project.createSourceFile("/types.ts", "export declare namespace NS {\n    interface A {\n        x: number\n    }\n}\n")
         const c = project.createSourceFile("/c.ts", 'import type {NS} from "./types.ts"\nconst _: NS.A = {x: 1}\n')
-        await refineRename({project, log, from: "NS.A", to: "NS.B", file: null, dryRun: true})
+        await refineRename({project, log, from: "NS.A", to: "NS.B", dryRun: true})
         assert.match(types.getFullText(), /interface B {/)
         assert.doesNotMatch(types.getFullText(), /interface A {/)
 
@@ -133,25 +133,25 @@ describe("refineRename", () => {
     it("refuses a cross-namespace rename", async () => {
         const project = newProject()
         project.createSourceFile("/types.ts", "export declare namespace NS {\n    interface A {}\n}\n")
-        await assert.rejects(refineRename({project, log, from: "NS.A", to: "Other.A", file: null, dryRun: true}), /same container/)
+        await assert.rejects(refineRename({project, log, from: "NS.A", to: "Other.A", dryRun: true}), /same container/)
     })
 
     it("refuses moving a namespace member to the top level", async () => {
         const project = newProject()
         project.createSourceFile("/types.ts", "export declare namespace NS {\n    interface A {}\n}\n")
-        await assert.rejects(refineRename({project, log, from: "NS.A", to: "A", file: null, dryRun: true}), /same container/)
+        await assert.rejects(refineRename({project, log, from: "NS.A", to: "A", dryRun: true}), /same container/)
     })
 
     it("refuses when the target member name already exists in the namespace", async () => {
         const project = newProject()
         project.createSourceFile("/types.ts", "export declare namespace NS {\n    interface A {}\n    interface B {}\n}\n")
-        await assert.rejects(refineRename({project, log, from: "NS.A", to: "NS.B", file: null, dryRun: true}), /already exists/)
+        await assert.rejects(refineRename({project, log, from: "NS.A", to: "NS.B", dryRun: true}), /already exists/)
     })
 
     it("errors when the namespace member is not found", async () => {
         const project = newProject()
         project.createSourceFile("/types.ts", "export declare namespace NS {\n    interface A {}\n}\n")
-        await assert.rejects(refineRename({project, log, from: "NS.Nope", to: "NS.X", file: null, dryRun: true}), /no in-project identifier/)
+        await assert.rejects(refineRename({project, log, from: "NS.Nope", to: "NS.X", dryRun: true}), /no in-project identifier/)
     })
 
     it("finds a member declared in a later merged namespace block", async () => {
@@ -160,7 +160,7 @@ describe("refineRename", () => {
         // Two `namespace NS {}` blocks in one file; the target is in the second.
         const types = project.createSourceFile("/types.ts", "export declare namespace NS {\n    interface A {}\n}\nexport declare namespace NS {\n    interface C {}\n}\n")
         const c = project.createSourceFile("/c.ts", 'import type {NS} from "./types.ts"\nconst _: NS.C = {}\n')
-        await refineRename({project, log, from: "NS.C", to: "NS.D", file: null, dryRun: true})
+        await refineRename({project, log, from: "NS.C", to: "NS.D", dryRun: true})
         assert.match(types.getFullText(), /interface D {}/)
         assert.match(c.getFullText(), /const _: NS\.D =/)
     })
@@ -191,7 +191,7 @@ describe("refineRename", () => {
         const project = newProject()
         const types = project.createSourceFile("/types.ts", "export interface Shape {\n    width: number\n}\n")
         const use = project.createSourceFile("/use.ts", 'import type {Shape} from "./types.ts"\nconst s: Shape = {width: 1}\nconsole.log(s.width)\n')
-        await refineRename({project, log, from: "Shape.width", to: "Shape.w", file: null, dryRun: true})
+        await refineRename({project, log, from: "Shape.width", to: "Shape.w", dryRun: true})
         assert.match(types.getFullText(), /\bw: number/)
         assert.doesNotMatch(types.getFullText(), /width/)
         assert.match(use.getFullText(), /\{w: 1\}/)
@@ -202,7 +202,7 @@ describe("refineRename", () => {
         const project = newProject()
         const types = project.createSourceFile("/box.ts", "export class Box {\n    grow(): void {}\n}\n")
         const use = project.createSourceFile("/use.ts", 'import {Box} from "./box.ts"\nnew Box().grow()\n')
-        await refineRename({project, log, from: "Box.grow", to: "Box.expand", file: null, dryRun: true})
+        await refineRename({project, log, from: "Box.grow", to: "Box.expand", dryRun: true})
         assert.match(types.getFullText(), /expand\(\): void/)
         assert.match(use.getFullText(), /\.expand\(\)/)
     })
@@ -210,7 +210,7 @@ describe("refineRename", () => {
     it("renames a property of a namespace-nested interface", async () => {
         const project = newProject()
         const types = project.createSourceFile("/types.ts", "export declare namespace NS {\n    interface Shape {\n        width: number\n    }\n}\n")
-        await refineRename({project, log, from: "NS.Shape.width", to: "NS.Shape.w", file: null, dryRun: true})
+        await refineRename({project, log, from: "NS.Shape.width", to: "NS.Shape.w", dryRun: true})
         assert.match(types.getFullText(), /\bw: number/)
         assert.doesNotMatch(types.getFullText(), /width/)
     })
@@ -218,19 +218,19 @@ describe("refineRename", () => {
     it("refuses moving a property to a different container", async () => {
         const project = newProject()
         project.createSourceFile("/types.ts", "export interface Shape {\n    width: number\n}\nexport interface Box {\n    width: number\n}\n")
-        await assert.rejects(refineRename({project, log, from: "Shape.width", to: "Box.w", file: null, dryRun: true}), /same container/)
+        await assert.rejects(refineRename({project, log, from: "Shape.width", to: "Box.w", dryRun: true}), /same container/)
     })
 
     it("refuses when the target property name already exists on the container", async () => {
         const project = newProject()
         project.createSourceFile("/types.ts", "export interface Shape {\n    width: number\n    w: number\n}\n")
-        await assert.rejects(refineRename({project, log, from: "Shape.width", to: "Shape.w", file: null, dryRun: true}), /already exists/)
+        await assert.rejects(refineRename({project, log, from: "Shape.width", to: "Shape.w", dryRun: true}), /already exists/)
     })
 
     it("errors when the container has no such property", async () => {
         const project = newProject()
         project.createSourceFile("/types.ts", "export interface Shape {\n    width: number\n}\n")
-        await assert.rejects(refineRename({project, log, from: "Shape.height", to: "Shape.h", file: null, dryRun: true}), /no in-project identifier/)
+        await assert.rejects(refineRename({project, log, from: "Shape.height", to: "Shape.h", dryRun: true}), /no in-project identifier/)
     })
 
     it("organizes each edited file in its own surveyed style", async () => {
@@ -241,7 +241,7 @@ describe("refineRename", () => {
         // the post-rename re-sort keeps that file's own brace style.
         const a = project.createSourceFile("/a.ts", 'import { funcA } from "./libs.ts"\nconst _ = funcA()\n')
         const b = project.createSourceFile("/b.ts", 'import {funcA} from "./libs.ts"\nconst _ = funcA()\n')
-        await refineRename({project, log, from: "funcA", to: "funcB", file: null, dryRun: true})
+        await refineRename({project, log, from: "funcA", to: "funcB", dryRun: true})
 
         assert.equal(a.getFullText(), 'import { funcB } from "./libs.ts"\nconst _ = funcB()\n')
         assert.equal(b.getFullText(), 'import {funcB} from "./libs.ts"\nconst _ = funcB()\n')

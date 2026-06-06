@@ -8,7 +8,7 @@ const SAMPLE_DIR = path.dirname(SAMPLE_TSCONFIG)
 
 describe("resolvePaths", () => {
     it("defaults to ./tsconfig.json when no path is given", () => {
-        assert.equal(resolvePaths(null, []).tsConfigFilePath, path.resolve("tsconfig.json"))
+        assert.equal(resolvePaths(undefined, []).tsConfigFilePath, path.resolve("tsconfig.json"))
     })
 
     it("treats a non-.json value as a directory and appends tsconfig.json", () => {

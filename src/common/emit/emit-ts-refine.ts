@@ -3,7 +3,7 @@
 // `grep -E '^ +--'` extract just the flags.
 
 import type {TSR} from "ts-refine"
-import {reportToFormatStyle} from "../../common/format-style.ts"
+import {reportToFormatStyle} from "../format-style.ts"
 
 // Returns argv-style tokens (flag and value pushed separately), the same
 // shape parseArgs consumes. Reads FormatStyle — the same value the
@@ -12,7 +12,7 @@ import {reportToFormatStyle} from "../../common/format-style.ts"
 export function buildFormatTokens(options: TSR.FormatStyle): string[] {
     const flags: string[] = []
     if (options.semi) flags.push("--semi", options.semi)
-    if (options.indent !== undefined) flags.push("--indent", String(options.indent))
+    if (options.indent != null) flags.push("--indent", String(options.indent))
     if (options.memberDelimiter) flags.push("--member-delimiter", options.memberDelimiter)
     if (options.newLine) flags.push("--new-line", options.newLine)
     if (options.bracketSpacing) flags.push("--bracket-spacing", options.bracketSpacing)
@@ -21,30 +21,7 @@ export function buildFormatTokens(options: TSR.FormatStyle): string[] {
 }
 
 // Renders the recommendation as the flag string the `format` command
-// consumes — the value emitTsRefineFormat frames and the Markdown survey
-// embeds. Returns plain text (empty when nothing fired), so the caller
-// picks its own framing.
 export function getTsRefineFormat(report: TSR.ReportResult): string {
     const flags = buildFormatTokens(reportToFormatStyle(report))
     return flags.join(" ")
-}
-
-export function emitTsRefineFormat(report: TSR.ReportResult, output: TSR.Writer): void {
-    const format = getTsRefineFormat(report)
-    if (!format) return
-    output.write(`${format}\n`)
-}
-
-// `## recommendation` block in the default-survey Markdown. Skipped
-// when no recommendations fired (the empty form carries no information).
-export function writeFormatMarkdown(report: TSR.ReportResult, output: TSR.Writer): void {
-    const format = getTsRefineFormat(report)
-    if (!format) return
-    output.write("## recommendation\n")
-    output.write("\n")
-    output.write("```sh\n")
-    output.write("ts-refine format \\\n")
-    output.write(`  ${format}\n`)
-    output.write("```\n")
-    output.write("\n")
 }

@@ -47,6 +47,7 @@ function survey(scratch: Project, probePath: string, containerText: string): {ki
 }
 
 export function applyMemberDelimiter(sf: SourceFile, style: TSR.MemberDelimiterReport["delimiter"]): void {
+    if (!style) return
     const want = SEPARATOR[style]
 
     // The scratch project for the verification re-parses. Built lazily on the

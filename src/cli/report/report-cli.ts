@@ -7,9 +7,6 @@ import {initProject} from "../../common/init-project.ts"
 import {refineReport} from "../../index.ts"
 import type {CLI} from "../cli-io.ts"
 import {resolvePaths} from "../resolve-paths.ts"
-import {writePrettierMarkdown} from "./emit-prettier.ts"
-import {writeStylisticMarkdown} from "./emit-stylistic.ts"
-import {writeFormatMarkdown} from "./emit-ts-refine.ts"
 import {parseReportArgs} from "./parse-report-args.ts"
 import {selectEmitter} from "./select-emitter.ts"
 
@@ -22,15 +19,14 @@ export const reportCLI: CLI = async (ctx) => {
     const project = initProject({tsConfigFilePath})
 
     // Report-name validation lives in refineReport so typos surface there.
-    const reports = args.reports as TSR.ReportName[]
-    const emitter = selectEmitter(args.emit, output)
+    const reports = args.reports as TSR.ReportName[] | undefined
+    const emitter = selectEmitter(args.emit)
 
-    const report = await refineReport({project, paths, reports, output: emitter.reportStream, log})
-    if (args.surveyDefault) {
-        writeFormatMarkdown(report, output)
-        writePrettierMarkdown(report, output)
-        writeStylisticMarkdown(report, output)
+    const report = await refineReport({project, paths, reports, output: emitter ? undefined : output, log})
+    if (emitter) {
+        const config = emitter(report)
+        if (config) output.write(config + "\n")
     }
-    emitter.finalize(report)
+
     return 0
 }

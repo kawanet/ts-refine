@@ -8,7 +8,7 @@ import {describe, it} from "node:test"
 import {type CommonArgs, parseCommonArgs} from "./parse-common-args.ts"
 
 function fresh(): CommonArgs {
-    return {tsconfigPath: null, dryRun: false, help: false}
+    return {}
 }
 
 describe("parseCommonArgs", () => {

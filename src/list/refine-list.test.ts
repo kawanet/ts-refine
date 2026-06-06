@@ -9,7 +9,7 @@ import {refineList} from "./refine-list.ts"
 
 const SAMPLE_TSCONFIG = path.resolve(import.meta.dirname, "../../sample/basic/tsconfig.json")
 
-const log = {write: (): void => null}
+const log = {write: (): void => undefined}
 
 describe("refineList (sample/basic)", () => {
     it("reports per-file export / unused / importer counts", async () => {

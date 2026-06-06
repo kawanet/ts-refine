@@ -1,9 +1,9 @@
 // CLI help text. Name lists come from the report / output registries
 // so help stays in sync with wired-up entries.
 
+import {emitNames} from "../common/emit-names.ts"
 import {inspectorNames} from "../common/inspector-names.ts"
 import {reportNames} from "../common/report-names.ts"
-import {emitNames} from "./report/select-emitter.ts"
 
 export function usage(): string {
     const reportFlags = reportNames.map((name) => `--${name}`).join(" ")

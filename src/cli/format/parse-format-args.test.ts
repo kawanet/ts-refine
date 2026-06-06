@@ -4,7 +4,7 @@ import type {CommonArgs} from "../parse-common-args.ts"
 import {parseFormatArgs} from "./parse-format-args.ts"
 
 function common(): CommonArgs {
-    return {tsconfigPath: null, dryRun: false, help: false}
+    return {}
 }
 
 describe("parseFormat", () => {
@@ -34,7 +34,7 @@ describe("parseFormat", () => {
         // The parser stays side-effect free: --check must not flip common.dryRun.
         const c = common()
         parseFormatArgs(["--check"], c)
-        assert.equal(c.dryRun, false)
+        assert.equal(!!c.dryRun, false)
     })
 
     it("rejects --semi with an invalid value", () => {

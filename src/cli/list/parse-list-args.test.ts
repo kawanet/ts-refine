@@ -4,7 +4,7 @@ import type {CommonArgs} from "../parse-common-args.ts"
 import {parseListArgs} from "./parse-list-args.ts"
 
 function common(): CommonArgs {
-    return {tsconfigPath: null, dryRun: false, help: false}
+    return {}
 }
 
 describe("parseList", () => {

@@ -7,7 +7,7 @@
 import type {ClassMemberTypes, TypeElementTypes} from "ts-morph"
 import {Node} from "ts-morph"
 import type {TSR} from "ts-refine"
-import {getTsRefineFormat} from "../cli/report/emit-ts-refine.ts"
+import {getTsRefineFormat} from "../common/emit/emit-ts-refine.ts"
 import {logging} from "../common/logging.ts"
 import {displayPath} from "../lib/source-files.ts"
 import {pickRecommendByFiles} from "./pick-recommend.ts"
@@ -49,7 +49,7 @@ export async function runReportMemberDelimiter({sourceFiles, output, log, import
             if (!Node.isInterfaceDeclaration(node) && !Node.isClassDeclaration(node)) return
             for (const member of node.getMembers()) {
                 const kind = classify(member)
-                if (kind === null) continue
+                if (kind == null) continue
                 counts.set(kind, (counts.get(kind) ?? 0) + 1)
             }
         })
@@ -75,7 +75,7 @@ export async function runReportMemberDelimiter({sourceFiles, output, log, import
 
     // Recommendation: file-count majority, line count breaks ties.
     const recommendSep = pickRecommendByFiles(DISPLAY_ORDER, (s) => buckets.get(s))
-    const report: Partial<TSR.MemberDelimiterReport> = recommendSep ? {delimiter: SEP_FLAG_VALUE[recommendSep]} : {}
+    const report: TSR.MemberDelimiterReport = recommendSep ? {delimiter: SEP_FLAG_VALUE[recommendSep]} : {}
 
     // The Markdown table is for display only; skip it (and its formatting)
     // when no output sink is given — the recommendation above is the result.
@@ -113,7 +113,7 @@ export async function runReportMemberDelimiter({sourceFiles, output, log, import
 // do. Shared with the apply pass so report and format agree on the scope.
 export function isSeparableMember(member: ClassMemberTypes | TypeElementTypes): boolean {
     if (Node.isClassStaticBlockDeclaration(member)) return false
-    return memberBody(member) === undefined
+    return memberBody(member) == null
 }
 
 // Reads the member AST and returns the trailing separator. Only members with

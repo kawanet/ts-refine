@@ -15,7 +15,7 @@ describe("writeInspectFile", () => {
             file: "src/a.ts",
             exports: [
                 {line: 3, kind: "const", name: "x", importers: 2, example: "src/cli.ts"},
-                {line: 8, kind: "type", name: "T", importers: 0, example: null},
+                {line: 8, kind: "type", name: "T", importers: 0, example: undefined},
             ],
         })
         assert.match(out, /^## src\/a\.ts\n/)

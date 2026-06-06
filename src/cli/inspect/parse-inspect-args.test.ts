@@ -4,14 +4,14 @@ import type {CommonArgs} from "../parse-common-args.ts"
 import {parseInspectArgs} from "./parse-inspect-args.ts"
 
 function common(): CommonArgs {
-    return {tsconfigPath: null, dryRun: false, help: false}
+    return {}
 }
 
 describe("parseInspect", () => {
-    it("defaults to the full inspector registry", () => {
+    it("defaults to no inspectors", () => {
         const r = parseInspectArgs([], common())
         assert.ok(r)
-        assert.deepEqual(r.inspectors, ["exports", "importers"])
+        assert.deepEqual(r.inspectors, undefined)
     })
 
     it("collects inspector selectors and dedupes", () => {
