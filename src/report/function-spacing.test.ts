@@ -78,6 +78,19 @@ describe("runReportFunctionSpacing", () => {
         assert.match(lines.join(""), /\| anonymous function \| total \| 1 \| 1 \| *\|/)
     })
 
+    it("counts anonymous generator spacing after the asterisk", async () => {
+        const project = initInMemoryProject()
+        project.createSourceFile("spaced-generator.ts", "const f = function* () { yield 1 }\n")
+        project.createSourceFile("compact-generator.ts", "const f = function*() { yield 1 }\n")
+        const lines: string[] = []
+        const ret = await runReportFunctionSpacing({sourceFiles: selectSourceFiles(project, {paths: []}), log, output: {write: (l) => lines.push(l)}})
+        const out = lines.join("")
+
+        assert.deepEqual(ret, {})
+        assert.match(out, /\| anonymous function \| `function \(\)` \| 1 \| 1 \| spaced-generator\.ts \|/)
+        assert.match(out, /\| anonymous function \| `function\(\)` \| 1 \| 1 \| compact-generator\.ts \|/)
+    })
+
     it("uses the do-while keyword token, not while substrings in the body or condition", async () => {
         const project = initInMemoryProject()
         project.createSourceFile("spaced.ts", 'do { const word = "while" } while (meanwhile)\n')

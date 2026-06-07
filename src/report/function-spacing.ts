@@ -118,14 +118,15 @@ function collectFileCounts(sf: SourceFile): FileCounts {
 }
 
 // Detect spacing after `function` in anonymous forms such as
-// `const f = function () {}` and `export default function () {}`.
+// `const f = function () {}` and generator `const f = function* () {}`.
 // Generic anonymous `function<T>()` is skipped because TS formats it as `function <T>()`.
 function classifyAnonymousFunction(node: Node): Style | null {
     const keyword = node.getFirstChildByKind(SyntaxKind.FunctionKeyword)
     const open = node.getFirstChildByKind(SyntaxKind.OpenParenToken)
     if (!keyword || !open) return null
     if (hasFunctionTypeParameters(node)) return null
-    return classifyParenGap(keyword.getEnd(), open)
+    const star = node.getFirstChildByKind(SyntaxKind.AsteriskToken)
+    return classifyParenGap(star ? star.getEnd() : keyword.getEnd(), open)
 }
 
 // Detect spacing before the parameter paren in named forms:
