@@ -11,7 +11,7 @@ type Bucket = {lines: number; files: number; topPath: string; topLines: number}
 type AxisConfig = {axis: Axis; label: string; order: readonly Style[]; example: Record<Style, string>}
 type PerFile = {path: string; counts: Map<Style, number>; primary: Style}
 
-// Keep the TS LS spacing knobs together as one formatting decision.
+// One report for related TS LS knobs.
 const AXES: readonly AxisConfig[] = [
     {
         axis: "anonymousFunctionSpacing",
@@ -108,7 +108,7 @@ function collectFileCounts(sf: SourceFile): Map<Axis, Map<Style, number>> {
         counts.set(style, (counts.get(style) ?? 0) + 1)
     }
 
-    // Constructors and async arrows are absent; these fields ignore them.
+    // Excluded: these fields ignore them.
     sf.forEachDescendant((node) => {
         if (Node.isFunctionExpression(node) && !node.getName()) {
             add("anonymousFunctionSpacing", classifyAnonymousFunction(node))
@@ -129,9 +129,8 @@ function classifyAnonymousFunction(node: Node): Style | null {
     const keyword = node.getFirstChildByKind(SyntaxKind.FunctionKeyword)
     const open = node.getFirstChildByKind(SyntaxKind.OpenParenToken)
     if (!keyword || !open) return null
-    const less = text.indexOf("<", keyword.getEnd())
-    const end = less >= 0 && less < open.getStart() ? less : open.getStart()
-    return classifyGap(text, keyword.getEnd(), end)
+    const from = keyword.getEnd(), to = open.getStart(), between = text.slice(from, to), less = between.indexOf("<")
+    return classifyGap(text, from, less < 0 || between.slice(0, less).trim() ? to : from + less)
 }
 
 function classifyNamedFunction(node: Node): Style | null {
@@ -141,9 +140,8 @@ function classifyNamedFunction(node: Node): Style | null {
     const name = Node.isFunctionDeclaration(node) || Node.isFunctionExpression(node) || Node.isMethodDeclaration(node) ? node.getNameNode() : undefined
     if (!name) return null
     const text = node.getSourceFile().getFullText()
-    const gt = text.lastIndexOf(">", open.getStart())
-    const from = gt >= name.getEnd() ? gt + 1 : name.getEnd()
-    return classifyGap(text, from, open.getStart())
+    const from = name.getEnd(), to = open.getStart(), gt = text.slice(from, to).lastIndexOf(">")
+    return classifyGap(text, gt < 0 ? from : from + gt + 1, to)
 }
 
 function classifyControlKeyword(node: Node): Style | null {
@@ -163,14 +161,12 @@ function classifyDoWhile(node: Node): Style | null {
     return classifyGap(node.getSourceFile().getFullText(), base + whileAt + 5, base + openAt)
 }
 
-// Only token-adjacent spacing votes; comments and `for await` do not.
+// Vote only token-adjacent gaps; comments/for-await skip.
 function classifyGap(text: string, from: number, to: number): Style | null {
     if (to < from) return null
     if (from === to) return "off"
-    for (let i = from; i < to; i++) {
-        if (text.charCodeAt(i) > 32) return null
-    }
-    return "on"
+    if (to === from + 1) return text.charCodeAt(from) <= 32 ? "on" : null
+    return text.slice(from, to).trim() ? null : "on"
 }
 
 function controlKeywordEnd(node: Node): number {
