@@ -262,13 +262,13 @@ npx ts-refine format --member-delimiter semi
 # pin trailing commas in multi-line lists (added when `on`, stripped when `off`)
 npx ts-refine format --trailing-comma on
 
-# pin function keyword spacing
+# anonymous functions: export default function () {}
 npx ts-refine format --function-keyword-spacing on
 
-# pin function paren spacing
+# named/generic bare functions: function f() {}, function <T>() {}
 npx ts-refine format --function-paren-spacing off
 
-# pin control keyword spacing
+# control flow keywords: if (ok) {}, while (ok) {}, catch (err) {}
 npx ts-refine format --control-keyword-spacing on
 ```
 
