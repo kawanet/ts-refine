@@ -91,6 +91,27 @@ describe("runReportFunctionSpacing", () => {
         assert.match(out, /\| control keyword \| `if\(x\)` \| 1 \| 1 \| compact\.ts \|/)
     })
 
+    it("skips comments and real tokens between the keyword/name and paren", async () => {
+        const project = initInMemoryProject()
+        project.createSourceFile(
+            "x.ts",
+            [
+                "const a = function /* gap */ () { return 1 }",
+                "function named /* gap */ () { return 1 }",
+                "if /* gap */ (a) { named() }",
+                "for await (const item of items) { named() }",
+                "",
+            ].join("\n"),
+        )
+        const lines: string[] = []
+        const ret = await runReportFunctionSpacing({sourceFiles: selectSourceFiles(project, {paths: []}), log, output: {write: (l) => lines.push(l)}})
+
+        assert.deepEqual(ret, {})
+        assert.match(lines.join(""), /\| anonymous function \| total \| 0 \| 0 \| *\|/)
+        assert.match(lines.join(""), /\| named function \| total \| 0 \| 0 \| *\|/)
+        assert.match(lines.join(""), /\| control keyword \| total \| 0 \| 0 \| *\|/)
+    })
+
     it("returns no recommendation when files and nodes tie on an axis", async () => {
         const project = initInMemoryProject()
         project.createSourceFile("tight.ts", "const a = function() { return 1 }\n")
