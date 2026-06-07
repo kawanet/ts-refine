@@ -27,6 +27,20 @@ function memberDelimiterConfig(delimiter: TSR.MemberDelimiterReport["delimiter"]
     ]
 }
 
+function functionSpacingConfig(report: TSR.ReportResult): Linter.RuleEntry<RuleOptions["@stylistic/space-before-function-paren"]> | undefined {
+    const anonymous = report.functionSpacing?.anonymousFunctionSpacing
+    const named = report.functionSpacing?.namedFunctionSpacing
+    if (!anonymous && !named) return undefined
+    return [
+        "error",
+        {
+            anonymous: anonymous === "on" ? "always" : anonymous === "off" ? "never" : "ignore",
+            named: named === "on" ? "always" : named === "off" ? "never" : "ignore",
+            asyncArrow: "ignore",
+        },
+    ]
+}
+
 function semiConfig(report: TSR.ReportResult): Linter.RuleEntry<RuleOptions["@stylistic/semi"]> | undefined {
     const semi = report.semi?.semi
     const delimiter = report.memberDelimiter?.delimiter
@@ -74,6 +88,12 @@ function buildStylisticRules(report: TSR.ReportResult): StylisticRules {
     } else if (report.trailingComma?.trailingComma === "off") {
         rules["@stylistic/comma-dangle"] = ["error", "never"]
     }
+    const functionSpacing = functionSpacingConfig(report)
+    if (functionSpacing) {
+        rules["@stylistic/space-before-function-paren"] = functionSpacing
+    }
+    // Do not emit @stylistic/keyword-spacing for controlKeywordSpacing:
+    // overrides still enable the rule defaults for unrelated keywords.
     return rules
 }
 

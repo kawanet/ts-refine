@@ -103,6 +103,20 @@ describe("getStylisticConfig", () => {
         assert.equal(json.rules["@stylistic/member-delimiter-style"]?.[1].multiline.delimiter, "comma")
     })
 
+    it("maps function spacing to function paren and skips broad keyword spacing", () => {
+        const json = capture({functionSpacing: {anonymousFunctionSpacing: "on", namedFunctionSpacing: "off", controlKeywordSpacing: "on"}})
+        assert.ok(json.rules)
+        assert.deepEqual(json.rules["@stylistic/space-before-function-paren"], [
+            "error",
+            {
+                anonymous: "always",
+                named: "never",
+                asyncArrow: "ignore",
+            },
+        ])
+        assert.equal(json.rules["@stylistic/keyword-spacing"], undefined)
+    })
+
     it("keeps rule arrays compact in the JSON output", () => {
         const out = getStylisticConfig({semi: {semi: "off"}, indent: {width: 2}})
         assert.match(out, /"@stylistic\/semi": \["error", "never"\]/)

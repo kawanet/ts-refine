@@ -53,8 +53,17 @@ export declare namespace TSR {
         trailingComma?: "on" | "off"
     }
 
+    interface FunctionSpacingReport {
+        // Space after `function` before `(` or a generic `<...>` list.
+        anonymousFunctionSpacing?: "on" | "off"
+        // Space before `(` on named functions and methods, after any `<...>` list.
+        namedFunctionSpacing?: "on" | "off"
+        // Space after parenthesized control-flow keywords such as `if` or `catch`.
+        controlKeywordSpacing?: "on" | "off"
+    }
+
     // Every report refineReport supports.
-    type ReportName = "semi" | "indent" | "member-delimiter" | "new-line" | "bracket-spacing" | "trailing-comma"
+    type ReportName = "semi" | "indent" | "member-delimiter" | "new-line" | "bracket-spacing" | "trailing-comma" | "function-spacing"
 
     interface ReportOpts extends CommonOpts {
         paths?: string[]
@@ -74,6 +83,7 @@ export declare namespace TSR {
         newLine?: NewLineReport
         bracketSpacing?: BracketSpacingReport
         trailingComma?: TrailingCommaReport
+        functionSpacing?: FunctionSpacingReport
     }
 
     // Per-field format intent derived from a report recommendation, and what the
@@ -85,6 +95,12 @@ export declare namespace TSR {
         semi?: "on" | "off"
         newLine?: "lf" | "crlf"
         bracketSpacing?: "on" | "off"
+        // Space after `function` before `(` or a generic `<...>` list.
+        anonymousFunctionSpacing?: "on" | "off"
+        // Space before `(` on named functions and methods, after any `<...>` list.
+        namedFunctionSpacing?: "on" | "off"
+        // Space after parenthesized control-flow keywords such as `if` or `catch`.
+        controlKeywordSpacing?: "on" | "off"
 
         // Interface / class member delimiter. Applied by a self-pass (the LS
         // can't set these and can't emit `comma` at all); no LS/Prettier mapping.

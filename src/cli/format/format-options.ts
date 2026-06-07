@@ -13,17 +13,27 @@ import {formatReportNames} from "../../common/report-names.ts"
 // A CLI override pins a field, so surveying the matching report is redundant.
 // reportNamesForFormat trims the apply set to the reports still worth running —
 // a fully-pinned format skips the survey.
-const reportByOverride: {field: keyof TSR.FormatStyle; report: TSR.ReportName}[] = [
+type ReportOverrideMap = {field: keyof TSR.FormatStyle; report: TSR.ReportName} | {fields: (keyof TSR.FormatStyle)[]; report: TSR.ReportName}
+
+const reportByOverride: ReportOverrideMap[] = [
     {field: "semi", report: "semi"},
     {field: "indent", report: "indent"},
     {field: "memberDelimiter", report: "member-delimiter"},
     {field: "newLine", report: "new-line"},
     {field: "bracketSpacing", report: "bracket-spacing"},
     {field: "trailingComma", report: "trailing-comma"},
+    {fields: ["anonymousFunctionSpacing", "namedFunctionSpacing", "controlKeywordSpacing"], report: "function-spacing"},
 ]
 
 export function reportNamesForFormat(overrides: TSR.FormatStyle): TSR.ReportName[] {
-    const skip = new Set(reportByOverride.filter((m) => overrides[m.field] != null).map((m) => m.report))
+    const skip = new Set(
+        reportByOverride
+            .filter((m) => {
+                const fields = "fields" in m ? m.fields : [m.field]
+                return fields.every((field) => overrides[field] != null)
+            })
+            .map((m) => m.report),
+    )
     return formatReportNames.filter((name) => !skip.has(name))
 }
 
@@ -36,5 +46,8 @@ export function mergeFormatStyles(base: TSR.FormatStyle, override: TSR.FormatSty
         bracketSpacing: override.bracketSpacing ?? base.bracketSpacing,
         memberDelimiter: override.memberDelimiter ?? base.memberDelimiter,
         trailingComma: override.trailingComma ?? base.trailingComma,
+        anonymousFunctionSpacing: override.anonymousFunctionSpacing ?? base.anonymousFunctionSpacing,
+        namedFunctionSpacing: override.namedFunctionSpacing ?? base.namedFunctionSpacing,
+        controlKeywordSpacing: override.controlKeywordSpacing ?? base.controlKeywordSpacing,
     }
 }

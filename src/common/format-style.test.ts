@@ -26,4 +26,9 @@ describe("reportToFormatStyle", () => {
         const o = reportToFormatStyle({memberDelimiter: {delimiter: "comma"}})
         assert.deepEqual(o, {memberDelimiter: "comma"})
     })
+
+    it("maps function-spacing through to the three format style fields", () => {
+        const o = reportToFormatStyle({functionSpacing: {anonymousFunctionSpacing: "on", namedFunctionSpacing: "off", controlKeywordSpacing: "on"}})
+        assert.deepEqual(o, {anonymousFunctionSpacing: "on", namedFunctionSpacing: "off", controlKeywordSpacing: "on"})
+    })
 })

@@ -89,6 +89,19 @@ describe("parseFormat", () => {
         assert.throws(() => parseFormatArgs(["--trailing-comma", "all"], common()), /--trailing-comma expects 'on' or 'off'/)
     })
 
+    it("accepts function spacing flags", () => {
+        const r = parseFormatArgs(["--anonymous-function-spacing", "on", "--named-function-spacing", "off", "--control-keyword-spacing", "on"], common())
+        assert.equal(r?.applyOverrides.anonymousFunctionSpacing, "on")
+        assert.equal(r?.applyOverrides.namedFunctionSpacing, "off")
+        assert.equal(r?.applyOverrides.controlKeywordSpacing, "on")
+    })
+
+    it("rejects function spacing flags with invalid values", () => {
+        assert.throws(() => parseFormatArgs(["--anonymous-function-spacing", "yes"], common()), /--anonymous-function-spacing expects 'on' or 'off'/)
+        assert.throws(() => parseFormatArgs(["--named-function-spacing", "yes"], common()), /--named-function-spacing expects 'on' or 'off'/)
+        assert.throws(() => parseFormatArgs(["--control-keyword-spacing", "yes"], common()), /--control-keyword-spacing expects 'on' or 'off'/)
+    })
+
     it("rejects --organize-imports with a redirect to the imports command", () => {
         assert.throws(() => parseFormatArgs(["--organize-imports", "only"], common()), /--organize-imports was removed; use `ts-refine imports` instead/)
     })

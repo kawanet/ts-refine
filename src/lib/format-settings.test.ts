@@ -49,6 +49,13 @@ describe("formatStyleToSettings", () => {
     it("maps newLine crlf → \\r\\n in newLineCharacter", () => {
         assert.equal(formatStyleToSettings({newLine: "crlf"}).newLineCharacter, "\r\n")
     })
+
+    it("maps function spacing axes to TS LS settings", () => {
+        const r = formatStyleToSettings({anonymousFunctionSpacing: "on", namedFunctionSpacing: "off", controlKeywordSpacing: "on"})
+        assert.equal(r.insertSpaceAfterFunctionKeywordForAnonymousFunctions, true)
+        assert.equal(r.insertSpaceBeforeFunctionParenthesis, false)
+        assert.equal(r.insertSpaceAfterKeywordsInControlFlowStatements, true)
+    })
 })
 
 describe("normalizeNewLines", () => {

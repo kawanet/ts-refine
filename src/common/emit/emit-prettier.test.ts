@@ -73,4 +73,9 @@ describe("getPrettierConfig", () => {
         assert.equal(JSON.parse(getPrettierConfig({trailingComma: {trailingComma: "on"}})).trailingComma, "all")
         assert.equal(JSON.parse(getPrettierConfig({trailingComma: {trailingComma: "off"}})).trailingComma, "none")
     })
+
+    it("ignores functionSpacing because Prettier has no matching option", () => {
+        const json = JSON.parse(getPrettierConfig({functionSpacing: {anonymousFunctionSpacing: "on", namedFunctionSpacing: "off", controlKeywordSpacing: "on"}}))
+        assert.deepEqual(json, {})
+    })
 })
