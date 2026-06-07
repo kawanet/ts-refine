@@ -27,6 +27,26 @@ function memberDelimiterConfig(delimiter: TSR.MemberDelimiterReport["delimiter"]
     ]
 }
 
+function functionSpacingConfig(report: TSR.ReportResult): Linter.RuleEntry<RuleOptions["@stylistic/space-before-function-paren"]> | undefined {
+    const anonymous = report.functionSpacing?.anonymousFunctionSpacing
+    const named = report.functionSpacing?.namedFunctionSpacing
+    if (!anonymous && !named) return undefined
+    return [
+        "error",
+        {
+            anonymous: anonymous === "on" ? "always" : anonymous === "off" ? "never" : "ignore",
+            named: named === "on" ? "always" : named === "off" ? "never" : "ignore",
+            asyncArrow: "ignore",
+        },
+    ]
+}
+
+function keywordSpacingConfig(report: TSR.ReportResult): Linter.RuleEntry<RuleOptions["@stylistic/keyword-spacing"]> | undefined {
+    const control = report.functionSpacing?.controlKeywordSpacing
+    if (!control) return undefined
+    return ["error", {after: control === "on"}]
+}
+
 function semiConfig(report: TSR.ReportResult): Linter.RuleEntry<RuleOptions["@stylistic/semi"]> | undefined {
     const semi = report.semi?.semi
     const delimiter = report.memberDelimiter?.delimiter
@@ -73,6 +93,14 @@ function buildStylisticRules(report: TSR.ReportResult): StylisticRules {
         rules["@stylistic/comma-dangle"] = ["error", "always-multiline"]
     } else if (report.trailingComma?.trailingComma === "off") {
         rules["@stylistic/comma-dangle"] = ["error", "never"]
+    }
+    const functionSpacing = functionSpacingConfig(report)
+    if (functionSpacing) {
+        rules["@stylistic/space-before-function-paren"] = functionSpacing
+    }
+    const keywordSpacing = keywordSpacingConfig(report)
+    if (keywordSpacing) {
+        rules["@stylistic/keyword-spacing"] = keywordSpacing
     }
     return rules
 }

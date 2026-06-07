@@ -3,12 +3,12 @@
 
 import type {TSR} from "ts-refine"
 
-export const reportNames: readonly TSR.ReportName[] = ["semi", "indent", "member-delimiter", "new-line", "bracket-spacing", "trailing-comma"] as const
+export const reportNames: readonly TSR.ReportName[] = ["semi", "indent", "member-delimiter", "new-line", "bracket-spacing", "trailing-comma", "function-spacing"] as const
 
 // Reports the `format` command applies. Kept distinct from `reportNames` even
 // when the values coincide: the offered registry and the format apply set
 // differ in role and may diverge again.
-export const formatReportNames: readonly TSR.ReportName[] = ["semi", "indent", "member-delimiter", "new-line", "bracket-spacing", "trailing-comma"]
+export const formatReportNames: readonly TSR.ReportName[] = ["semi", "indent", "member-delimiter", "new-line", "bracket-spacing", "trailing-comma", "function-spacing"]
 
 // Reports for the per-file import survey (formatSettingsForFile, used by
 // imports/move/rename): the LS-mappable axes plus trailing-comma, which has no

@@ -12,5 +12,8 @@ export function reportToFormatStyle(report: TSR.ReportResult): TSR.FormatStyle {
     if (report.bracketSpacing?.bracketSpacing) options.bracketSpacing = report.bracketSpacing.bracketSpacing
     if (report.memberDelimiter?.delimiter) options.memberDelimiter = report.memberDelimiter.delimiter
     if (report.trailingComma?.trailingComma) options.trailingComma = report.trailingComma.trailingComma
+    if (report.functionSpacing?.anonymousFunctionSpacing) options.anonymousFunctionSpacing = report.functionSpacing.anonymousFunctionSpacing
+    if (report.functionSpacing?.namedFunctionSpacing) options.namedFunctionSpacing = report.functionSpacing.namedFunctionSpacing
+    if (report.functionSpacing?.controlKeywordSpacing) options.controlKeywordSpacing = report.functionSpacing.controlKeywordSpacing
     return options
 }

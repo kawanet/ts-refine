@@ -83,6 +83,27 @@ export function parseFormatArgs(sub: string[], common: CommonArgs): FormatArgs |
             }
             overrides.trailingComma = v
             i += 2
+        } else if (a === "--anonymous-function-spacing") {
+            const v = sub[i + 1]
+            if (v !== "on" && v !== "off") {
+                throw new Error(`--anonymous-function-spacing expects 'on' or 'off'; got: ${v ?? "(missing)"}`)
+            }
+            overrides.anonymousFunctionSpacing = v
+            i += 2
+        } else if (a === "--named-function-spacing") {
+            const v = sub[i + 1]
+            if (v !== "on" && v !== "off") {
+                throw new Error(`--named-function-spacing expects 'on' or 'off'; got: ${v ?? "(missing)"}`)
+            }
+            overrides.namedFunctionSpacing = v
+            i += 2
+        } else if (a === "--control-keyword-spacing") {
+            const v = sub[i + 1]
+            if (v !== "on" && v !== "off") {
+                throw new Error(`--control-keyword-spacing expects 'on' or 'off'; got: ${v ?? "(missing)"}`)
+            }
+            overrides.controlKeywordSpacing = v
+            i += 2
         } else if (a === "--check") {
             check = true
             i++

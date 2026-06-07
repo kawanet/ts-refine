@@ -12,6 +12,7 @@ import {resolveProject} from "../common/init-project.ts"
 import {reportNames} from "../common/report-names.ts"
 import {selectSourceFiles} from "../lib/source-files.ts"
 import {runReportBracketSpacing} from "./bracket-spacing.ts"
+import {runReportFunctionSpacing} from "./function-spacing.ts"
 import {runReportIndent} from "./indent.ts"
 import {runReportMemberDelimiter} from "./member-delimiter.ts"
 import {runReportNewLine} from "./new-line.ts"
@@ -71,6 +72,9 @@ export const runReports = async (reportOpts: ReportRunOpts, requested: readonly 
     }
     if (requested.includes("trailing-comma")) {
         report.trailingComma = await runReportTrailingComma(reportOpts)
+    }
+    if (requested.includes("function-spacing")) {
+        report.functionSpacing = await runReportFunctionSpacing(reportOpts)
     }
 
     return report
