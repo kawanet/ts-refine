@@ -1,4 +1,4 @@
-import type {Node as TsNode, SourceFile as TsSourceFile} from "typescript"
+import type {Node as TsNode, SourceFile as TsSourceFile, TypeLiteralNode} from "typescript"
 import {SyntaxKind} from "typescript"
 import type {SourceFile} from "../bridge/bridge.ts"
 
@@ -16,7 +16,7 @@ export function applyTypeLiteralBracketSpacing(sf: SourceFile, style: Style): vo
 
     const visit = (node: TsNode): void => {
         if (node.kind === SyntaxKind.TypeLiteral) {
-            collectTypeLiteralEdits(edits, fullText, tsSf, node, style)
+            collectTypeLiteralEdits(edits, fullText, tsSf, node as TypeLiteralNode, style)
         }
         node.forEachChild(visit)
     }
@@ -31,43 +31,44 @@ export function applyTypeLiteralBracketSpacing(sf: SourceFile, style: Style): vo
     sf.replaceWithText(result)
 }
 
-function collectTypeLiteralEdits(edits: Edit[], fullText: string, tsSf: TsSourceFile, node: TsNode, style: Style): void {
+function collectTypeLiteralEdits(edits: Edit[], fullText: string, tsSf: TsSourceFile, node: TypeLiteralNode, style: Style): void {
+    const members = node.members
+    const first = members[0]
+    const last = members[members.length - 1]
+    if (first == null || last == null) return
+
     const open = node.getStart(tsSf)
     const close = node.end - 1
     if (fullText[open] !== "{" || fullText[close] !== "}") return
 
     const innerStart = open + 1
     const innerEnd = close
-    if (innerEnd <= innerStart) return
+    // Same fast single-line gate used by the type-literal tail pass: CRLF
+    // contains LF, and CR-only files are rejected before format passes run.
+    const lf = fullText.indexOf("\n", innerStart)
+    if (lf >= 0 && lf < innerEnd) return
 
-    let first = innerStart
-    while (first < innerEnd && isHorizontalSpace(fullText.charCodeAt(first))) first++
-
-    let last = innerEnd - 1
-    while (last >= first && isHorizontalSpace(fullText.charCodeAt(last))) last--
-
-    if (last < first) return // whitespace-only `{ }`
-    if (hasLineBreak(fullText, first, last + 1)) return
-
+    const leftEnd = first.getStart(tsSf)
+    const rightStart = last.end
     if (style === "off") {
-        if (first > innerStart) edits.push({start: innerStart, end: first, text: ""})
-        if (last + 1 < innerEnd) edits.push({start: last + 1, end: innerEnd, text: ""})
+        addGapEdit(edits, fullText, innerStart, leftEnd, "")
+        addGapEdit(edits, fullText, rightStart, innerEnd, "")
     } else {
-        const leftText = first === innerStart ? " " : fullText.slice(innerStart, first) === " " ? undefined : " "
-        const rightText = last + 1 === innerEnd ? " " : fullText.slice(last + 1, innerEnd) === " " ? undefined : " "
-        if (leftText != null) edits.push({start: innerStart, end: first, text: leftText})
-        if (rightText != null) edits.push({start: last + 1, end: innerEnd, text: rightText})
+        addGapEdit(edits, fullText, innerStart, leftEnd, " ")
+        addGapEdit(edits, fullText, rightStart, innerEnd, " ")
     }
 }
 
-function isHorizontalSpace(c: number): boolean {
-    return c === 0x20 || c === 0x09
-}
+function addGapEdit(edits: Edit[], fullText: string, start: number, end: number, text: string): void {
+    if (start > end) return
+    const current = fullText.slice(start, end)
+    if (current === text) return
 
-function hasLineBreak(text: string, start: number, end: number): boolean {
-    for (let i = start; i < end; i++) {
-        const c = text.charCodeAt(i)
-        if (c === 0x0a || c === 0x0d) return true
+    // Only rewrite plain horizontal whitespace. A comment between the brace
+    // and member is real trivia, so leave that spacing to the LS formatter.
+    for (let i = 0; i < current.length; i++) {
+        const c = current.charCodeAt(i)
+        if (c !== 0x20 && c !== 0x09) return
     }
-    return false
+    edits.push({start, end, text})
 }
