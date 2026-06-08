@@ -24,10 +24,9 @@ NAMED_EXPORTS := $(shell sed -nE 's/^export declare function ([a-zA-Z_$$]+).*/\1
 # so it cannot slip in. This cap is not a minifier target: raise it for real
 # feature growth, and keep source code readable.
 #
-# The mjs bundle carries the src/bridge compat layer (replacing the external
-# ts-morph). The CLI bundle imports the library through ../index.ts, which the
-# CLI rollup config aliases to the external "ts-refine", so it stays small and
-# never re-bundles the bridge.
+# The mjs bundle carries the src/bridge compat layer. The CLI bundle imports
+# the library through ../index.ts, which the CLI rollup config aliases to the
+# external "ts-refine", so it stays small and never re-bundles the bridge.
 MJS_MAX_BYTES := 230000
 CLI_MAX_BYTES := 60000
 

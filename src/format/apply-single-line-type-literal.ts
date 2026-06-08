@@ -8,8 +8,8 @@ import type {SourceFile} from "../bridge/bridge.ts"
 //
 // Walk the compiler AST directly rather than `sf.forEachDescendant`: the only
 // inputs needed per node are kind / members / pos / end, and the per-visit
-// ts-morph Node wrapper dominated this pass's runtime. Writes still go through
-// the ts-morph SourceFile so the wrapped tree refreshes after editing.
+// Node wrapper dominated this pass's runtime. Writes still go through
+// the bridge SourceFile so the wrapped tree refreshes after editing.
 export function applySingleLineTypeLiteralTail(sf: SourceFile): void {
     const edits: number[] = []
     const fullText = sf.getFullText()

@@ -48,7 +48,7 @@ export async function runReportMemberDelimiter({sourceFiles, output, log, import
     for (const sf of sourceFiles) {
         const counts = new Map<Separator, number>()
         // Find interface / class declarations on the compiler AST, then wrap
-        // only those few back into ts-morph for the member-level classify. The
+        // only those few back into bridge Nodes for the member-level classify. The
         // previous sf.forEachDescendant allocated a wrapper for every node in
         // the file just to reach the handful of containers.
         const tsSf = sf.compilerNode

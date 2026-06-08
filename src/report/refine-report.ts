@@ -1,6 +1,6 @@
 // Report router. Validates argv-side input against the report-name
 // registry (kept in ./report-names.ts so it can be imported without
-// dragging in ts-morph) and runs requested reports in a fixed order.
+// dragging in the bridge) and runs requested reports in a fixed order.
 // Each report function returns the action params its recommendation
 // would drive (or an empty partial when nothing strict was found); the
 // router merges those into a single ReportResult so a caller can

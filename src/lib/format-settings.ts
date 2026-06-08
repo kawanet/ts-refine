@@ -13,7 +13,7 @@ export interface ImportsStyle {
 }
 
 // Survey a single file's import/export statements and convert the recommended
-// style to ts-morph settings. The write commands call this per file so each
+// style to the language service's format settings. The write commands call this per file so each
 // keeps its own existing conventions.
 export const formatSettingsForFile = async (sf: SourceFile): Promise<ImportsStyle> => {
     const log = {write: (): void => undefined}
@@ -25,7 +25,7 @@ export const formatSettingsForFile = async (sf: SourceFile): Promise<ImportsStyl
 // FormatCodeSettings is readonly; build mutably and cast at the return.
 type MutableFormatSettings = {-readonly [K in keyof FormatCodeSettings]: FormatCodeSettings[K]}
 
-// FormatStyle → the FormatCodeSettings refineFormat hands to ts-morph. The
+// FormatStyle → the FormatCodeSettings refineFormat hands to the language service. The
 // chosen newline lands in `newLineCharacter`; callers that need to normalize
 // existing terminators read it back from there (see refineFormat).
 export function formatStyleToSettings(options: TSR.FormatStyle): FormatCodeSettings {

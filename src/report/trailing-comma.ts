@@ -53,7 +53,7 @@ export async function runReportTrailingComma({sourceFiles, output, log, importsO
         const text = sf.getFullText()
         const counts = new Map<Style, number>()
         // Walk the compiler AST directly: the classifier already works on raw
-        // compiler nodes, so the per-visit ts-morph wrapper is pure overhead.
+        // compiler nodes, so the per-visit wrapper is pure overhead.
         const visit = (node: TsNode): void => {
             const style = classify(text, node)
             if (style != null) counts.set(style, (counts.get(style) ?? 0) + 1)

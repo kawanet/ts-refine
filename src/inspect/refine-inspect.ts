@@ -177,7 +177,7 @@ function gatherExports(sf: SourceFile): TSR.InspectExport[] {
 }
 
 // Map a declaration node to a human-friendly kind label
-// (function/class/const/...) instead of ts-morph's raw kind name.
+// (function/class/const/...) instead of the compiler's raw kind name.
 function kindLabel(decl: Node): string {
     if (Node.isFunctionDeclaration(decl)) return "function"
     if (Node.isClassDeclaration(decl)) return "class"

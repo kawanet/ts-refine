@@ -1,5 +1,5 @@
 // `move`: relocate one or more .ts files and update every import path
-// that targets them. ts-morph's sf.move() handles the path arithmetic
+// that targets them. sf.move() handles the path arithmetic
 // for all import forms (value / type / namespace / re-export / dynamic)
 // and preserves the surrounding text untouched; what it doesn't do is
 // preserve the `.ts` extension in the rewritten module specifiers, so we
@@ -29,7 +29,7 @@ import {displayPath, inProjectSourceFiles} from "../lib/source-files.ts"
 // reference so it stays valid across sf.move() and can be patched in place.
 // `originalExt` is the literal extension on the source-time specifier
 // (".ts", ".js", ".mjs", ...) or "" for no extension — whatever the user
-// wrote stays. ts-morph drops the extension during move and we put back
+// wrote stays. sf.move() drops the extension during move and we put back
 // exactly what was there originally.
 type SpecRecord = {kind: "import"; node: ImportDeclaration; originalExt: string} | {kind: "export"; node: ExportDeclaration; originalExt: string} | {kind: "dynamic"; node: StringLiteral; originalExt: string}
 
@@ -67,13 +67,13 @@ export const refineMove: typeof declared.refineMove = async (opts) => {
     const targetFiles = new Set(records.map((r) => r.node.getSourceFile()))
     const styleOf = await surveyImportStyles(targetFiles)
 
-    // Apply each move in turn. ts-morph keeps cross-file references in sync
+    // Apply each move in turn. sf.move() keeps cross-file references in sync
     // — including the moved file's own outgoing relative paths.
     for (const {from, to} of plan) {
         project.getSourceFileOrThrow(from).move(to)
     }
 
-    // Restore each specifier's original extension. ts-morph drops the
+    // Restore each specifier's original extension. sf.move() drops the
     // extension during move; this puts back exactly what the user wrote
     // (`.ts`, `.js`, `.mjs`, none, …) — no migration across styles.
     for (const r of records) restoreOriginalExtension(r)
@@ -115,7 +115,7 @@ export const refineMove: typeof declared.refineMove = async (opts) => {
             try {
                 await fileSystem.delete(from)
             } catch {
-                // Source already gone (e.g., ts-morph's in-memory FS
+                // Source already gone (e.g., the in-memory FS
                 // dropped it as part of move) — nothing to delete.
             }
         }
@@ -192,13 +192,13 @@ function planMoves(project: Project, sources: string[], dest: string): {from: st
 }
 
 // Detect a directory destination in priority order: explicit trailing
-// slash, ts-morph's filesystem view, project source-file layout, then
+// slash, the project's filesystem view, project source-file layout, then
 // host fs.statSync as the on-disk fallback.
 function isDirectoryDest(project: Project, dest: string): boolean {
     if (dest.endsWith("/") || dest.endsWith(path.sep)) return true
     if (project.getFileSystem().directoryExistsSync(dest)) return true
 
-    // ts-morph's in-memory FS does not register parent dirs until the
+    // the in-memory FS does not register parent dirs until the
     // child file is saved; infer dir-ness from the source-file layout
     // so a fresh createSourceFile + refineMove flow still works.
     const prefix = dest + "/"
@@ -214,7 +214,7 @@ function isDirectoryDest(project: Project, dest: string): boolean {
 
 // Walks every project source file and captures any specifier whose target
 // is moving — or any outgoing specifier on a moving file itself, since
-// ts-morph rewrites those too when the file relocates. `.d.ts` files are
+// sf.move() rewrites those too when the file relocates. `.d.ts` files are
 // included so an ambient declaration that imports or re-exports a moving
 // source still gets its specifier rewritten and saved.
 function snapshotSpecifiers(project: Project, movingPaths: Set<string>): SpecRecord[] {

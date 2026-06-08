@@ -96,7 +96,7 @@ export async function runReportFunctionSpacing({sourceFiles, output, importsOnly
 // Constructors and async arrows are intentionally absent; these fields do not
 // control `constructor ()` or `async () =>`. The compiler AST is walked
 // directly (not sf.forEachDescendant): the classifiers below only need raw
-// node positions, so the per-visit ts-morph wrapper is avoided.
+// node positions, so the per-visit wrapper is avoided.
 function collectFileCounts(sf: SourceFile): FileCounts {
     const functionKeywordSpacing: StyleCounts = {}
     const functionParenSpacing: StyleCounts = {}

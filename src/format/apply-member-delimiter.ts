@@ -66,7 +66,7 @@ export function applyMemberDelimiter(sf: SourceFile, style: TSR.MemberDelimiterR
     const edits: {start: number; end: number; text: string}[] = []
 
     // Find the interface / class declarations on the compiler AST, then wrap
-    // only those few back into ts-morph for the member-level work below. The
+    // only those few back into bridge Nodes for the member-level work below. The
     // previous sf.forEachDescendant allocated a wrapper for every node in the
     // file just to reach the handful of containers.
     const tsSf = sf.compilerNode

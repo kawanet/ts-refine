@@ -8,7 +8,7 @@
 // and interface / type-literal / class member lists, which the separators pass
 // owns. Spread/rest and dynamic import carry their own predicates below.
 //
-// Works on raw TypeScript compiler nodes (not ts-morph wrappers): the per-visit
+// Works on raw TypeScript compiler nodes (not bridge wrappers): the per-visit
 // wrapper allocation dominated these hot walks, so callers hand off
 // `node.compilerNode` and read positions / `hasTrailingComma` directly.
 
