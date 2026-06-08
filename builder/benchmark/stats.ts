@@ -4,6 +4,7 @@
 import type {TSR} from "ts-refine"
 
 export interface Summary {
+    total: number
     min: number
     median: number
     mean: number
@@ -22,7 +23,7 @@ export function summarize(samples: number[]): Summary {
     const middle = Math.floor(sorted.length / 2)
     const median = sorted.length % 2 === 0 ? (sorted[middle - 1] + sorted[middle]) / 2 : sorted[middle]
 
-    return {min: sorted[0], median, mean: total / samples.length, max: sorted[sorted.length - 1]}
+    return {total, min: sorted[0], median, mean: total / samples.length, max: sorted[sorted.length - 1]}
 }
 
 export function formatMs(value: number): string {
@@ -41,8 +42,8 @@ export function printStatsTable(output: TSR.Writer, nameHeader: string, rows: St
     const sorted = [...rows].sort((a, b) => b.mean - a.mean)
     printTable(
         output,
-        [nameHeader, "calls", "mean", "median", "min", "max"],
-        sorted.map((row) => [row.name, String(row.calls), formatMs(row.mean), formatMs(row.median), formatMs(row.min), formatMs(row.max)]),
+        [nameHeader, "calls", "total", "mean", "median", "min", "max"],
+        sorted.map((row) => [row.name, String(row.calls), formatMs(row.total), formatMs(row.mean), formatMs(row.median), formatMs(row.min), formatMs(row.max)]),
     )
 }
 
