@@ -1,8 +1,6 @@
 // Public library entry.
 
 export type {TSR} from "../types/ts-refine.d.ts"
-export {Project} from "./bridge/bridge.ts"
-export type {ProjectOptions} from "./bridge/bridge.ts"
 export {refineFormat} from "./format/refine-format.ts"
 export {refineImports} from "./imports/refine-imports.ts"
 export {refineInspect} from "./inspect/refine-inspect.ts"
