@@ -48,18 +48,19 @@ export const refineFormat: typeof declared.refineFormat = async (opts) => {
         // formatText's semicolons diverge from Prettier on two narrow points,
         // mutually exclusive by semi value; correct whichever applies first.
         // `off`: restore the `;(` ASI guard the LS re-spaced to `; (`.
-        if (style.semi === "off") applyAsiGuard(sf)
+        applyAsiGuard(sf, style.semi)
+
         // `on`: the LS appends a `;` to a single-line type literal's last
         // member that Prettier keeps bare; trim only that tail.
-        if (style.semi === "on") applySingleLineTypeLiteralTail(sf)
+        applySingleLineTypeLiteralTail(sf, style.semi)
 
         // member-delimiter and trailing-comma are axes the LS can't express
         // (it can't emit a comma delimiter at all); reassert each afterward.
         // Type-literal brace spacing is reasserted last because the LS can leave
         // index-signature literals asymmetric when bracketSpacing is off.
-        if (style.memberDelimiter != null) applyMemberDelimiter(sf, style.memberDelimiter)
-        if (style.trailingComma != null) applyTrailingComma(sf, style.trailingComma)
-        if (style.bracketSpacing != null) applyTypeLiteralBracketSpacing(sf, style.bracketSpacing)
+        applyMemberDelimiter(sf, style.memberDelimiter)
+        applyTrailingComma(sf, style.trailingComma)
+        applyTypeLiteralBracketSpacing(sf, style.bracketSpacing)
 
         // LS `newLineCharacter` only governs inserted text; existing
         // terminators are normalized here to the same target. Push the result

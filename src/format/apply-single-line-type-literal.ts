@@ -1,3 +1,4 @@
+import type {TSR} from "ts-refine"
 import type {Node as TsNode, TypeLiteralNode} from "typescript"
 import {SyntaxKind} from "typescript"
 import type {SourceFile} from "../bridge/bridge.ts"
@@ -10,7 +11,9 @@ import type {SourceFile} from "../bridge/bridge.ts"
 // inputs needed per node are kind / members / pos / end, and the per-visit
 // Node wrapper dominated this pass's runtime. Writes still go through
 // the bridge SourceFile so the wrapped tree refreshes after editing.
-export function applySingleLineTypeLiteralTail(sf: SourceFile): void {
+export function applySingleLineTypeLiteralTail(sf: SourceFile, semi: TSR.FormatStyle["semi"]): void {
+    if (semi !== "on") return
+
     const edits: number[] = []
     const fullText = sf.getFullText()
     const tsSf = sf.compilerNode

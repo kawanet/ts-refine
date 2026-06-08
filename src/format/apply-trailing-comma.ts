@@ -11,6 +11,7 @@
 // there is a syntax error, so honoring `off` but not `on` would be lopsided. A
 // dynamic import is kept comma-free to match Prettier (see isDynamicImport).
 
+import type {TSR} from "ts-refine"
 import type {Node as TsNode} from "typescript"
 import {SyntaxKind} from "typescript"
 import type {SourceFile} from "../bridge/bridge.ts"
@@ -50,7 +51,9 @@ function findCommaSkippingComments(text: string, from: number, to: number): numb
 // importsOnly narrows the walk to import/export specifier lists, so the
 // imports/move/rename commands reassert the comma style without touching any
 // other list in the file. The format command omits it and walks the whole file.
-export function applyTrailingComma(sf: SourceFile, mode: "on" | "off", opts?: {importsOnly?: boolean}): void {
+export function applyTrailingComma(sf: SourceFile, mode: TSR.FormatStyle["trailingComma"], opts?: {importsOnly?: boolean}): void {
+    if (!mode) return
+
     const full = sf.getFullText()
     const tsSf = sf.compilerNode
     const edits: {start: number; end: number; text: string}[] = []

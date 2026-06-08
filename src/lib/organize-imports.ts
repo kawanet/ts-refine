@@ -22,7 +22,7 @@ export function applyOrganizeImports(sf: SourceFile, style: ImportsStyle): void 
     // organizeImports drops a trailing comma when it rebuilds a local `export
     // {}` specifier list, and the LS can't set one anyway. Reassert the surveyed
     // style on the import/export specifiers only, as a self-pass.
-    if (trailingComma != null) applyTrailingComma(sf, trailingComma, {importsOnly: true})
+    applyTrailingComma(sf, trailingComma, {importsOnly: true})
 }
 
 // organizeImports' printer commits a deferred `;` when a token trails a

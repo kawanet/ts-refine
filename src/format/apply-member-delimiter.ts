@@ -48,7 +48,7 @@ function survey(scratch: Project, probePath: string, containerText: string): {ki
     return {kinds, errors}
 }
 
-export function applyMemberDelimiter(sf: SourceFile, style: TSR.MemberDelimiterReport["delimiter"]): void {
+export function applyMemberDelimiter(sf: SourceFile, style: TSR.FormatStyle["memberDelimiter"]): void {
     if (!style) return
     const want = SEPARATOR[style]
 

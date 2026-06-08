@@ -1,15 +1,16 @@
+import type {TSR} from "ts-refine"
 import type {Node as TsNode, SourceFile as TsSourceFile, TypeLiteralNode} from "typescript"
 import {SyntaxKind} from "typescript"
 import type {SourceFile} from "../bridge/bridge.ts"
-
-type Style = "on" | "off"
 
 type Edit = {start: number; end: number; text: string}
 
 // The TS formatter can leave type-literal braces asymmetric, notably
 // `{[id: string]: boolean }` when bracketSpacing is off. Reassert this narrow
 // axis after formatText while leaving multi-line type literals alone.
-export function applyTypeLiteralBracketSpacing(sf: SourceFile, style: Style): void {
+export function applyTypeLiteralBracketSpacing(sf: SourceFile, style: TSR.FormatStyle["bracketSpacing"]): void {
+    if (!style) return
+
     const fullText = sf.getFullText()
     const tsSf = sf.compilerNode
     const edits: Edit[] = []
@@ -31,7 +32,7 @@ export function applyTypeLiteralBracketSpacing(sf: SourceFile, style: Style): vo
     sf.replaceWithText(result)
 }
 
-function collectTypeLiteralEdits(edits: Edit[], fullText: string, tsSf: TsSourceFile, node: TypeLiteralNode, style: Style): void {
+function collectTypeLiteralEdits(edits: Edit[], fullText: string, tsSf: TsSourceFile, node: TypeLiteralNode, style: "on" | "off"): void {
     const members = node.members
     const first = members[0]
     const last = members[members.length - 1]
