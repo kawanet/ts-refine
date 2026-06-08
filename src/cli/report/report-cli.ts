@@ -3,13 +3,13 @@
 // skip those survey-only blocks.
 
 import type {TSR} from "ts-refine"
+import {writeReportSections} from "../../common/write-report-sections.ts"
 import {createRefineProject, refineReport} from "../../index.ts"
 import type {CLI} from "../cli-io.ts"
 import {resolvePaths} from "../resolve-paths.ts"
 import {parseReportArgs} from "./parse-report-args.ts"
 import {writeFormatMarkdown, writePrettierMarkdown, writeStylisticMarkdown} from "./recommend-markdown.ts"
 import {selectEmitter} from "./select-emitter.ts"
-import {writeReportSections} from "./write-report-sections.ts"
 
 export const reportCLI: CLI = async (ctx) => {
     const {args: common, tokens, output, log} = ctx

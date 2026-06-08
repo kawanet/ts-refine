@@ -1,7 +1,7 @@
 import {strict as assert} from "node:assert"
 import {describe, it} from "node:test"
-import {renderSections} from "../cli/report/write-report-sections.ts"
 import {initInMemoryProject} from "../common/init-project.ts"
+import {renderSections} from "../common/write-report-sections.ts"
 import {selectSourceFiles} from "../lib/source-files.ts"
 import {omitSections} from "../test-utils/omit-sections.ts"
 import {runReportFunctionSpacing} from "./function-spacing.ts"
