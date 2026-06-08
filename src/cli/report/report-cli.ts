@@ -3,8 +3,7 @@
 // skip those survey-only blocks.
 
 import type {TSR} from "ts-refine"
-import {initProject} from "../../common/init-project.ts"
-import {refineReport} from "../../index.ts"
+import {createRefineProject, refineReport} from "../../index.ts"
 import type {CLI} from "../cli-io.ts"
 import {resolvePaths} from "../resolve-paths.ts"
 import {parseReportArgs} from "./parse-report-args.ts"
@@ -16,7 +15,7 @@ export const reportCLI: CLI = async (ctx) => {
     if (!args) return 1
     if (common.help) throw new Error("--help is not supported for the report command")
     const {tsConfigFilePath, paths} = resolvePaths(common.tsconfigPath, args.paths)
-    const project = initProject({tsConfigFilePath})
+    const project = createRefineProject({tsConfigFilePath})
 
     // Report-name validation lives in refineReport so typos surface there.
     const reports = args.reports as TSR.ReportName[] | undefined

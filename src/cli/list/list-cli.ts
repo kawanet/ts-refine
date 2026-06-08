@@ -1,8 +1,7 @@
 // `list` runner: gather the cleanup-candidate entries and write the filtered
 // table to stdout.
 
-import {initProject} from "../../common/init-project.ts"
-import {refineList} from "../../index.ts"
+import {createRefineProject, refineList} from "../../index.ts"
 import type {CLI} from "../cli-io.ts"
 import {resolvePaths} from "../resolve-paths.ts"
 import {parseListArgs} from "./parse-list-args.ts"
@@ -14,7 +13,7 @@ export const listCLI: CLI = async (ctx) => {
     if (!args) return 1
     if (common.help) throw new Error("--help is not supported for the list command")
     const {tsConfigFilePath, paths} = resolvePaths(common.tsconfigPath, args.paths)
-    const project = initProject({tsConfigFilePath})
+    const project = createRefineProject({tsConfigFilePath})
     const entries = await refineList({project, paths, filters: args.listFilters, log})
     writeListTable(entries, output)
     return 0

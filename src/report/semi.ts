@@ -26,7 +26,7 @@ export async function runReportSemi({sourceFiles, output, log, importsOnly}: Rep
         const counts = {total: 0, withSemi: 0}
 
         // Walk the compiler AST directly: the kind test and the trailing-char
-        // check below need only a raw node, so the per-visit ts-morph wrapper
+        // check below need only a raw node, so the per-visit wrapper
         // (and a dozen `Node.isX` guards per node) that forEachDescendant would
         // allocate are the dominant cost avoided here.
         // importsOnly: only the import/export statements are rewritten, so weigh

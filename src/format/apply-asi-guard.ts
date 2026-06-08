@@ -7,8 +7,9 @@
 // Scope is just the inserted space: indentation differences (the formatter also
 // shifts the guarded line) are out of scope and left untouched.
 
-import {SyntaxKind, type SourceFile} from "ts-morph"
 import type {Statement, Node as TsNode} from "typescript"
+import {SyntaxKind} from "typescript"
+import type {SourceFile} from "../bridge/bridge.ts"
 
 // Cheap gate: skip the AST walk unless the formatted text actually contains a
 // `; (` (space or tab between the two). The walk below is the real filter that

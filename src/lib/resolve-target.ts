@@ -6,7 +6,7 @@
 // (one name node per distinct symbol) and never throws on "not found": the
 // caller decides — rename requires a single in-project match, list unions them.
 
-import {type Identifier, Node, type Project, type Symbol as TsSymbol} from "ts-morph"
+import {type Identifier, Node, type Project, type Symbol as TsSymbol} from "../bridge/bridge.ts"
 import {inProjectSourceFileOrThrow, inProjectSourceFiles} from "./source-files.ts"
 
 export const IDENT = /^[A-Za-z_$][A-Za-z0-9_$]*$/

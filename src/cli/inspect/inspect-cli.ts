@@ -2,8 +2,7 @@
 // analysis to stdout.
 
 import type {TSR} from "ts-refine"
-import {initProject} from "../../common/init-project.ts"
-import {refineInspect} from "../../index.ts"
+import {createRefineProject, refineInspect} from "../../index.ts"
 import type {CLI} from "../cli-io.ts"
 import {resolvePaths} from "../resolve-paths.ts"
 import {parseInspectArgs} from "./parse-inspect-args.ts"
@@ -15,7 +14,7 @@ export const inspectCLI: CLI = async (ctx) => {
     if (!args) return 1
     if (common.help) throw new Error("--help is not supported for the inspect command")
     const {tsConfigFilePath, paths} = resolvePaths(common.tsconfigPath, args.paths)
-    const project = initProject({tsConfigFilePath})
+    const project = createRefineProject({tsConfigFilePath})
     const inspectors = args.inspectors as TSR.InspectorName[]
     const files = await refineInspect({project, paths, inspectors, log})
     for (const file of files) writeInspectFile(file, output)

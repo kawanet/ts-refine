@@ -3,8 +3,7 @@
 // file) before relocation, so a project with mixed formatting keeps each file's
 // conventions; use `format` to unify them instead.
 
-import {initProject} from "../../common/init-project.ts"
-import {refineMove} from "../../index.ts"
+import {createRefineProject, refineMove} from "../../index.ts"
 import type {CLI} from "../cli-io.ts"
 import {resolvePaths} from "../resolve-paths.ts"
 import {parseMoveArgs} from "./parse-move-args.ts"
@@ -15,7 +14,7 @@ export const moveCLI: CLI = async (ctx) => {
     if (!args) return 1
     if (common.help) throw new Error("--help is not supported for the move command")
     const {tsConfigFilePath, paths} = resolvePaths(common.tsconfigPath, args.paths)
-    const project = initProject({tsConfigFilePath})
+    const project = createRefineProject({tsConfigFilePath})
     const sources = paths.slice(0, -1)
     const dest = paths[paths.length - 1]
 

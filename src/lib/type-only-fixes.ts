@@ -4,7 +4,7 @@
 // pass they fire purely from diagnostics, so a project without
 // verbatimModuleSyntax/isolatedModules sees a clean no-op.
 
-import type {FormatCodeSettings, SourceFile} from "ts-morph"
+import type {FormatCodeSettings, SourceFile} from "../bridge/bridge.ts"
 
 // Applied in this order before organizeImports: split rescues an illegal
 // `import type X, {Y}` so later fixes see a legal AST, convert-import adds

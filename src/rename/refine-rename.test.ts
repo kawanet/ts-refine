@@ -1,6 +1,7 @@
 import {strict as assert} from "node:assert"
 import {describe, it} from "node:test"
-import {Project, ts} from "ts-morph"
+import ts from "typescript"
+import {Project} from "../bridge/bridge.ts"
 import {initInMemoryProject} from "../common/init-project.ts"
 import {refineRename} from "./refine-rename.ts"
 

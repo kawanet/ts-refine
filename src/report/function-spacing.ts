@@ -1,6 +1,7 @@
-import {SyntaxKind, type SourceFile} from "ts-morph"
 import type {TSR} from "ts-refine"
 import type {Node as TsNode, SourceFile as TsSourceFile} from "typescript"
+import {SyntaxKind} from "typescript"
+import type {SourceFile} from "../bridge/bridge.ts"
 import {displayPath} from "../lib/source-files.ts"
 import {writeFunctionSpacingMarkdown} from "./function-spacing-markdown.ts"
 import {pickRecommendByFiles} from "./pick-recommend.ts"
@@ -95,7 +96,7 @@ export async function runReportFunctionSpacing({sourceFiles, output, importsOnly
 // Constructors and async arrows are intentionally absent; these fields do not
 // control `constructor ()` or `async () =>`. The compiler AST is walked
 // directly (not sf.forEachDescendant): the classifiers below only need raw
-// node positions, so the per-visit ts-morph wrapper is avoided.
+// node positions, so the per-visit wrapper is avoided.
 function collectFileCounts(sf: SourceFile): FileCounts {
     const functionKeywordSpacing: StyleCounts = {}
     const functionParenSpacing: StyleCounts = {}

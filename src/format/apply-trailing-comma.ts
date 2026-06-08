@@ -11,8 +11,9 @@
 // there is a syntax error, so honoring `off` but not `on` would be lopsided. A
 // dynamic import is kept comma-free to match Prettier (see isDynamicImport).
 
-import {SyntaxKind, type SourceFile} from "ts-morph"
 import type {Node as TsNode} from "typescript"
+import {SyntaxKind} from "typescript"
+import type {SourceFile} from "../bridge/bridge.ts"
 import {isDynamicImport, isSpreadOrRest, listOf} from "../lib/comma-lists.ts"
 import {hasLineBreakBetween} from "../lib/text-ranges.ts"
 

@@ -7,9 +7,9 @@
 // The export/unused counting mirrors the unused-exports report; the two
 // will be unified in a later pass (that report is left untouched for now).
 
-import {Node, type Project} from "ts-morph"
 import type * as declared from "ts-refine"
 import type {TSR} from "ts-refine"
+import {Node, type Project} from "../bridge/bridge.ts"
 import {resolveProject} from "../common/init-project.ts"
 import {logging} from "../common/logging.ts"
 import {resolveImportedAnchors, resolveInProjectAnchors} from "../lib/resolve-target.ts"

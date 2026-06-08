@@ -5,9 +5,9 @@
 // attributes, plus the TS type-literal / interface / enum bodies. Single-line
 // statement blocks are deliberately left out (not a bracketSpacing concept).
 
-import {SyntaxKind} from "ts-morph"
 import type {TSR} from "ts-refine"
 import type {Node as TsNode} from "typescript"
+import {SyntaxKind} from "typescript"
 import {getTsRefineFormat} from "../common/emit/emit-ts-refine.ts"
 import {logging} from "../common/logging.ts"
 import {displayPath} from "../lib/source-files.ts"

@@ -36,7 +36,7 @@ export const refineFormat: typeof declared.refineFormat = async (opts) => {
         const before = sf.getFullText()
         assertNoLoneCr(before, filePath)
 
-        // The survey navigated this file and left ts-morph node wrappers cached.
+        // The survey navigated this file and left bridge node wrappers cached.
         // formatText's incremental reparse diffs the new tree against those
         // wrappers and throws when a structural edit (e.g. removing a trailing
         // `;`) changes a child count, so drop them and reparse from clean text.

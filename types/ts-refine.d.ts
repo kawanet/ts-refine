@@ -2,18 +2,43 @@
  * https://github.com/kawanet/ts-refine
  */
 
-import type {Project} from "ts-morph"
-
 export {} // external module indicator
 
 export declare namespace TSR {
     // output stream
     type Writer = {write: (line: string) => void}
 
-    // Common base for every entry. Supply the ts-morph project one of two ways:
-    // your own `project` (bring-your-own — in-memory, custom options, and reuse
-    // across calls), or a `tsConfigFilePath` to build a fresh one (best for
-    // one-shot use). Exactly one is required — supplying both throws.
+    // Provisional structural surface of a bring-your-own project. Intentionally
+    // not exhaustive: it covers the methods the library's own (non-bridge) tests
+    // exercise, so a caller can hand in a compatible project without the package
+    // exposing its internal compat layer. The in-package Project/SourceFile
+    // classes implement these, which keeps the two in sync.
+    interface SourceFile {
+        getFullText(): string
+    }
+
+    interface Project {
+        createSourceFile(filePath: string, text: string, options?: {overwrite?: boolean}): SourceFile
+        addSourceFileAtPath(filePath: string): SourceFile
+        getSourceFile(filePath: string): SourceFile | undefined
+        getSourceFiles(): SourceFile[]
+    }
+
+    // Options for createRefineProject. Intentionally small: load from a tsconfig
+    // (the common case), or start an in-memory project and add files yourself.
+    // `skipLoadingLibFiles` is deliberately not exposed — the refine entries do
+    // semantic work that needs the default library; a caller that truly wants it
+    // can pass `compilerOptions: {noLib: true}`.
+    interface ProjectOptions {
+        tsConfigFilePath?: string
+        useInMemoryFileSystem?: boolean
+        compilerOptions?: import("typescript").CompilerOptions
+    }
+
+    // Common base for every entry. Supply the project one of two ways: your own
+    // `project` (bring-your-own — in-memory, custom options, and reuse across
+    // calls), or a `tsConfigFilePath` to build a fresh one (best for one-shot
+    // use). Exactly one is required — supplying both throws.
     // log receives progress/notes (route it to stderr); no-op Writer to discard.
     interface CommonOpts {
         project?: Project
@@ -263,3 +288,7 @@ export declare function refineInspect(opts: TSR.InspectOpts): Promise<TSR.Inspec
 export declare function refineMove(opts: TSR.MoveOpts): Promise<TSR.MoveResult>
 
 export declare function refineRename(opts: TSR.RenameOpts): Promise<TSR.RenameResult>
+
+// Build a project to pass as `project` to the refine entries — construct it once
+// and reuse it across calls instead of rebuilding per call.
+export declare function createRefineProject(options?: TSR.ProjectOptions): TSR.Project

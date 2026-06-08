@@ -1,13 +1,15 @@
-// Project acquisition for the refine* entries. initProject is the thin
-// tsconfig→Project builder (internal now); resolveProject picks the project a
-// call should use from CommonOpts: a caller-supplied `project`, or one built
-// from `tsConfigFilePath`.
+// Project acquisition for the refine* entries. createRefineProject is the
+// public factory; resolveProject picks the project a call should use from
+// CommonOpts: a caller-supplied `project`, or one built from `tsConfigFilePath`.
 
-import {Project, type ProjectOptions} from "ts-morph"
 import type {TSR} from "ts-refine"
+import {Project, type ProjectOptions} from "../bridge/bridge.ts"
 
-export function initProject(opts: {tsConfigFilePath: string}): Project {
-    return new Project(opts)
+// Public factory: build a project a caller can construct once and reuse as the
+// `project` option across refine* calls. Returns the structural TSR.Project so
+// the public surface never exposes the internal compat class.
+export function createRefineProject(options?: TSR.ProjectOptions): TSR.Project {
+    return new Project(options)
 }
 
 // A lib-less in-memory project: no lib.d.ts load, so it is cheap and meant for
@@ -26,7 +28,17 @@ export function resolveProject(opts: Pick<TSR.CommonOpts, "project" | "tsConfigF
     if (opts.project && opts.tsConfigFilePath) {
         throw new Error("refine: specify either `project` or `tsConfigFilePath`, not both")
     }
-    if (opts.project) return opts.project
-    if (opts.tsConfigFilePath) return initProject({tsConfigFilePath: opts.tsConfigFilePath})
+    if (opts.project) {
+        // CommonOpts.project is the structural public surface (TSR.Project).
+        // Require a real bridge Project — built by createRefineProject — so a
+        // hand-rolled object, or one from a different ts-refine instance, fails
+        // here with a clear message instead of crashing later on a missing
+        // internal method. instanceof also narrows away the unchecked cast.
+        if (!(opts.project instanceof Project)) {
+            throw new Error("refine: `project` must be built with createRefineProject()")
+        }
+        return opts.project
+    }
+    if (opts.tsConfigFilePath) return new Project({tsConfigFilePath: opts.tsConfigFilePath})
     throw new Error("refine: specify either `project` or `tsConfigFilePath`")
 }

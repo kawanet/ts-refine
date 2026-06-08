@@ -10,9 +10,10 @@
 // suggestion column.
 
 import path from "node:path"
-import {type ImportDeclaration, Node, type SourceFile, ts} from "ts-morph"
 import type * as declared from "ts-refine"
 import type {TSR} from "ts-refine"
+import {SyntaxKind} from "typescript"
+import {type ImportDeclaration, Node, type SourceFile} from "../bridge/bridge.ts"
 import {resolveProject} from "../common/init-project.ts"
 import {inspectorNames} from "../common/inspector-names.ts"
 import {logging} from "../common/logging.ts"
@@ -75,7 +76,7 @@ function gatherImporters(target: SourceFile, allFiles: SourceFile[]): TSR.Inspec
             // `export * from "..."` has neither — fall through with no names.
             if (!namespaceExport && named.length === 0) names.add("*")
         }
-        for (const call of sf.getDescendantsOfKind(ts.SyntaxKind.CallExpression)) {
+        for (const call of sf.getDescendantsOfKind(SyntaxKind.CallExpression)) {
             if (call.getExpression().getKindName() !== "ImportKeyword") continue
             const arg = call.getArguments()[0]
             if (!arg || !Node.isStringLiteral(arg)) continue
@@ -176,7 +177,7 @@ function gatherExports(sf: SourceFile): TSR.InspectExport[] {
 }
 
 // Map a declaration node to a human-friendly kind label
-// (function/class/const/...) instead of ts-morph's raw kind name.
+// (function/class/const/...) instead of the compiler's raw kind name.
 function kindLabel(decl: Node): string {
     if (Node.isFunctionDeclaration(decl)) return "function"
     if (Node.isClassDeclaration(decl)) return "class"

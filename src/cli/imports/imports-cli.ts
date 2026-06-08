@@ -3,9 +3,8 @@
 // mixed formatting keeps each file's conventions. Use `format` to unify a
 // project's surrounding style instead.
 
-import {initProject} from "../../common/init-project.ts"
 import {logging} from "../../common/logging.ts"
-import {refineImports} from "../../index.ts"
+import {createRefineProject, refineImports} from "../../index.ts"
 import type {CLI} from "../cli-io.ts"
 import {resolvePaths} from "../resolve-paths.ts"
 import {parseImportsArgs} from "./parse-imports-args.ts"
@@ -16,7 +15,7 @@ export const importsCLI: CLI = async (ctx) => {
     if (!args) return 1
     if (common.help) throw new Error("--help is not supported for the imports command")
     const {tsConfigFilePath, paths} = resolvePaths(common.tsconfigPath, args.paths)
-    const project = initProject({tsConfigFilePath})
+    const project = createRefineProject({tsConfigFilePath})
 
     // `--check` reports without writing, so it forces dry-run; the per-file
     // list and summary are already on the log, so only the fix hint is added.

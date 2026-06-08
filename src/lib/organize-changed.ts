@@ -4,7 +4,7 @@
 // SourceFile (not path) so a later move() that repaths the node still resolves.
 // An unsurveyed file yields undefined, which the caller reads as "leave alone".
 
-import type {SourceFile} from "ts-morph"
+import type {SourceFile} from "../bridge/bridge.ts"
 import {type ImportsStyle, formatSettingsForFile} from "./format-settings.ts"
 
 export async function surveyImportStyles(files: Iterable<SourceFile>): Promise<(sf: SourceFile) => ImportsStyle | undefined> {

@@ -1,5 +1,6 @@
-import {SyntaxKind, type SourceFile} from "ts-morph"
 import type {Node as TsNode, TypeLiteralNode} from "typescript"
+import {SyntaxKind} from "typescript"
+import type {SourceFile} from "../bridge/bridge.ts"
 
 // TS LS SemicolonPreference.Insert adds `;` to the last type member too, while
 // Prettier keeps single-line type literals bare at the tail. This narrow pass
@@ -7,8 +8,8 @@ import type {Node as TsNode, TypeLiteralNode} from "typescript"
 //
 // Walk the compiler AST directly rather than `sf.forEachDescendant`: the only
 // inputs needed per node are kind / members / pos / end, and the per-visit
-// ts-morph Node wrapper dominated this pass's runtime. Writes still go through
-// the ts-morph SourceFile so the wrapped tree refreshes after editing.
+// Node wrapper dominated this pass's runtime. Writes still go through
+// the bridge SourceFile so the wrapped tree refreshes after editing.
 export function applySingleLineTypeLiteralTail(sf: SourceFile): void {
     const edits: number[] = []
     const fullText = sf.getFullText()

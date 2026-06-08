@@ -4,8 +4,8 @@
 
 import {strict as assert} from "node:assert"
 import {describe, it} from "node:test"
-import {Project} from "ts-morph"
 import type {TSR} from "ts-refine"
+import {Project} from "../bridge/bridge.ts"
 import {initInMemoryProject} from "../common/init-project.ts"
 import {refineFormat} from "./refine-format.ts"
 

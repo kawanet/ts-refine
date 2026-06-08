@@ -7,8 +7,8 @@
 // only the collision guard below is rename-specific. The surveyed `format`
 // style drives the post-rename organizeImports.
 
-import {Node, type Project, type SourceFile} from "ts-morph"
 import type * as declared from "ts-refine"
+import {Node, type Project, type SourceFile} from "../bridge/bridge.ts"
 import {resolveProject} from "../common/init-project.ts"
 import {logging} from "../common/logging.ts"
 import {surveyImportStyles} from "../lib/organize-changed.ts"

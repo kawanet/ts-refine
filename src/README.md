@@ -19,4 +19,7 @@ CLI bundles.
   contain the reusable library implementation for each subcommand.
 - `src/common/` contains code shared by CLI and library implementations.
 - `src/lib/` contains internal library helpers.
+- `src/bridge/` contains the in-house compatibility layer over the TypeScript
+  compiler and language service — the ts-morph-shaped `Project` / `SourceFile` /
+  `Node` surface the rest of `src/` is written against.
 - `src/test-utils/` contains shared test helpers.

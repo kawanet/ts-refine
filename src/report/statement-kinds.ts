@@ -3,7 +3,7 @@
 // count the same statements the LS rewrites. Expressed as a SyntaxKind set so
 // the report can test a raw compiler node's kind without allocating a wrapper.
 
-import {SyntaxKind} from "ts-morph"
+import {SyntaxKind} from "typescript"
 
 export const SEMI_ELIGIBLE_STATEMENT_KINDS: ReadonlySet<SyntaxKind> = new Set([
     SyntaxKind.ExpressionStatement,

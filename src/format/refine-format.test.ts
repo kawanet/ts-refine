@@ -1,6 +1,6 @@
 import {strict as assert} from "node:assert"
 import {describe, it} from "node:test"
-import {ts} from "ts-morph"
+import ts from "typescript"
 import {initInMemoryProject} from "../common/init-project.ts"
 import {refineReport} from "../report/refine-report.ts"
 import {refineFormat} from "./refine-format.ts"
@@ -97,7 +97,7 @@ describe("refineFormat", () => {
     })
 
     it("formats after a survey that already navigated the file (semicolons off)", async () => {
-        // Regression: `format` surveys the file first, caching ts-morph node
+        // Regression: `format` surveys the file first, caching bridge node
         // wrappers. Dropping the abstract method's trailing `;` changes a child
         // count, and formatText's incremental reparse used to throw against the
         // stale wrappers ("old and new trees ... same count").

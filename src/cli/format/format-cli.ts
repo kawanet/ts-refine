@@ -4,9 +4,8 @@
 
 import {buildFormatTokens} from "../../common/emit/emit-ts-refine.ts"
 import {reportToFormatStyle} from "../../common/format-style.ts"
-import {initProject} from "../../common/init-project.ts"
 import {logging} from "../../common/logging.ts"
-import {refineFormat, refineReport} from "../../index.ts"
+import {createRefineProject, refineFormat, refineReport} from "../../index.ts"
 import type {CLI} from "../cli-io.ts"
 import {resolvePaths} from "../resolve-paths.ts"
 import {mergeFormatStyles, reportNamesForFormat} from "./format-options.ts"
@@ -18,7 +17,7 @@ export const formatCLI: CLI = async (ctx) => {
     if (!args) return 1
     if (common.help) throw new Error("--help is not supported for the format command")
     const {tsConfigFilePath, paths} = resolvePaths(common.tsconfigPath, args.paths)
-    const project = initProject({tsConfigFilePath})
+    const project = createRefineProject({tsConfigFilePath})
 
     // Skip surveying any field the CLI already pinned; a fully-pinned run
     // makes this an empty set and refineReport does no work.

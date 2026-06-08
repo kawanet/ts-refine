@@ -10,7 +10,7 @@
     "url": "https://github.com/kawanet/ts-refine/issues"
   },
   "dependencies": {
-    "ts-morph": "^28.0.0"
+    "typescript": "~6.0.3"
   },
   "devDependencies": {
     "@rollup/plugin-alias": "^6.0.0",
@@ -21,8 +21,7 @@
     "@typescript-eslint/parser": "^8.60.1",
     "eslint": "^10.4.1",
     "prettier": "^3.8.3",
-    "rollup": "^4.61.0",
-    "typescript": "^6.0.3"
+    "rollup": "^4.61.0"
   },
   "engines": {
     "node": ">=22.18"
@@ -48,9 +47,9 @@
     "organize-imports",
     "prettier",
     "refactor",
+    "stylistic",
     "ts-morph",
-    "typescript",
-    "unused"
+    "typescript"
   ],
   "license": "MIT",
   "main": "./dist/ts-refine.mjs",

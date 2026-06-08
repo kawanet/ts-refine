@@ -2,8 +2,9 @@
 // settling, organizeImports, and the semicolon cleanup below always run as a
 // set, so callers invoke this instead of organizeImports directly.
 
-import type {FormatCodeSettings, SourceFile} from "ts-morph"
-import {Node, ts} from "ts-morph"
+import {SemicolonPreference, SyntaxKind} from "typescript"
+import type {FormatCodeSettings, SourceFile} from "../bridge/bridge.ts"
+import {Node} from "../bridge/bridge.ts"
 import {applyTrailingComma} from "../format/apply-trailing-comma.ts"
 import type {ImportsStyle} from "./format-settings.ts"
 import {applyTypeOnlyFixes} from "./type-only-fixes.ts"
@@ -29,12 +30,12 @@ export function applyOrganizeImports(sf: SourceFile, style: ImportsStyle): void 
 // artifact only for a `//` comment, which runs to the line end so nothing can
 // follow; a block comment may precede same-line code that still needs the `;`.
 function stripCommentDeferredSemicolons(sf: SourceFile, settings: FormatCodeSettings): void {
-    if (settings.semicolons !== ts.SemicolonPreference.Remove) return
+    if (settings.semicolons !== SemicolonPreference.Remove) return
     for (const stmt of sf.getStatements()) {
         if (!Node.isImportDeclaration(stmt) && !Node.isExportDeclaration(stmt)) continue
         const semicolon = stmt.getLastChild()
-        if (!semicolon || semicolon.getKind() !== ts.SyntaxKind.SemicolonToken) continue
-        const trailedByLineComment = semicolon.getTrailingCommentRanges().some((range) => range.getKind() === ts.SyntaxKind.SingleLineCommentTrivia)
+        if (!semicolon || semicolon.getKind() !== SyntaxKind.SemicolonToken) continue
+        const trailedByLineComment = semicolon.getTrailingCommentRanges().some((range) => range.getKind() === SyntaxKind.SingleLineCommentTrivia)
         if (trailedByLineComment) semicolon.replaceWithText("")
     }
 }

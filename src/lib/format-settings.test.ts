@@ -1,6 +1,6 @@
 import {strict as assert} from "node:assert"
 import {describe, it} from "node:test"
-import {ts} from "ts-morph"
+import ts from "typescript"
 import {formatStyleToSettings, normalizeNewLines} from "./format-settings.ts"
 
 describe("formatStyleToSettings", () => {
