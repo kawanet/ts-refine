@@ -37,7 +37,7 @@ const SEP_FLAG_VALUE: Record<Separator, TSR.MemberDelimiterReport["delimiter"]> 
 
 type Bucket = {lines: number; files: number; topPath: string; topLines: number}
 
-export async function runReportMemberDelimiter({sourceFiles, output, log, importsOnly}: ReportRunOpts): Promise<Partial<TSR.MemberDelimiterReport>> {
+export async function runReportMemberDelimiter({sourceFiles, log, importsOnly}: ReportRunOpts): Promise<Partial<TSR.MemberDelimiterReport>> {
     // import/export statements carry no interface/class members, so an
     // imports-only survey has nothing to weigh — skip the whole-file scan.
     if (importsOnly) return {}
@@ -91,31 +91,25 @@ export async function runReportMemberDelimiter({sourceFiles, output, log, import
     const recommendSep = pickRecommendByFiles(DISPLAY_ORDER, (s) => buckets.get(s))
     const report: TSR.MemberDelimiterReport = recommendSep ? {delimiter: SEP_FLAG_VALUE[recommendSep]} : {}
 
-    // The Markdown table is for display only; skip it (and its formatting)
-    // when no output sink is given — the recommendation above is the result.
-    if (output) {
-        const totalLines = [...buckets.values()].reduce((s, b) => s + b.lines, 0)
+    // Build the display section as raw table cells; the CLI renders it.
+    const totalLines = [...buckets.values()].reduce((s, b) => s + b.lines, 0)
+    const heading = getTsRefineFormat({memberDelimiter: report}) || "(member-delimiter)"
+    const table: string[][] = [["delimiter", "lines", "files", "example"]]
+    for (const s of DISPLAY_ORDER) {
+        const b = buckets.get(s)
 
-        const heading = getTsRefineFormat({memberDelimiter: report}) || "(member-delimiter)"
-        output.write(`### ${heading}\n`)
-        output.write("\n")
-        output.write("| delimiter | lines | files | example |\n")
-        output.write("| --- | --- | --- | --- |\n")
-        for (const s of DISPLAY_ORDER) {
-            const b = buckets.get(s)
-
-            // `\n` and `;` always get a row (0 when absent); `,` only appears
-            // when present, since a comma style is unusual enough to be noise
-            // as a permanent 0-row.
-            if (b) {
-                output.write(`| ${SEP_LABEL[s]} | ${b.lines} | ${b.files} | ${b.topPath} |\n`)
-            } else {
-                output.write(`| ${SEP_LABEL[s]} | 0 | 0 |  |\n`)
-            }
+        // `\n` and `;` always get a row (0 when absent); `,` only appears
+        // when present, since a comma style is unusual enough to be noise
+        // as a permanent 0-row.
+        if (b) {
+            table.push([SEP_LABEL[s], String(b.lines), String(b.files), b.topPath])
+        } else {
+            table.push([SEP_LABEL[s], "0", "0", ""])
         }
-        output.write(`| total | ${totalLines} | ${perFile.length} |  |\n`)
-        output.write("\n")
     }
+    table.push(["total", String(totalLines), String(perFile.length), ""])
+    report.sections = [{title: heading, table}]
+
     logging(log, `report member-delimiter: ${perFile.length} files counted / ${sourceFiles.length} files total`)
 
     return report

@@ -2,13 +2,15 @@ import type {TSR} from "ts-refine"
 import type {Node as TsNode, SourceFile as TsSourceFile} from "typescript"
 import {SyntaxKind} from "typescript"
 import type {SourceFile} from "../bridge/bridge.ts"
+import {getTsRefineFormat} from "../common/emit/emit-ts-refine.ts"
 import {displayPath} from "../lib/source-files.ts"
-import {writeFunctionSpacingMarkdown} from "./function-spacing-markdown.ts"
 import {pickRecommendByFiles} from "./pick-recommend.ts"
 import type {ReportRunOpts} from "./report-run-opts.ts"
 
 export type FunctionSpacingStyle = "on" | "off"
-export type FunctionSpacingAxis = keyof TSR.FunctionSpacingReport
+// The three spacing knobs only — exclude the `sections` display slot that
+// FunctionSpacingReport inherits from ReportSections.
+export type FunctionSpacingAxis = Exclude<keyof TSR.FunctionSpacingReport, "sections">
 export type FunctionSpacingBucket = {lines: number; files: number; topPath: string; topLines: number}
 export type FunctionSpacingStyleCounts = Partial<Record<FunctionSpacingStyle, number>>
 export type FunctionSpacingAxisConfig = {axis: FunctionSpacingAxis; label: string; order: readonly FunctionSpacingStyle[]; sample: Record<FunctionSpacingStyle, string>}
@@ -56,7 +58,7 @@ const AXES: readonly AxisConfig[] = [
 // Survey project files for the three spacing axes and render one table.
 // Generic anonymous functions are reported on the paren axis because TS LS
 // formats `function <T>()` with insertSpaceBeforeFunctionParenthesis.
-export async function runReportFunctionSpacing({sourceFiles, output, importsOnly}: ReportRunOpts): Promise<Partial<TSR.FunctionSpacingReport>> {
+export async function runReportFunctionSpacing({sourceFiles, importsOnly}: ReportRunOpts): Promise<Partial<TSR.FunctionSpacingReport>> {
     if (importsOnly) return {}
 
     const perAxis = new Map<Axis, PerFile[]>()
@@ -88,7 +90,23 @@ export async function runReportFunctionSpacing({sourceFiles, output, importsOnly
         })
     }
 
-    if (output) writeFunctionSpacingMarkdown(report, rows, output)
+    // Build the display section as raw table cells; the CLI renders it. Each
+    // axis lists its styles in order, then a per-axis total row.
+    const heading = getTsRefineFormat({functionSpacing: report}) || "(function-spacing)"
+    const table: string[][] = [["axis", "style", "nodes", "files", "example"]]
+    for (const row of rows) {
+        for (const style of row.config.order) {
+            const b = row.buckets.get(style)
+            if (b) {
+                table.push([row.config.label, row.config.sample[style], String(b.lines), String(b.files), b.topPath])
+            } else {
+                table.push([row.config.label, row.config.sample[style], "0", "0", ""])
+            }
+        }
+        table.push([row.config.label, "total", String(row.total), String(row.files), ""])
+    }
+    report.sections = [{title: heading, table}]
+
     return report
 }
 

@@ -3,10 +3,12 @@
 // skip those survey-only blocks.
 
 import type {TSR} from "ts-refine"
+import {writeReportSections} from "../../common/write-report-sections.ts"
 import {createRefineProject, refineReport} from "../../index.ts"
 import type {CLI} from "../cli-io.ts"
 import {resolvePaths} from "../resolve-paths.ts"
 import {parseReportArgs} from "./parse-report-args.ts"
+import {writeFormatMarkdown, writePrettierMarkdown, writeStylisticMarkdown} from "./recommend-markdown.ts"
 import {selectEmitter} from "./select-emitter.ts"
 
 export const reportCLI: CLI = async (ctx) => {
@@ -21,10 +23,19 @@ export const reportCLI: CLI = async (ctx) => {
     const reports = args.reports as TSR.ReportName[] | undefined
     const emitter = selectEmitter(args.emit)
 
-    const report = await refineReport({project, paths, reports, output: emitter ? undefined : output, log})
+    const report = await refineReport({project, paths, reports, log})
     if (emitter) {
         const config = emitter(report)
         if (config) output.write(config + "\n")
+    } else {
+        // Render the survey tables, then the `## recommendation` footer — the
+        // latter only for the default full survey, not a named-report subset.
+        writeReportSections(report, output)
+        if (!reports?.length) {
+            writeFormatMarkdown(report, output)
+            writePrettierMarkdown(report, output)
+            writeStylisticMarkdown(report, output)
+        }
     }
 
     return 0

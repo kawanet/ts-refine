@@ -16,13 +16,12 @@ import {runReportFunctionSpacing} from "./function-spacing.ts"
 import {runReportIndent} from "./indent.ts"
 import {runReportMemberDelimiter} from "./member-delimiter.ts"
 import {runReportNewLine} from "./new-line.ts"
-import {writeFormatMarkdown, writePrettierMarkdown, writeStylisticMarkdown} from "./recommend-markdown.ts"
 import type {ReportRunOpts} from "./report-run-opts.ts"
 import {runReportSemi} from "./semi.ts"
 import {runReportTrailingComma} from "./trailing-comma.ts"
 
 export const refineReport: typeof declared.refineReport = async (opts) => {
-    const {output, reports, paths, log} = opts
+    const {reports, paths, log} = opts
     const project = resolveProject(opts)
     const requested = reports ?? reportNames
 
@@ -41,15 +40,7 @@ export const refineReport: typeof declared.refineReport = async (opts) => {
     // the project scan runs a single time instead of per report.
     const sourceFiles = selectSourceFiles(project, {paths})
 
-    const report = await runReports({sourceFiles, output, log}, requested)
-
-    if (!reports?.length && output) {
-        writeFormatMarkdown(report, output)
-        writePrettierMarkdown(report, output)
-        writeStylisticMarkdown(report, output)
-    }
-
-    return report
+    return await runReports({sourceFiles, log}, requested)
 }
 
 export const runReports = async (reportOpts: ReportRunOpts, requested: readonly TSR.ReportName[]): Promise<TSR.ReportResult> => {

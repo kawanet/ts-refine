@@ -2,8 +2,10 @@ import {strict as assert} from "node:assert"
 import path from "node:path"
 import {describe, it} from "node:test"
 import {initInMemoryProject} from "../common/init-project.ts"
+import {renderSections} from "../common/write-report-sections.ts"
 import {selectSourceFiles} from "../lib/source-files.ts"
 import {initTestProject} from "../test-utils/init-test-project.ts"
+import {omitSections} from "../test-utils/omit-sections.ts"
 import {runReportSemi} from "./semi.ts"
 
 const SAMPLE_TSCONFIG = path.resolve(import.meta.dirname, "../../sample/semicolons-mixed/tsconfig.json")
@@ -13,10 +15,9 @@ const log = {write: (): void => undefined}
 describe("runReportSemi (sample/semicolons-mixed)", () => {
     it("buckets files by trailing `;` ratio and returns the action params", async () => {
         const project = initTestProject(SAMPLE_TSCONFIG)
-        const lines: string[] = []
-        const ret = await runReportSemi({sourceFiles: selectSourceFiles(project, {paths: []}), log, output: {write: (l) => lines.push(l)}})
+        const ret = await runReportSemi({sourceFiles: selectSourceFiles(project, {paths: []}), log})
 
-        const out = lines.join("")
+        const out = renderSections(ret.sections ?? [])
         assert.match(out, /^### --semi /)
 
         // The fixture has one all-semi (100%), one no-semi (0%), and one mixed
@@ -40,11 +41,10 @@ describe("runReportSemi (sample/semicolons-mixed)", () => {
         project.createSourceFile("/sample/ten-percent.ts", statements(1, 10))
         project.createSourceFile("/sample/exact-half.ts", statements(1, 2))
         project.createSourceFile("/sample/ninety-percent.ts", statements(9, 10))
-        const lines: string[] = []
 
-        await runReportSemi({sourceFiles: selectSourceFiles(project, {paths: ["/sample/*.ts"]}), log, output: {write: (l) => lines.push(l)}})
+        const ret = await runReportSemi({sourceFiles: selectSourceFiles(project, {paths: ["/sample/*.ts"]}), log})
 
-        const out = lines.join("")
+        const out = renderSections(ret.sections ?? [])
         assert.match(out, /\| 1-10% \| 10 \| 1 \| /)
         assert.match(out, /\| 50% \| 2 \| 1 \| /)
         assert.match(out, /\| 90-99% \| 10 \| 1 \| /)
@@ -56,18 +56,16 @@ describe("runReportSemi (sample/semicolons-mixed)", () => {
         const project = initInMemoryProject()
         project.createSourceFile("/sample/no-semi.ts", statements(0, 10))
         project.createSourceFile("/sample/all-semi.ts", statements(3, 3))
-        const lines: string[] = []
-        const ret = await runReportSemi({sourceFiles: selectSourceFiles(project, {paths: ["/sample/*.ts"]}), log, output: {write: (l) => lines.push(l)}})
-        assert.deepEqual(ret, {semi: "off"})
+        const ret = await runReportSemi({sourceFiles: selectSourceFiles(project, {paths: ["/sample/*.ts"]}), log})
+        assert.deepEqual(omitSections(ret), {semi: "off"})
     })
 
     it("returns an empty partial when files AND statements tie on both sides", async () => {
         const project = initInMemoryProject()
         project.createSourceFile("/sample/no-semi.ts", statements(0, 5))
         project.createSourceFile("/sample/all-semi.ts", statements(5, 5))
-        const lines: string[] = []
-        const ret = await runReportSemi({sourceFiles: selectSourceFiles(project, {paths: ["/sample/*.ts"]}), log, output: {write: (l) => lines.push(l)}})
-        assert.deepEqual(ret, {})
+        const ret = await runReportSemi({sourceFiles: selectSourceFiles(project, {paths: ["/sample/*.ts"]}), log})
+        assert.deepEqual(omitSections(ret), {})
     })
 
     it("counts interface/type members the LS rewrites and skips comma-separated ones", async () => {
@@ -76,23 +74,21 @@ describe("runReportSemi (sample/semicolons-mixed)", () => {
         // file is entirely member-driven: 2/3 carry `;` → bucket 51-89%.
         const project = initInMemoryProject()
         project.createSourceFile("/sample/iface.ts", ["interface A {", "  a: string;", "  b: number;", "  c: boolean", "  d(): void,", "}"].join("\n"))
-        const lines: string[] = []
-        const ret = await runReportSemi({sourceFiles: selectSourceFiles(project, {paths: ["/sample/*.ts"]}), log, output: {write: (l) => lines.push(l)}})
-        const out = lines.join("")
+        const ret = await runReportSemi({sourceFiles: selectSourceFiles(project, {paths: ["/sample/*.ts"]}), log})
+        const out = renderSections(ret.sections ?? [])
 
         // 3 members counted (comma member excluded), 2 with `;`.
         assert.match(out, /\| total \| 3 \| 1 \| *\|/)
-        assert.deepEqual(ret, {semi: "on"})
+        assert.deepEqual(omitSections(ret), {semi: "on"})
     })
 
     it("does not count grammar-required do-while semicolons", async () => {
         const project = initInMemoryProject()
         project.createSourceFile("/sample/do-while.ts", ["let x = 0", "do {", "  x++", "} while (x < 2);"].join("\n"))
-        const lines: string[] = []
 
-        await runReportSemi({sourceFiles: selectSourceFiles(project, {paths: ["/sample/*.ts"]}), log, output: {write: (l) => lines.push(l)}})
+        const ret = await runReportSemi({sourceFiles: selectSourceFiles(project, {paths: ["/sample/*.ts"]}), log})
 
-        const out = lines.join("")
+        const out = renderSections(ret.sections ?? [])
         assert.match(out, /\| 0% \| \d+ \| 1 \| /)
         assert.match(out, /\| total \| \d+ \| 1 \| *\|/)
     })
@@ -104,9 +100,8 @@ describe("runReportSemi (sample/semicolons-mixed)", () => {
         // would lean "off" (1 of 3 with `;`); importsOnly sees only the import,
         // which is 100% — so the recommendation flips to "on".
         project.createSourceFile("a.ts", ['import {a} from "./x.ts";', "const _ = a", "const b = 2", ""].join("\n"))
-        const lines: string[] = []
-        const ret = await runReportSemi({sourceFiles: selectSourceFiles(project, {paths: []}), log, output: {write: (l) => lines.push(l)}, importsOnly: true})
-        assert.deepEqual(ret, {semi: "on"})
+        const ret = await runReportSemi({sourceFiles: selectSourceFiles(project, {paths: []}), log, importsOnly: true})
+        assert.deepEqual(omitSections(ret), {semi: "on"})
     })
 })
 

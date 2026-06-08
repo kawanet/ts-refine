@@ -2,8 +2,10 @@ import {strict as assert} from "node:assert"
 import path from "node:path"
 import {describe, it} from "node:test"
 import {initInMemoryProject} from "../common/init-project.ts"
+import {renderSections} from "../common/write-report-sections.ts"
 import {selectSourceFiles} from "../lib/source-files.ts"
 import {initTestProject} from "../test-utils/init-test-project.ts"
+import {omitSections} from "../test-utils/omit-sections.ts"
 import {runReportIndent} from "./indent.ts"
 
 const SAMPLE_TSCONFIG = path.resolve(import.meta.dirname, "../../sample/indents-mixed/tsconfig.json")
@@ -14,10 +16,9 @@ const log = {write: (): void => undefined}
 describe("runReportIndent (sample/indents-mixed)", () => {
     it("groups files by primary leading width and returns the file-count majority", async () => {
         const project = initTestProject(SAMPLE_TSCONFIG)
-        const lines: string[] = []
-        const ret = await runReportIndent({sourceFiles: selectSourceFiles(project, {paths: []}), log, output: {write: (l) => lines.push(l)}})
+        const ret = await runReportIndent({sourceFiles: selectSourceFiles(project, {paths: []}), log})
 
-        const out = lines.join("")
+        const out = renderSections(ret.sections ?? [])
         assert.match(out, /^### --indent /m)
 
         // two-space.ts:    {2: 4, 4: 1} → primary = 2 (mode)
@@ -39,7 +40,7 @@ describe("runReportIndent (sample/indents-mixed)", () => {
         assert.equal(/^recommendation:/m.test(out), false)
 
         // Bucket 4 has 2 files; buckets 2 and tab have 1 each, so width=4 wins.
-        assert.deepEqual(ret, {width: 4})
+        assert.deepEqual(omitSections(ret), {width: 4})
         assert.equal(/no-indent\.ts/.test(out), false)
     })
 
@@ -49,21 +50,20 @@ describe("runReportIndent (sample/indents-mixed)", () => {
         const project = initInMemoryProject()
         project.createSourceFile("/sample/two.ts", "function f() {\n  return 1\n}\n")
         project.createSourceFile("/sample/four.ts", "function g() {\n    if (a) {\n        b()\n    }\n}\n")
-        const lines: string[] = []
-        const ret = await runReportIndent({sourceFiles: selectSourceFiles(project, {paths: ["/sample/*.ts"]}), log, output: {write: (l) => lines.push(l)}})
-        assert.deepEqual(ret, {width: 4})
+        const ret = await runReportIndent({sourceFiles: selectSourceFiles(project, {paths: ["/sample/*.ts"]}), log})
+        const out = renderSections(ret.sections ?? [])
+        assert.deepEqual(omitSections(ret), {width: 4})
 
         // No tab-indented file, but the tab row is still emitted at 0.
-        assert.match(lines.join(""), /\| tab \| 0 \| 0 \| *\|/)
+        assert.match(out, /\| tab \| 0 \| 0 \| *\|/)
     })
 
     it("returns an empty partial when files AND transition counts tie", async () => {
         const project = initInMemoryProject()
         project.createSourceFile("/sample/two.ts", "function f() {\n  return 1\n}\n")
         project.createSourceFile("/sample/four.ts", "function g() {\n    return 1\n}\n")
-        const lines: string[] = []
-        const ret = await runReportIndent({sourceFiles: selectSourceFiles(project, {paths: ["/sample/*.ts"]}), log, output: {write: (l) => lines.push(l)}})
-        assert.deepEqual(ret, {})
+        const ret = await runReportIndent({sourceFiles: selectSourceFiles(project, {paths: ["/sample/*.ts"]}), log})
+        assert.deepEqual(omitSections(ret), {})
     })
 })
 
@@ -73,11 +73,10 @@ describe("runReportIndent (sample/tab-indent)", () => {
         // useTabs), so the recommendation returns {width: "tab"} and the
         // formatters emit `--indent tab` / `useTabs: true`.
         const project = initTestProject(TAB_TSCONFIG)
-        const lines: string[] = []
-        const ret = await runReportIndent({sourceFiles: selectSourceFiles(project, {paths: []}), log, output: {write: (l) => lines.push(l)}})
+        const ret = await runReportIndent({sourceFiles: selectSourceFiles(project, {paths: []}), log})
 
-        const out = lines.join("")
+        const out = renderSections(ret.sections ?? [])
         assert.match(out, /\| tab \| \d+ \| 3 \| /)
-        assert.deepEqual(ret, {width: "tab"})
+        assert.deepEqual(omitSections(ret), {width: "tab"})
     })
 })

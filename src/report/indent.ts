@@ -17,7 +17,7 @@ import type {ReportRunOpts} from "./report-run-opts.ts"
 
 type Bucket = {lines: number; files: number; topPath: string; topLines: number}
 
-export async function runReportIndent({sourceFiles, output, log}: ReportRunOpts): Promise<Partial<TSR.IndentReport>> {
+export async function runReportIndent({sourceFiles, log}: ReportRunOpts): Promise<Partial<TSR.IndentReport>> {
     // Per-file: detect leading-width distribution, then collapse to one
     // "primary" width (the line-count mode). Files with no leading
     // whitespace at all are excluded.
@@ -60,27 +60,21 @@ export async function runReportIndent({sourceFiles, output, log}: ReportRunOpts)
     const recommendWidth = pickRecommendByFiles(widths, (w) => buckets.get(w))
     const report: TSR.IndentReport = recommendWidth ? {width: recommendWidth} : {}
 
-    // The Markdown table is for display only; skip it (and its formatting)
-    // when no output sink is given — the recommendation above is the result.
-    if (output) {
-        const totalLines = [...buckets.values()].reduce((s, b) => s + b.lines, 0)
-
-        const heading = getTsRefineFormat({indent: report}) || "(indent)"
-        output.write(`### ${heading}\n`)
-        output.write("\n")
-        output.write("| indent | lines | files | example |\n")
-        output.write("| --- | --- | --- | --- |\n")
-        for (const w of widths) {
-            const b = buckets.get(w)
-            if (b) {
-                output.write(`| ${w} | ${b.lines} | ${b.files} | ${b.topPath} |\n`)
-            } else {
-                output.write(`| ${w} | 0 | 0 |  |\n`)
-            }
+    // Build the display section as raw table cells; the CLI renders it.
+    const totalLines = [...buckets.values()].reduce((s, b) => s + b.lines, 0)
+    const heading = getTsRefineFormat({indent: report}) || "(indent)"
+    const table: string[][] = [["indent", "lines", "files", "example"]]
+    for (const w of widths) {
+        const b = buckets.get(w)
+        if (b) {
+            table.push([String(w), String(b.lines), String(b.files), b.topPath])
+        } else {
+            table.push([String(w), "0", "0", ""])
         }
-        output.write(`| total | ${totalLines} | ${perFile.length} |  |\n`)
-        output.write("\n")
     }
+    table.push(["total", String(totalLines), String(perFile.length), ""])
+    report.sections = [{title: heading, table}]
+
     logging(log, `report indent: ${perFile.length} files counted / ${sourceFiles.length} files total`)
 
     return report

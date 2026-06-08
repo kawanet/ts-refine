@@ -7,7 +7,6 @@ import type {SourceFile} from "../bridge/bridge.ts"
 
 export interface ReportRunOpts {
     sourceFiles: SourceFile[]
-    output?: TSR.Writer
     log?: TSR.Writer
 
     // Restrict scanning to import/export statements (see TSR.ReportOpts).

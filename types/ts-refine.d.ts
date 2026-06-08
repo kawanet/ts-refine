@@ -52,33 +52,47 @@ export declare namespace TSR {
     // Recommendation shapes. Not runtime inputs — they describe the value
     // type of each `ReportResult` slot.
 
-    interface SemiReport {
+    // One rendered block of a report: a heading and a Markdown table held as
+    // raw cells (table[0] is the header row; "" is a blank cell). The CLI turns
+    // these into Markdown, so the library stays output-format agnostic and a
+    // future `--emit csv` / `--emit json` can consume the same data.
+    interface Section {
+        title?: string
+        table?: string[][]
+    }
+
+    // Mixed into every per-report result so each carries its display sections.
+    interface ReportSections {
+        sections?: Section[]
+    }
+
+    interface SemiReport extends ReportSections {
         semi?: "on" | "off"
     }
 
     // "tab" recommends tab indentation (LS convertTabsToSpaces:false /
     // Prettier useTabs); a number recommends that many spaces.
-    interface IndentReport {
+    interface IndentReport extends ReportSections {
         width?: number | "tab"
     }
 
-    interface MemberDelimiterReport {
+    interface MemberDelimiterReport extends ReportSections {
         delimiter?: "semi" | "comma" | "none"
     }
 
-    interface NewLineReport {
+    interface NewLineReport extends ReportSections {
         newLine?: "lf" | "crlf"
     }
 
-    interface BracketSpacingReport {
+    interface BracketSpacingReport extends ReportSections {
         bracketSpacing?: "on" | "off"
     }
 
-    interface TrailingCommaReport {
+    interface TrailingCommaReport extends ReportSections {
         trailingComma?: "on" | "off"
     }
 
-    interface FunctionSpacingReport {
+    interface FunctionSpacingReport extends ReportSections {
         // Space after anonymous `function` / `function*` before the parameter paren.
         functionKeywordSpacing?: "on" | "off"
         // Space before function/method parameter parens.
@@ -92,10 +106,6 @@ export declare namespace TSR {
 
     interface ReportOpts extends CommonOpts {
         paths?: string[]
-
-        // Markdown sink for the per-report tables. Omit it to compute the
-        // recommendations only (callers that just want the ReportResult).
-        output?: Writer
         reports?: ReportName[]
     }
 

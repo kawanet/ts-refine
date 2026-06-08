@@ -17,7 +17,7 @@ import {SEMI_ELIGIBLE_STATEMENT_KINDS, TYPE_MEMBER_KINDS} from "./statement-kind
 // too sparse to be useful — every middle bucket was empty for typical files.
 const BUCKET_LABELS = ["0%", "1-10%", "11-49%", "50%", "51-89%", "90-99%", "100%"] as const
 
-export async function runReportSemi({sourceFiles, output, log, importsOnly}: ReportRunOpts): Promise<Partial<TSR.SemiReport>> {
+export async function runReportSemi({sourceFiles, log, importsOnly}: ReportRunOpts): Promise<Partial<TSR.SemiReport>> {
     type PerFile = {path: string; total: number; withSemi: number}
     const perFile: PerFile[] = []
 
@@ -67,34 +67,28 @@ export async function runReportSemi({sourceFiles, output, log, importsOnly}: Rep
     const recommend: "on" | "off" | undefined = belowFiles > aboveFiles ? "off" : aboveFiles > belowFiles ? "on" : belowStmts > aboveStmts ? "off" : aboveStmts > belowStmts ? "on" : undefined
     const report: TSR.SemiReport = recommend ? {semi: recommend} : {}
 
-    // The Markdown table is for display only; skip it (and its formatting)
-    // when no output sink is given — the recommendation above is the result.
-    if (output) {
-        const heading = getTsRefineFormat({semi: report}) || "(semi)"
-        output.write(`### ${heading}\n`)
-        output.write("\n")
-
-        // `lines` (statement count) sits next to `files` so the table mirrors
-        // the other reports and makes the tiebreaker rationale visible.
-        output.write("| trailing `;` | lines | files | example |\n")
-        output.write("| --- | --- | --- | --- |\n")
-        let totalStmts = 0
-        for (let i = 0; i < BUCKET_LABELS.length; i++) {
-            const files = bucketFiles[i]
-            const bucketStmts = files.reduce((s, f) => s + f.total, 0)
-            totalStmts += bucketStmts
-            if (files.length === 0) {
-                output.write(`| ${BUCKET_LABELS[i]} | 0 | 0 |  |\n`)
-            } else {
-                // The example column shows the file with the largest statement count
-                // in the bucket; ties resolved lexicographically by path.
-                const example = files.slice().sort((a, b) => b.total - a.total || a.path.localeCompare(b.path))[0]
-                output.write(`| ${BUCKET_LABELS[i]} | ${bucketStmts} | ${files.length} | ${example.path} |\n`)
-            }
+    // Build the display section as raw table cells; the CLI renders it. `lines`
+    // (statement count) sits next to `files` so the table mirrors the other
+    // reports and makes the tiebreaker rationale visible.
+    const heading = getTsRefineFormat({semi: report}) || "(semi)"
+    const table: string[][] = [["trailing `;`", "lines", "files", "example"]]
+    let totalStmts = 0
+    for (let i = 0; i < BUCKET_LABELS.length; i++) {
+        const files = bucketFiles[i]
+        const bucketStmts = files.reduce((s, f) => s + f.total, 0)
+        totalStmts += bucketStmts
+        if (files.length === 0) {
+            table.push([BUCKET_LABELS[i], "0", "0", ""])
+        } else {
+            // The example column shows the file with the largest statement count
+            // in the bucket; ties resolved lexicographically by path.
+            const example = files.slice().sort((a, b) => b.total - a.total || a.path.localeCompare(b.path))[0]
+            table.push([BUCKET_LABELS[i], String(bucketStmts), String(files.length), example.path])
         }
-        output.write(`| total | ${totalStmts} | ${perFile.length} |  |\n`)
-        output.write("\n")
     }
+    table.push(["total", String(totalStmts), String(perFile.length), ""])
+    report.sections = [{title: heading, table}]
+
     logging(log, `report semi: ${perFile.length} files counted / ${sourceFiles.length} files total`)
 
     return report

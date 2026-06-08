@@ -20,7 +20,7 @@ const NL_LABEL: Record<NewLine, string> = {
 
 type Bucket = {lines: number; files: number; topPath: string; topLines: number}
 
-export async function runReportNewLine({sourceFiles, output, log}: ReportRunOpts): Promise<Partial<TSR.NewLineReport>> {
+export async function runReportNewLine({sourceFiles, log}: ReportRunOpts): Promise<Partial<TSR.NewLineReport>> {
     type PerFile = {path: string; counts: Map<NewLine, number>; primary: NewLine}
     const perFile: PerFile[] = []
 
@@ -50,25 +50,23 @@ export async function runReportNewLine({sourceFiles, output, log}: ReportRunOpts
 
     const recommend = pickRecommendByFiles(DISPLAY_ORDER, (k) => buckets.get(k))
 
-    // The Markdown table is for display only; skip it (and its formatting)
-    // when no output sink is given — the recommendation above is the result.
-    if (output) {
-        const totalLines = [...buckets.values()].reduce((s, b) => s + b.lines, 0)
-
-        output.write("### new-line\n")
-        output.write("\n")
-        output.write("| new-line | lines | files | example |\n")
-        output.write("| --- | --- | --- | --- |\n")
-        for (const k of DISPLAY_ORDER) {
-            const b = buckets.get(k)
-            if (!b) continue
-            output.write(`| ${NL_LABEL[k]} | ${b.lines} | ${b.files} | ${b.topPath} |\n`)
-        }
-        output.write(`| total | ${totalLines} | ${perFile.length} | |\n`)
-        output.write("\n")
+    // Build the display section as raw table cells; the CLI renders it. Only the
+    // terminators present get a row (no fixed 0-rows). The title is the plain
+    // report name — new-line has no `getTsRefineFormat` flag form.
+    const totalLines = [...buckets.values()].reduce((s, b) => s + b.lines, 0)
+    const table: string[][] = [["new-line", "lines", "files", "example"]]
+    for (const k of DISPLAY_ORDER) {
+        const b = buckets.get(k)
+        if (!b) continue
+        table.push([NL_LABEL[k], String(b.lines), String(b.files), b.topPath])
     }
+    table.push(["total", String(totalLines), String(perFile.length), ""])
+
+    const result: Partial<TSR.NewLineReport> = recommend != null ? {newLine: recommend} : {}
+    result.sections = [{title: "new-line", table}]
+
     logging(log, `report new-line: ${perFile.length} files counted / ${sourceFiles.length} files total`)
-    return recommend != null ? {newLine: recommend} : {}
+    return result
 }
 
 // Single pass splitting LF and CRLF; `\r\n` is one terminator (crlf), so the

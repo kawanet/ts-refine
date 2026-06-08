@@ -12,7 +12,6 @@ const log = {write: (): void => undefined}
 describe("refineReport", () => {
     it("throws on an unknown report name (validation moved out of parseArgs)", async () => {
         const project = initTestProject(SAMPLE_TSCONFIG)
-        const lines: string[] = []
         await assert.rejects(
             () =>
                 refineReport({
@@ -23,31 +22,33 @@ describe("refineReport", () => {
                     // names, so the cast lets the test reach the runtime
                     // validation that the production CLI also relies on.
                     reports: ["typo-name" as unknown as TSR.ReportName],
-                    output: {write: (l) => lines.push(l)},
                     paths: [],
                 }),
             /unknown report name: typo-name/,
         )
     })
 
-    it("runs requested reports in registry order regardless of input order", async () => {
+    it("returns each requested report's display section regardless of input order", async () => {
         const project = initTestProject(SAMPLE_TSCONFIG)
 
-        const run = async (reports: TSR.ReportName[]) => {
-            const lines: string[] = []
-            await refineReport({
-                project,
-                log,
-                reports,
-                output: {write: (l) => lines.push(l)},
-                paths: [],
-            })
-            return lines.filter((v) => /^#/.test(v)).join("")
+        const titles = async (reports: TSR.ReportName[]) => {
+            const report = await refineReport({project, log, reports, paths: []})
+            return {semi: report.semi?.sections?.[0]?.title, indent: report.indent?.sections?.[0]?.title}
         }
 
-        // Input deliberately in reverse of registry order to confirm the
-        // router re-orders. indent precedes semicolons in the registry.
-        assert.equal(await run(["semi", "indent"]), "### --semi on\n### (indent)\n")
-        assert.equal(await run(["indent", "semi"]), "### --semi on\n### (indent)\n")
+        // Markdown rendering (and its registry order) is now the CLI's job; the
+        // library just hands back the per-report sections. Each slot carries its
+        // own section whichever order the caller requested the reports in.
+        assert.deepEqual(await titles(["semi", "indent"]), {semi: "--semi on", indent: "(indent)"})
+        assert.deepEqual(await titles(["indent", "semi"]), {semi: "--semi on", indent: "(indent)"})
+    })
+
+    it("fills section tables with a header row and a total row", async () => {
+        const project = initTestProject(SAMPLE_TSCONFIG)
+        const report = await refineReport({project, log, reports: ["semi"], paths: []})
+        const table = report.semi?.sections?.[0]?.table
+
+        assert.deepEqual(table?.[0], ["trailing `;`", "lines", "files", "example"])
+        assert.equal(table?.at(-1)?.[0], "total")
     })
 })

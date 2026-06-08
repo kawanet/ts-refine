@@ -25,7 +25,7 @@ const STYLE_LABEL: Record<Style, string> = {
 
 type Bucket = {lines: number; files: number; topPath: string; topLines: number}
 
-export async function runReportBracketSpacing({sourceFiles, output, log, importsOnly}: ReportRunOpts): Promise<Partial<TSR.BracketSpacingReport>> {
+export async function runReportBracketSpacing({sourceFiles, log, importsOnly}: ReportRunOpts): Promise<Partial<TSR.BracketSpacingReport>> {
     type PerFile = {path: string; counts: Map<Style, number>; primary: Style}
     const perFile: PerFile[] = []
 
@@ -70,30 +70,24 @@ export async function runReportBracketSpacing({sourceFiles, output, log, imports
     const recommend = pickRecommendByFiles(DISPLAY_ORDER, (k) => buckets.get(k))
     const report: TSR.BracketSpacingReport = recommend ? {bracketSpacing: recommend} : {}
 
-    // The Markdown table is for display only; skip it (and its formatting)
-    // when no output sink is given — the recommendation above is the result.
-    if (output) {
-        const totalLines = [...buckets.values()].reduce((s, b) => s + b.lines, 0)
+    // Build the display section as raw table cells; the CLI renders it.
+    const totalLines = [...buckets.values()].reduce((s, b) => s + b.lines, 0)
+    const heading = getTsRefineFormat({bracketSpacing: report}) || "(bracket-spacing)"
+    const table: string[][] = [["style", "nodes", "files", "example"]]
+    for (const k of DISPLAY_ORDER) {
+        const b = buckets.get(k)
 
-        const heading = getTsRefineFormat({bracketSpacing: report}) || "(bracket-spacing)"
-        output.write(`### ${heading}\n`)
-        output.write("\n")
-        output.write("| style | nodes | files | example |\n")
-        output.write("| --- | --- | --- | --- |\n")
-        for (const k of DISPLAY_ORDER) {
-            const b = buckets.get(k)
-
-            // Both styles always get a row (0 when absent) so the two-way
-            // comparison is always visible at a glance.
-            if (b) {
-                output.write(`| ${STYLE_LABEL[k]} | ${b.lines} | ${b.files} | ${b.topPath} |\n`)
-            } else {
-                output.write(`| ${STYLE_LABEL[k]} | 0 | 0 |  |\n`)
-            }
+        // Both styles always get a row (0 when absent) so the two-way
+        // comparison is always visible at a glance.
+        if (b) {
+            table.push([STYLE_LABEL[k], String(b.lines), String(b.files), b.topPath])
+        } else {
+            table.push([STYLE_LABEL[k], "0", "0", ""])
         }
-        output.write(`| total | ${totalLines} | ${perFile.length} |  |\n`)
-        output.write("\n")
     }
+    table.push(["total", String(totalLines), String(perFile.length), ""])
+    report.sections = [{title: heading, table}]
+
     logging(log, `report bracket-spacing: ${perFile.length} files counted / ${sourceFiles.length} files total`)
 
     return report

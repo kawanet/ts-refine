@@ -1,7 +1,7 @@
 import type {TSR} from "ts-refine"
-import {getPrettierConfig} from "../common/emit/emit-prettier.ts"
-import {getStylisticConfig} from "../common/emit/emit-stylistic.ts"
-import {getTsRefineFormat} from "../common/emit/emit-ts-refine.ts"
+import {getPrettierConfig} from "../../common/emit/emit-prettier.ts"
+import {getStylisticConfig} from "../../common/emit/emit-stylistic.ts"
+import {getTsRefineFormat} from "../../common/emit/emit-ts-refine.ts"
 
 // `## recommendation` block in the default-survey Markdown. Skipped
 // when no recommendations fired (the empty form carries no information).
