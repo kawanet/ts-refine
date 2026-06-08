@@ -14,6 +14,7 @@
 
 import type {Node, SourceFile} from "ts-morph"
 import {Node as N, SyntaxKind} from "ts-morph"
+import {hasLineBreakBetween} from "../lib/text-ranges.ts"
 
 export type List = {elements: Node[]; close: Node}
 
@@ -73,6 +74,13 @@ export function trailingCommaToken(lastElement: Node): Node | undefined {
     return lastElement.getNextSiblingIfKind(SyntaxKind.CommaToken)
 }
 
+// Spread (`...x`) / rest (`...x` in param, binding, tuple) detection via AST
+// kinds. `getText().startsWith("...")` was simpler but allocates the full
+// source slice per node — the dominant cost on hot trailing-comma walks.
+export function isSpreadOrRestElement(node: Node): boolean {
+    return N.isSpreadElement(node) || N.isSpreadAssignment(node) || N.isRestTypeNode(node) || (node.compilerNode as {dotDotDotToken?: unknown}).dotDotDotToken != null
+}
+
 // importsOnly narrows the walk to import/export specifier lists, so the
 // imports/move/rename commands reassert the comma style without touching any
 // other list in the file. The format command omits it and walks the whole file.
@@ -88,11 +96,13 @@ export function applyTrailingComma(sf: SourceFile, mode: "on" | "off", opts?: {i
         // Leave a spread / rest last element as written in both modes: adding a
         // comma is a syntax error in rest / binding positions, so removing in
         // `off` only would be lopsided. Excluded outright, not handled one-way.
-        if (last.getText().startsWith("...")) return
+        if (isSpreadOrRestElement(last)) return
 
         // The author's layout decides "multiline": the closing bracket is on a
-        // later line than the last element. No printWidth / reflow.
-        const multiline = last.getEndLineNumber() !== list.close.getStartLineNumber()
+        // later line than the last element. No printWidth / reflow. A direct
+        // source-text scan is cheaper than line-number lookups on hot walks.
+        const end = last.getEnd()
+        const multiline = hasLineBreakBetween(full, end, list.close.getStart())
         const wantComma = mode === "on" && multiline
 
         const commaTok = trailingCommaToken(last)
@@ -100,7 +110,7 @@ export function applyTrailingComma(sf: SourceFile, mode: "on" | "off", opts?: {i
         if (wantComma === hasComma) return // already conforms
 
         if (wantComma) {
-            edits.push({start: last.getEnd(), end: last.getEnd(), text: ","}) // insert after the element
+            edits.push({start: end, end, text: ","}) // insert after the element
         } else if (commaTok) {
             edits.push({start: commaTok.getStart(), end: commaTok.getEnd(), text: ""}) // drop the trailing comma
         }

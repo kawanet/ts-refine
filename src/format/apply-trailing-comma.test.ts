@@ -40,8 +40,7 @@ describe("applyTrailingComma", () => {
         assert.equal(run(arr, "on"), arr)
         const rest = "function f(\n    ...args\n) {}\n"
         assert.equal(run(rest, "on"), rest)
-        // Rest also as the last element of an object binding and a tuple type:
-        // `getText().startsWith("...")` catches both, so no comma is added.
+        // Rest also as the last element of an object binding and a tuple type.
         const objRest = "const {\n    a,\n    ...rest\n} = o\n"
         assert.equal(run(objRest, "on"), objRest)
         const tupleRest = "type T = [\n    A,\n    ...B[]\n]\n"
