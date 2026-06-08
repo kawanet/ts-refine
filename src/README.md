@@ -1,22 +1,22 @@
 # Source Layout
 
-This directory contains the TypeScript sources that are bundled into the
-published library and CLI.
+The `src/` directory contains TypeScript source for the published library and
+CLI bundles.
 
 ## Entry Points
 
-- `src/index.ts` exports the public library API described by
-  `types/ts-refine.d.ts`; it is bundled into `dist/ts-refine.mjs`.
-- `src/cli.ts` is the executable entry point for the `ts-refine` command; it is
-  bundled into `dist/ts-refine.cli.mjs`.
+- `src/index.ts` is the public library entry point for the API declared in
+  `types/ts-refine.d.ts`. It is bundled into `dist/ts-refine.mjs`.
+- `src/cli.ts` is the `ts-refine` command entry point. It is bundled into
+  `dist/ts-refine.cli.mjs`.
 
 ## Directories
 
-- `src/cli/` contains command-line adapters for the public CLI.
-- `src/common/` contains code shared by the CLI layer and public API
-  implementations.
-- `src/lib/` contains internal helpers shared by the public API implementations.
-- `src/test-utils/` contains shared test helpers.
+- `src/cli/` contains CLI implementation for the `ts-refine` command.
+- `src/cli/{subcommand}/` directories contain CLI adapters for subcommands
+  when needed.
 - `src/{subcommand}/` directories, such as `src/report/` and `src/format/`,
-  contain reusable implementation for command-sized features; matching
-  `src/cli/{subcommand}/` directories adapt them to the CLI.
+  contain the reusable library implementation for each subcommand.
+- `src/common/` contains code shared by CLI and library implementations.
+- `src/lib/` contains internal library helpers.
+- `src/test-utils/` contains shared test helpers.
