@@ -17,6 +17,15 @@ describe("refineFormat", () => {
         assert.match(sf.getFullText(), /\n {4}return 1\n/)
     })
 
+    it("throws on a CR-only file (lone \\r, no \\n)", async () => {
+        const project = initInMemoryProject()
+        project.createSourceFile("cr.ts", "const a = 1\rconst b = 2\r")
+        await assert.rejects(
+            refineFormat({project, log, dryRun: true, paths: [], style: {indent: 4}}),
+            /CR-only line endings are not supported/,
+        )
+    })
+
     it("applies a pinned indent width", async () => {
         const project = initInMemoryProject()
         const sf = project.createSourceFile("a.ts", "function f() {\n  return 1\n}\n")

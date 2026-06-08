@@ -8,7 +8,7 @@
 //   semi.semi === "off"         → semi: false
 //   indent.width === <number>               → tabWidth: <number>, useTabs: false
 //   indent.width === "tab"                  → useTabs: true
-//   newLine.newLine === <lf|crlf|cr>        → endOfLine: <lf|crlf|cr>
+//   newLine.newLine === <lf|crlf>           → endOfLine: <lf|crlf>
 //   bracketSpacing.bracketSpacing === "on"  → bracketSpacing: true
 //   bracketSpacing.bracketSpacing === "off" → bracketSpacing: false
 // member-delimiter has no Prettier mapping (comma members are

@@ -7,6 +7,7 @@ import fs from "node:fs/promises"
 import type * as declared from "ts-refine"
 import {resolveProject} from "../common/init-project.ts"
 import {logging} from "../common/logging.ts"
+import {assertNoLoneCr} from "../lib/assert-no-lone-cr.ts"
 import {formatStyleToSettings, normalizeNewLines} from "../lib/format-settings.ts"
 import {selectSourceFiles} from "../lib/source-files.ts"
 import {applyMemberDelimiter} from "./apply-member-delimiter.ts"
@@ -32,6 +33,7 @@ export const refineFormat: typeof declared.refineFormat = async (opts) => {
         totalCount++
         const filePath = sf.getFilePath()
         const before = sf.getFullText()
+        assertNoLoneCr(before, filePath)
 
         // The survey navigated this file and left ts-morph node wrappers cached.
         // formatText's incremental reparse diffs the new tree against those

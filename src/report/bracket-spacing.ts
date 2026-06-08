@@ -136,8 +136,8 @@ function classifyBraces(text: string): Style | null {
     const inner = text.slice(1, -1)
     if (inner.trim().length === 0) return null
 
-    // CR-only files (no LF) are rare but real; the new-line report
-    // already classifies them, so the multi-line skip matches.
+    // A newline (LF or CRLF) means a multi-line literal, which carries no
+    // bracket-spacing preference, so skip it.
     if (/[\r\n]/.test(inner)) return null
     return inner.startsWith(" ") && inner.endsWith(" ") ? "on" : "off"
 }

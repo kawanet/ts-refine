@@ -52,6 +52,15 @@ describe("runReportNewLine (sample/newlines-mixed)", () => {
         assert.deepEqual(ret, {newLine: "lf"})
     })
 
+    it("throws on a CR-only file (lone \\r, no \\n)", async () => {
+        const project = initInMemoryProject()
+        project.createSourceFile("cr.ts", "const a = 1\rconst b = 2\r")
+        await assert.rejects(
+            runReportNewLine({sourceFiles: selectSourceFiles(project, {paths: []}), log}),
+            /CR-only line endings are not supported/,
+        )
+    })
+
     it("returns an empty partial when files AND terminator counts both tie", async () => {
         const project = initInMemoryProject()
         project.createSourceFile("lf.ts", "const a = 1\n")

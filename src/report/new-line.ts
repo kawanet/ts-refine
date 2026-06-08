@@ -4,18 +4,18 @@
 
 import type {TSR} from "ts-refine"
 import {logging} from "../common/logging.ts"
+import {assertNoLoneCr} from "../lib/assert-no-lone-cr.ts"
 import {displayPath} from "../lib/source-files.ts"
 import {pickRecommendByFiles} from "./pick-recommend.ts"
 import type {ReportRunOpts} from "./report-run-opts.ts"
 
-type NewLine = "lf" | "crlf" | "cr"
+type NewLine = "lf" | "crlf"
 
-const DISPLAY_ORDER: NewLine[] = ["lf", "crlf", "cr"]
+const DISPLAY_ORDER: NewLine[] = ["lf", "crlf"]
 
 const NL_LABEL: Record<NewLine, string> = {
     lf: "`\\n`",
     crlf: "`\\r\\n`",
-    cr: "`\\r`",
 }
 
 type Bucket = {lines: number; files: number; topPath: string; topLines: number}
@@ -25,7 +25,9 @@ export async function runReportNewLine({sourceFiles, output, log}: ReportRunOpts
     const perFile: PerFile[] = []
 
     for (const sf of sourceFiles) {
-        const counts = countTerminators(sf.getFullText())
+        const text = sf.getFullText()
+        assertNoLoneCr(text, sf.getFilePath())
+        const counts = countTerminators(text)
         if (counts.size === 0) continue
         perFile.push({path: displayPath(sf.getFilePath()), counts, primary: pickPrimary(counts)})
     }
@@ -69,29 +71,25 @@ export async function runReportNewLine({sourceFiles, output, log}: ReportRunOpts
     return recommend != null ? {newLine: recommend} : {}
 }
 
-// Single pass over the text to split LF, CRLF, and lone CR. `\r\n` is one
-// terminator (crlf), not `\r` followed by `\n`, so the scanner advances
-// past the LF when it sees the pair.
+// Single pass splitting LF and CRLF; `\r\n` is one terminator (crlf), so the
+// scanner skips the LF after the CR. Lone CR is rejected upstream by
+// assertNoLoneCr, so a stray `\r` is ignored here.
 function countTerminators(text: string): Map<NewLine, number> {
     const counts = new Map<NewLine, number>()
     for (let i = 0; i < text.length; i++) {
         const c = text.charCodeAt(i)
         if (c === 0x0a) {
             counts.set("lf", (counts.get("lf") ?? 0) + 1)
-        } else if (c === 0x0d) {
-            if (text.charCodeAt(i + 1) === 0x0a) {
-                counts.set("crlf", (counts.get("crlf") ?? 0) + 1)
-                i++
-            } else {
-                counts.set("cr", (counts.get("cr") ?? 0) + 1)
-            }
+        } else if (c === 0x0d && text.charCodeAt(i + 1) === 0x0a) {
+            counts.set("crlf", (counts.get("crlf") ?? 0) + 1)
+            i++
         }
     }
     return counts
 }
 
 // Primary = terminator with the highest count in this file. Ties follow
-// the display order (lf > crlf > cr), making LF the conventional default
+// the display order (lf > crlf), making LF the conventional default
 // when a file mixes styles.
 function pickPrimary(counts: Map<NewLine, number>): NewLine {
     let best: NewLine = "lf"

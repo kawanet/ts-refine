@@ -29,11 +29,6 @@ export const formatCLI: CLI = async (ctx) => {
     const report = await refineReport({project, paths, reports, log})
     const style = mergeFormatStyles(reportToFormatStyle(report), args.applyOverrides)
 
-    // `cr` is dropped from FormatStyle, so flag it from the report: the survey
-    // recommended CR-only newlines but no override forced an applicable value.
-    if (args.applyOverrides.newLine == null && report.newLine?.newLine === "cr") {
-        logging(log, "note: report recommends CR-only newlines; not applied (LS formatter supports LF/CRLF only)")
-    }
     logging(log, `format: ${buildFormatTokens(style).join(" ")}`)
 
     // `--check` reports without writing, so it forces dry-run; the per-file

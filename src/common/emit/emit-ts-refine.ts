@@ -8,7 +8,7 @@ import {reportToFormatStyle} from "../format-style.ts"
 // Returns argv-style tokens (flag and value pushed separately), the same
 // shape parseArgs consumes. Reads FormatStyle — the same value the
 // `format` command applies — so the printed command and the apply agree;
-// `cr` is already dropped upstream, so --new-line is always runnable.
+// FormatStyle.newLine is lf|crlf, so --new-line is always a runnable flag.
 export function buildFormatTokens(options: TSR.FormatStyle): string[] {
     const flags: string[] = []
     if (options.semi) flags.push("--semi", options.semi)

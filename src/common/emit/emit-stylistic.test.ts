@@ -59,13 +59,6 @@ describe("getStylisticConfig", () => {
         assert.deepEqual(json.rules["@stylistic/comma-dangle"], ["error", "never"])
     })
 
-    it("skips CR-only new-line reports because stylistic has no equivalent", () => {
-        const json = capture({newLine: {newLine: "cr"}})
-
-        assert.ok(json.rules)
-        assert.deepEqual(json.rules, {})
-    })
-
     it("uses a legal singleline delimiter when member delimiter is none", () => {
         const json = capture({memberDelimiter: {delimiter: "none"}})
 

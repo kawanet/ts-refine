@@ -17,11 +17,6 @@ describe("reportToFormatStyle", () => {
         assert.equal(reportToFormatStyle({indent: {width: "tab"}}).indent, "tab")
     })
 
-    it("discards a cr newline recommendation (not a runnable flag nor an LS setting)", () => {
-        const o = reportToFormatStyle({newLine: {newLine: "cr"}})
-        assert.equal(o.newLine, undefined)
-    })
-
     it("maps member-delimiter through (the format command applies it via a self-pass)", () => {
         const o = reportToFormatStyle({memberDelimiter: {delimiter: "comma"}})
         assert.deepEqual(o, {memberDelimiter: "comma"})

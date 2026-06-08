@@ -42,7 +42,7 @@ export declare namespace TSR {
     }
 
     interface NewLineReport {
-        newLine?: "lf" | "crlf" | "cr"
+        newLine?: "lf" | "crlf"
     }
 
     interface BracketSpacingReport {
@@ -87,9 +87,8 @@ export declare namespace TSR {
     }
 
     // Per-field format intent derived from a report recommendation, and what the
-    // CLI overrides feed. `newLine` is lf|crlf only — a `cr` recommendation is
-    // neither a runnable flag nor an LS setting, so it never enters here.
-    // refineMove/refineRename take this to organize the imports they rewrote.
+    // CLI overrides feed. refineMove/refineRename take this to organize the
+    // imports they rewrote.
     interface FormatStyle {
         indent?: number | "tab"
         semi?: "on" | "off"
