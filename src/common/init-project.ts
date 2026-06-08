@@ -28,9 +28,17 @@ export function resolveProject(opts: Pick<TSR.CommonOpts, "project" | "tsConfigF
     if (opts.project && opts.tsConfigFilePath) {
         throw new Error("refine: specify either `project` or `tsConfigFilePath`, not both")
     }
-    // CommonOpts.project is the provisional public surface (TSR.Project); a
-    // brought-in project is a full bridge Project at runtime, so widen it back.
-    if (opts.project) return opts.project as Project
+    if (opts.project) {
+        // CommonOpts.project is the structural public surface (TSR.Project).
+        // Require a real bridge Project — built by createRefineProject — so a
+        // hand-rolled object, or one from a different ts-refine instance, fails
+        // here with a clear message instead of crashing later on a missing
+        // internal method. instanceof also narrows away the unchecked cast.
+        if (!(opts.project instanceof Project)) {
+            throw new Error("refine: `project` must be built with createRefineProject()")
+        }
+        return opts.project
+    }
     if (opts.tsConfigFilePath) return new Project({tsConfigFilePath: opts.tsConfigFilePath})
     throw new Error("refine: specify either `project` or `tsConfigFilePath`")
 }

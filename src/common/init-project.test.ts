@@ -24,6 +24,13 @@ describe("resolveProject", () => {
     it("throws when neither is given", () => {
         assert.throws(() => resolveProject({}), /project.*tsConfigFilePath/)
     })
+
+    it("rejects a project not built by createRefineProject", () => {
+        // A structurally-typed but foreign object must fail loudly, not crash
+        // later on a missing internal method.
+        const fake = {getSourceFiles: () => []} as unknown as never
+        assert.throws(() => resolveProject({project: fake}), /createRefineProject/)
+    })
 })
 
 describe("createRefineProject", () => {
