@@ -83,6 +83,14 @@ export function listOf(node: TsNode, text: string): ListInfo | undefined {
     return {elements: els, hasTrailingComma: els.hasTrailingComma === true, closeStart: node.end - 1}
 }
 
+// Dynamic `import(...)` is a CallExpression whose callee is the `import`
+// keyword. Prettier `trailingComma: "all"` never trails its argument list and
+// strips an existing comma — unlike a normal call or `new` — so this pass
+// excludes it from the add path and lets `on` remove one that is already there.
+export function isDynamicImport(node: TsNode): boolean {
+    return node.kind === SyntaxKind.CallExpression && (node as {expression?: TsNode}).expression?.kind === SyntaxKind.ImportKeyword
+}
+
 // Spread (`...x`) / rest element detection via AST kinds rather than a `...`
 // text prefix. Avoids allocating the node's text per visit.
 export function isSpreadOrRest(node: TsNode): boolean {
@@ -214,7 +222,9 @@ function applyToNode(node: TsNode, full: string, mode: "on" | "off", edits: {sta
 
     const end = last.end
     const multiline = hasLineBreakBetween(full, end, list.closeStart)
-    const wantComma = mode === "on" && multiline
+    // A dynamic import never wants a trailing comma (Prettier parity), so it
+    // takes the remove branch below and `on` strips an existing one.
+    const wantComma = mode === "on" && multiline && !isDynamicImport(node)
     if (wantComma === list.hasTrailingComma) return // already conforms
 
     if (wantComma) {

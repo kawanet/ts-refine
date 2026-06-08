@@ -144,4 +144,31 @@ describe("applyTrailingComma", () => {
         const expected = "const f = (\n    a,\n    b\n) => a + b\n"
         assert.equal(run(src, "off"), expected)
     })
+
+    // Dynamic `import()` is the one CallExpression Prettier `trailingComma:
+    // "all"` excludes: it never trails the argument list and strips an existing
+    // comma. `on` mirrors that (never add, and remove like a single-line list),
+    // while a normal call / `new` keeps the multi-line comma it always had.
+
+    it("on does not add a trailing comma to a multi-line dynamic import", () => {
+        const src = "const x = await import(\n    `./mod.json`\n)\n"
+        assert.equal(run(src, "on"), src)
+    })
+
+    it("on strips an existing trailing comma from a dynamic import (Prettier parity)", () => {
+        assert.equal(run("const x = await import(\n    `./mod.json`,\n)\n", "on"), "const x = await import(\n    `./mod.json`\n)\n")
+    })
+
+    it("on leaves a two-argument dynamic import's list bare but commas nested lists", () => {
+        // The import's own arg list gets no trailing comma; the inner object
+        // literal is a separate list and follows the normal multi-line rule.
+        const src = "const x = await import(\n    `./mod.json`,\n    {\n        with: {\n            type: \"json\"\n        }\n    }\n)\n"
+        const expected = "const x = await import(\n    `./mod.json`,\n    {\n        with: {\n            type: \"json\",\n        },\n    }\n)\n"
+        assert.equal(run(src, "on"), expected)
+    })
+
+    it("on still adds the trailing comma to a normal call and `new` (not excluded)", () => {
+        assert.equal(run("fn(\n    a,\n    b\n)\n", "on"), "fn(\n    a,\n    b,\n)\n")
+        assert.equal(run("new Foo(\n    a,\n    b\n)\n", "on"), "new Foo(\n    a,\n    b,\n)\n")
+    })
 })
