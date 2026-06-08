@@ -27,7 +27,7 @@ NAMED_EXPORTS := $(shell sed -nE 's/^export declare function ([a-zA-Z_$$]+).*/\1
 # The mjs bundle carries the src/bridge compat layer. The CLI bundle imports
 # the library through ../index.ts, which the CLI rollup config aliases to the
 # external "ts-refine", so it stays small and never re-bundles the bridge.
-MJS_MAX_BYTES := 230000
+MJS_MAX_BYTES := 250000
 CLI_MAX_BYTES := 60000
 
 ALL := $(MJS_DST) $(CLI_DST)

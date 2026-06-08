@@ -14,6 +14,7 @@ import {applyAsiGuard} from "./apply-asi-guard.ts"
 import {applyMemberDelimiter} from "./apply-member-delimiter.ts"
 import {applySingleLineTypeLiteralTail} from "./apply-single-line-type-literal.ts"
 import {applyTrailingComma} from "./apply-trailing-comma.ts"
+import {applyTypeLiteralBracketSpacing} from "./apply-type-literal-bracket-spacing.ts"
 
 export const refineFormat: typeof declared.refineFormat = async (opts) => {
     const {dryRun, paths, style, log} = opts
@@ -53,9 +54,11 @@ export const refineFormat: typeof declared.refineFormat = async (opts) => {
 
         // member-delimiter and trailing-comma are axes the LS can't express
         // (it can't emit a comma delimiter at all); reassert each afterward.
-        // All four passes edit disjoint regions, so this order is for reading.
+        // Type-literal brace spacing is reasserted last because the LS can leave
+        // index-signature literals asymmetric when bracketSpacing is off.
         if (style.memberDelimiter != null) applyMemberDelimiter(sf, style.memberDelimiter)
         if (style.trailingComma != null) applyTrailingComma(sf, style.trailingComma)
+        if (style.bracketSpacing != null) applyTypeLiteralBracketSpacing(sf, style.bracketSpacing)
 
         // LS `newLineCharacter` only governs inserted text; existing
         // terminators are normalized here to the same target. Push the result
