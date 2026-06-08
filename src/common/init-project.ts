@@ -10,6 +10,13 @@ export function initProject(opts: {tsConfigFilePath: string}): Project {
     return new Project(opts)
 }
 
+// Public factory: build a project a caller can construct once and reuse as the
+// `project` option across refine* calls. Returns the structural TSR.Project so
+// the public surface never exposes the internal compat class.
+export function createRefineProject(options?: TSR.ProjectOptions): TSR.Project {
+    return new Project(options)
+}
+
 // A lib-less in-memory project: no lib.d.ts load, so it is cheap and meant for
 // syntactic work only (parsing / member counts / parse diagnostics), never
 // semantic analysis of real code. Used by the format separator pass to re-parse

@@ -24,6 +24,17 @@ export declare namespace TSR {
         getSourceFiles(): SourceFile[]
     }
 
+    // Options for createRefineProject. Intentionally small: load from a tsconfig
+    // (the common case), or start an in-memory project and add files yourself.
+    // `skipLoadingLibFiles` is deliberately not exposed — the refine entries do
+    // semantic work that needs the default library; a caller that truly wants it
+    // can pass `compilerOptions: {noLib: true}`.
+    interface ProjectOptions {
+        tsConfigFilePath?: string
+        useInMemoryFileSystem?: boolean
+        compilerOptions?: import("typescript").CompilerOptions
+    }
+
     // Common base for every entry. Supply the project one of two ways: your own
     // `project` (bring-your-own — in-memory, custom options, and reuse across
     // calls), or a `tsConfigFilePath` to build a fresh one (best for one-shot
@@ -277,3 +288,7 @@ export declare function refineInspect(opts: TSR.InspectOpts): Promise<TSR.Inspec
 export declare function refineMove(opts: TSR.MoveOpts): Promise<TSR.MoveResult>
 
 export declare function refineRename(opts: TSR.RenameOpts): Promise<TSR.RenameResult>
+
+// Build a project to pass as `project` to the refine entries — construct it once
+// and reuse it across calls instead of rebuilding per call.
+export declare function createRefineProject(options?: TSR.ProjectOptions): TSR.Project
