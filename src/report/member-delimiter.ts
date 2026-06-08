@@ -5,8 +5,8 @@
 // theirs to make.
 
 import type {TSR} from "ts-refine"
-import type {ClassElement, Node as TsNode, TypeElement} from "typescript"
-import {SyntaxKind} from "typescript"
+import type {ClassElement, Node as TsNode, SourceFile as TsSourceFile, TypeElement} from "typescript"
+import {isClassDeclaration, isInterfaceDeclaration, SyntaxKind} from "typescript"
 import {Node} from "../bridge/bridge.ts"
 import {getTsRefineFormat} from "../common/emit/emit-ts-refine.ts"
 import {logging} from "../common/logging.ts"
@@ -36,6 +36,8 @@ const SEP_FLAG_VALUE: Record<Separator, TSR.MemberDelimiterReport["delimiter"]> 
 
 type Bucket = {lines: number; files: number; topPath: string; topLines: number}
 type Member = Node<ClassElement> | Node<TypeElement>
+type TsMember = ClassElement | TypeElement
+type MemberLike = Member | TsMember
 
 export async function runReportMemberDelimiter({sourceFiles, output, log, importsOnly}: ReportRunOpts): Promise<Partial<TSR.MemberDelimiterReport>> {
     // import/export statements carry no interface/class members, so an
@@ -47,20 +49,14 @@ export async function runReportMemberDelimiter({sourceFiles, output, log, import
 
     for (const sf of sourceFiles) {
         const counts = new Map<Separator, number>()
-        // Find interface / class declarations on the compiler AST, then wrap
-        // only those few through the bridge for the member-level classify. The
-        // previous sf.forEachDescendant allocated a wrapper for every node in
-        // the file just to reach the handful of containers.
         const tsSf = sf.compilerNode
+        const text = sf.getFullText()
         const collect = (node: TsNode): void => {
-            if (node.kind === SyntaxKind.InterfaceDeclaration || node.kind === SyntaxKind.ClassDeclaration) {
-                const wrapped = sf.getDescendantAtStartWithWidth(node.getStart(tsSf), node.getWidth(tsSf))
-                if (wrapped) {
-                    for (const member of wrapped.getMembers() as Member[]) {
-                        const kind = classify(member)
-                        if (kind == null) continue
-                        counts.set(kind, (counts.get(kind) ?? 0) + 1)
-                    }
+            if (isInterfaceDeclaration(node) || isClassDeclaration(node)) {
+                for (const member of node.members) {
+                    const kind = classify(member, text, tsSf)
+                    if (kind == null) continue
+                    counts.set(kind, (counts.get(kind) ?? 0) + 1)
                 }
             }
             node.forEachChild(collect)
@@ -124,24 +120,30 @@ export async function runReportMemberDelimiter({sourceFiles, output, log, import
 // method / accessor / constructor / static block ends in its own `}`, not a
 // separator. Property / index / call / construct signatures and class fields
 // do. Shared with the apply pass so report and format agree on the scope.
-export function isSeparableMember(member: Member): boolean {
-    if (Node.isClassStaticBlockDeclaration(member)) return false
+export function isSeparableMember(member: MemberLike): boolean {
+    const node = compilerMember(member)
+    if (node.kind === SyntaxKind.ClassStaticBlockDeclaration) return false
     return memberBody(member) == null
 }
 
 // Reads the member AST and returns the trailing separator. Only members with
 // their own executable body are skipped; properties whose initializer ends in
 // `}` still have a trailing punctuation style to count.
-function classify(member: Member): Separator | null {
+function classify(member: TsMember, text: string, tsSf: TsSourceFile): Separator | null {
     if (!isSeparableMember(member)) return null
-    const last = member.getText().trimEnd().slice(-1)
+    const last = text.slice(member.getStart(tsSf), member.end).trimEnd().slice(-1)
     if (last === ";") return ";"
     if (last === ",") return ","
     return "none"
 }
 
-function memberBody(member: Member): unknown {
-    return "getBody" in member ? member.getBody() : undefined
+function compilerMember(member: MemberLike): TsMember {
+    return member instanceof Node ? member.compilerNode : member
+}
+
+function memberBody(member: MemberLike): unknown {
+    if (member instanceof Node) return member.getBody()
+    return (member as {body?: unknown}).body
 }
 
 // Primary = bucket with the highest count in this file. Ties follow the
