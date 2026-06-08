@@ -1,5 +1,6 @@
 import fs from "node:fs"
 import path from "node:path"
+import type {TSR} from "ts-refine"
 import * as ts from "typescript"
 import {BridgeFileSystem, normalizePath} from "./file-system.ts"
 import {LanguageService} from "./language-service.ts"
@@ -15,7 +16,7 @@ export type ProjectOptions = {
 // Project owns source text, compiler options, and the TypeScript language
 // service. It deliberately models only the project operations ts-refine uses,
 // so the bridge can stay smaller than a general-purpose AST library.
-export class Project {
+export class Project implements TSR.Project {
     private readonly files = new Map<string, string>()
     private readonly versions = new Map<string, number>()
     private readonly sourceFiles = new Map<string, SourceFile>()

@@ -1,4 +1,5 @@
 import path from "node:path"
+import type {TSR} from "ts-refine"
 import * as ts from "typescript"
 import {normalizePath} from "./file-system.ts"
 import {Node} from "./node.ts"
@@ -8,7 +9,7 @@ import {applyTextChanges} from "./text-change.ts"
 // SourceFile stores the mutable text for one project file and reparses it after
 // edits. The bridge avoids preserving stale child-node wrappers across edits;
 // callers should reacquire nodes from the file after mutating it.
-export class SourceFile {
+export class SourceFile implements TSR.SourceFile {
     compilerNode: ts.SourceFile
     private readonly project: Project
     private filePath: string

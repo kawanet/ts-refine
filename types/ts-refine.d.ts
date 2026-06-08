@@ -14,10 +14,15 @@ export declare namespace TSR {
         useInMemoryFileSystem?: boolean
     }
 
+    interface SourceFile {
+        getFullText(): string
+    }
+
     interface Project {
-        createSourceFile(filePath: string, text: string, opts?: {overwrite?: boolean}): unknown
-        addSourceFileAtPath(filePath: string): unknown
-        getSourceFiles(paths?: string[]): unknown[]
+        createSourceFile(filePath: string, text: string, opts?: {overwrite?: boolean}): SourceFile
+        addSourceFileAtPath(filePath: string): SourceFile
+        getSourceFile(filePath: string): SourceFile | undefined
+        getSourceFiles(paths?: string[]): SourceFile[]
     }
 
     // output stream
