@@ -5,8 +5,9 @@
 // attributes, plus the TS type-literal / interface / enum bodies. Single-line
 // statement blocks are deliberately left out (not a bracketSpacing concept).
 
-import {Node, SyntaxKind} from "ts-morph"
+import {SyntaxKind} from "ts-morph"
 import type {TSR} from "ts-refine"
+import type {Node as TsNode} from "typescript"
 import {getTsRefineFormat} from "../common/emit/emit-ts-refine.ts"
 import {logging} from "../common/logging.ts"
 import {displayPath} from "../lib/source-files.ts"
@@ -29,22 +30,21 @@ export async function runReportBracketSpacing({sourceFiles, output, log, imports
     const perFile: PerFile[] = []
 
     for (const sf of sourceFiles) {
+        const fullText = sf.getFullText()
         const counts = new Map<Style, number>()
-        const visit = (node: Node) => {
-            const braces = braceSpan(node)
-            if (braces == null) return
-            const style = classifyBraces(braces)
-            if (style == null) return
-            counts.set(style, (counts.get(style) ?? 0) + 1)
+        const visit = (node: TsNode): void => {
+            const style = classifyBraces(node, fullText)
+            if (style != null) counts.set(style, (counts.get(style) ?? 0) + 1)
+            node.forEachChild(visit)
         }
         // importsOnly: only the import/export statements are rewritten by
         // organizeImports, so count the braces inside them (named bindings +
         // import attributes), not the whole file.
         if (importsOnly) {
-            sf.getImportDeclarations().forEach((d) => d.forEachDescendant(visit))
-            sf.getExportDeclarations().forEach((d) => d.forEachDescendant(visit))
+            for (const d of sf.getImportDeclarations()) visit(d.compilerNode)
+            for (const d of sf.getExportDeclarations()) visit(d.compilerNode)
         } else {
-            sf.forEachDescendant(visit)
+            visit(sf.compilerNode)
         }
         if (counts.size === 0) continue
         perFile.push({path: displayPath(sf.getFilePath()), counts, primary: pickPrimary(counts)})
@@ -98,48 +98,46 @@ export async function runReportBracketSpacing({sourceFiles, output, log, imports
     return report
 }
 
-// Node kinds whose own brace pair the LS formatter re-spaces. ImportAttributes
-// covers both `import ... with {…}` and the export form. The TS bodies
-// (type literal / interface / enum) are re-spaced by formatText just like
-// object literals; import attributes are re-spaced by organizeImports.
-function isBraceCarrier(node: Node): boolean {
-    return (
-        Node.isObjectLiteralExpression(node) ||
-        Node.isObjectBindingPattern(node) ||
-        Node.isNamedImports(node) ||
-        Node.isNamedExports(node) ||
-        Node.isTypeLiteral(node) ||
-        Node.isInterfaceDeclaration(node) ||
-        Node.isEnumDeclaration(node) ||
-        Node.isImportAttributes(node)
-    )
-}
+// Brace carriers whose own pair the LS formatter re-spaces, mapped to the
+// property holding their member/element list. ImportAttributes covers both
+// `import ... with {…}` and the export form. The TS bodies (type literal /
+// interface / enum) are re-spaced by formatText like object literals; import
+// attributes are re-spaced by organizeImports. The list's `pos` sits right
+// after the body's own `{`, so a header like `interface I<X = {}>` never
+// picks up the type-parameter braces.
+const BRACE_MEMBERS_PROP = new Map<SyntaxKind, string>([
+    [SyntaxKind.ObjectLiteralExpression, "properties"],
+    [SyntaxKind.ObjectBindingPattern, "elements"],
+    [SyntaxKind.NamedImports, "elements"],
+    [SyntaxKind.NamedExports, "elements"],
+    [SyntaxKind.TypeLiteral, "members"],
+    [SyntaxKind.InterfaceDeclaration, "members"],
+    [SyntaxKind.EnumDeclaration, "members"],
+    [SyntaxKind.ImportAttributes, "elements"],
+])
 
-// The carrier's own brace pair as source text (e.g. `{ a: number }` from an
-// interface, `{type:"json"}` from import attributes), or null when the node
-// is not a carrier or has no braces. Uses the immediate brace tokens, so a
-// header like `interface I<X = {}>` never picks up the type-parameter braces.
-function braceSpan(node: Node): string | null {
-    if (!isBraceCarrier(node)) return null
-    const open = node.getFirstChildByKind(SyntaxKind.OpenBraceToken)
-    const close = node.getLastChildByKind(SyntaxKind.CloseBraceToken)
-    if (!open || !close) return null
-    return node.getSourceFile().getFullText().slice(open.getStart(), close.getEnd())
-}
+// The inner-padding style for a carrier's brace pair, or null when the node is
+// not a carrier or the braces carry no `{ a }` vs `{a}` preference — empty
+// `{}`, whitespace-only `{ }`, and multi-line forms. The inner span runs from
+// the member list's `pos` (just past `{`) to the node end minus the `}`, so no
+// node text is allocated.
+function classifyBraces(node: TsNode, fullText: string): Style | null {
+    const prop = BRACE_MEMBERS_PROP.get(node.kind)
+    if (prop == null) return null
+    const list = (node as unknown as Record<string, {pos: number} | undefined>)[prop]
+    if (list == null) return null
+    const innerStart = list.pos
+    const innerEnd = node.end - 1
+    if (innerEnd <= innerStart) return null // empty `{}`
 
-// Returns the inner-padding style for a brace pair, or null if the node
-// shape can't speak to the bracketSpacing convention. Empty `{}`,
-// whitespace-only `{ }`, and multi-line forms are all excluded — none
-// of them express a `{ a }` vs `{a}` preference.
-function classifyBraces(text: string): Style | null {
-    if (text.length < 2 || text[0] !== "{" || text[text.length - 1] !== "}") return null
-    const inner = text.slice(1, -1)
-    if (inner.trim().length === 0) return null
-
-    // A newline (LF or CRLF) means a multi-line literal, which carries no
-    // bracket-spacing preference, so skip it.
-    if (/[\r\n]/.test(inner)) return null
-    return inner.startsWith(" ") && inner.endsWith(" ") ? "on" : "off"
+    let sawNonSpace = false
+    for (let i = innerStart; i < innerEnd; i++) {
+        const c = fullText.charCodeAt(i)
+        if (c === 0x0a || c === 0x0d) return null // newline: multi-line, no preference
+        if (c !== 0x20 && c !== 0x09) sawNonSpace = true
+    }
+    if (!sawNonSpace) return null // whitespace-only `{ }`
+    return fullText.charCodeAt(innerStart) === 0x20 && fullText.charCodeAt(innerEnd - 1) === 0x20 ? "on" : "off"
 }
 
 // Primary = style with the highest count in this file. Ties follow the

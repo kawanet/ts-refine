@@ -1,5 +1,6 @@
-import {Node, SyntaxKind, type SourceFile} from "ts-morph"
+import {SyntaxKind, type SourceFile} from "ts-morph"
 import type {TSR} from "ts-refine"
+import type {Node as TsNode, SourceFile as TsSourceFile} from "typescript"
 import {displayPath} from "../lib/source-files.ts"
 import {writeFunctionSpacingMarkdown} from "./function-spacing-markdown.ts"
 import {pickRecommendByFiles} from "./pick-recommend.ts"
@@ -92,108 +93,166 @@ export async function runReportFunctionSpacing({sourceFiles, output, importsOnly
 
 // Walk one file and count only AST shapes controlled by these TS LS settings.
 // Constructors and async arrows are intentionally absent; these fields do not
-// control `constructor ()` or `async () =>`.
+// control `constructor ()` or `async () =>`. The compiler AST is walked
+// directly (not sf.forEachDescendant): the classifiers below only need raw
+// node positions, so the per-visit ts-morph wrapper is avoided.
 function collectFileCounts(sf: SourceFile): FileCounts {
     const functionKeywordSpacing: StyleCounts = {}
     const functionParenSpacing: StyleCounts = {}
     const controlKeywordSpacing: StyleCounts = {}
-    const countsByAxis = {functionKeywordSpacing, functionParenSpacing, controlKeywordSpacing}
+    const text = sf.getFullText()
+    const tsSf = sf.compilerNode
 
-    sf.forEachDescendant((node) => {
-        if ((Node.isFunctionExpression(node) || Node.isFunctionDeclaration(node)) && !node.getName()) {
-            const style = classifyFunctionKeyword(node)
-            if (style) functionKeywordSpacing[style] = (functionKeywordSpacing[style] ?? 0) + 1
+    const visit = (node: TsNode): void => {
+        const kind = node.kind
+        if (kind === SyntaxKind.FunctionExpression || kind === SyntaxKind.FunctionDeclaration) {
+            // functionKeyword axis covers only anonymous functions.
+            if ((node as FunctionParts).name == null) {
+                const style = classifyFunctionKeyword(node, text)
+                if (style) functionKeywordSpacing[style] = (functionKeywordSpacing[style] ?? 0) + 1
+            }
         }
-        if (Node.isFunctionDeclaration(node) || Node.isFunctionExpression(node) || Node.isMethodDeclaration(node)) {
-            const style = classifyFunctionParen(node)
+        if (kind === SyntaxKind.FunctionExpression || kind === SyntaxKind.FunctionDeclaration || kind === SyntaxKind.MethodDeclaration) {
+            const style = classifyFunctionParen(node, text)
             if (style) functionParenSpacing[style] = (functionParenSpacing[style] ?? 0) + 1
         }
-        if (isControlKeywordNode(node)) {
-            const style = classifyControlKeyword(node)
+        if (CONTROL_KEYWORD_LEN.has(kind) || kind === SyntaxKind.DoStatement) {
+            const style = classifyControlKeyword(node, text, tsSf)
             if (style) controlKeywordSpacing[style] = (controlKeywordSpacing[style] ?? 0) + 1
         }
-    })
+        node.forEachChild(visit)
+    }
+    visit(tsSf)
 
-    return countsByAxis
+    return {functionKeywordSpacing, functionParenSpacing, controlKeywordSpacing}
+}
+
+// Position-only views of the raw compiler nodes the classifiers read.
+type FunctionParts = {
+    name?: {end: number}
+    typeParameters?: {end: number; length: number}
+    asteriskToken?: {end: number}
+    modifiers?: {end: number; length: number}
+    pos: number
 }
 
 // Detect spacing controlled by insertSpaceAfterFunctionKeywordForAnonymousFunctions:
 // `const f = function () {}` / `function()`, plus generator `function* ()`.
 // Generic anonymous `function <T>()` belongs to functionParenSpacing instead.
-function classifyFunctionKeyword(node: Node): Style | null {
-    const keyword = node.getFirstChildByKind(SyntaxKind.FunctionKeyword)
-    const open = node.getFirstChildByKind(SyntaxKind.OpenParenToken)
-    if (!keyword || !open) return null
-    if (hasFunctionTypeParameters(node)) return null
-    const star = node.getFirstChildByKind(SyntaxKind.AsteriskToken)
-    return classifyParenGap(star ? star.getEnd() : keyword.getEnd(), open)
+function classifyFunctionKeyword(node: TsNode, text: string): Style | null {
+    const fn = node as FunctionParts
+    if (fn.typeParameters && fn.typeParameters.length > 0) return null
+    const from = fn.asteriskToken ? fn.asteriskToken.end : functionKeywordEnd(fn, text)
+    return classifyParenGap(from, text)
 }
 
 // Detect spacing controlled by insertSpaceBeforeFunctionParenthesis:
 // `function foo()` / `foo ()`, methods, and generic anonymous `function <T>()`.
-// The `(` previous sibling is used so `function <T extends U<V>> ()` votes
-// from the outer `>` without scanning or slicing through type text.
-function classifyFunctionParen(node: Node): Style | null {
-    if (!hasFunctionName(node) && !hasFunctionTypeParameters(node)) return null
-    const open = node.getFirstChildByKind(SyntaxKind.OpenParenToken)
-    if (!open) return null
-    const prev = open.getPreviousSibling()
-    if (!prev) return null
-    return classifyParenGap(prev.getEnd(), open)
+// The gap is measured from the token before `(`: the type-parameter list's
+// closing `>` when generic (so `<T extends U<V>>` votes from the outer `>`),
+// otherwise the name.
+function classifyFunctionParen(node: TsNode, text: string): Style | null {
+    const fn = node as FunctionParts
+    const generic = fn.typeParameters != null && fn.typeParameters.length > 0
+    if (!generic && fn.name == null) return null
+    const from = generic ? typeParameterListEnd(fn, text) : fn.name!.end
+    if (from < 0) return null
+    return classifyParenGap(from, text)
 }
+
+// The `function` keyword end for an anonymous, non-generic, non-generator
+// function: the keyword follows any modifiers (e.g. `async`, `export default`)
+// plus leading trivia, and is the fixed-width `function`.
+const FUNCTION_KEYWORD_LENGTH = "function".length
+function functionKeywordEnd(fn: FunctionParts, text: string): number {
+    const afterModifiers = fn.modifiers && fn.modifiers.length > 0 ? fn.modifiers.end : fn.pos
+    return skipTrivia(text, afterModifiers) + FUNCTION_KEYWORD_LENGTH
+}
+
+// The position just past the type-parameter list's closing `>`. The list's own
+// `end` stops at the last parameter (before any trailing comma and the `>`), so
+// skip trivia and an optional trailing comma to reach and step over the `>`.
+function typeParameterListEnd(fn: FunctionParts, text: string): number {
+    let p = skipTrivia(text, fn.typeParameters!.end)
+    if (text.charCodeAt(p) === 0x2c) p = skipTrivia(text, p + 1) // trailing comma `<T,>`
+    if (text.charCodeAt(p) !== 0x3e) return -1 // '>'
+    return p + 1
+}
+
+// Control keywords whose `(` spacing the LS controls, mapped to keyword length
+// so the gap to `(` can be measured from the keyword's end. `do … while` is
+// handled separately (its `while` is not the statement's first token).
+const CONTROL_KEYWORD_LEN = new Map<SyntaxKind, number>([
+    [SyntaxKind.IfStatement, 2],
+    [SyntaxKind.ForStatement, 3],
+    [SyntaxKind.ForInStatement, 3],
+    [SyntaxKind.ForOfStatement, 3],
+    [SyntaxKind.WhileStatement, 5],
+    [SyntaxKind.SwitchStatement, 6],
+    [SyntaxKind.CatchClause, 5],
+])
+const WHILE_KEYWORD_LENGTH = "while".length
 
 // Detect parenthesized control keyword spacing, e.g. `if (x)`, `for(x)`,
-// `switch (x)`, and `catch(e)`. `do ... while` is delegated to the `while` side.
-function classifyControlKeyword(node: Node): Style | null {
-    if (Node.isDoStatement(node)) return classifyDoWhile(node)
-    const open = node.getFirstChildByKind(SyntaxKind.OpenParenToken)
-    if (!open) return null
-    return classifyParenGap(controlKeywordEnd(node), open)
+// `switch (x)`, and `catch(e)`. `do ... while` is delegated to the `while`
+// side; the leading `do {` gap is not TS LS control-parenthesis spacing.
+function classifyControlKeyword(node: TsNode, text: string, sf: TsSourceFile): Style | null {
+    if (node.kind === SyntaxKind.DoStatement) {
+        const whileStart = skipTrivia(text, (node as unknown as {statement: {end: number}}).statement.end)
+        return classifyParenGap(whileStart + WHILE_KEYWORD_LENGTH, text)
+    }
+    const len = CONTROL_KEYWORD_LEN.get(node.kind)
+    if (len == null) return null
+    return classifyParenGap(node.getStart(sf) + len, text)
 }
 
-// Detect only the `while (...)` spacing in `do { ... } while (x)`;
-// the leading `do {` gap is not part of TS LS control-parenthesis spacing.
-function classifyDoWhile(node: Node): Style | null {
-    const keyword = node.getFirstChildByKind(SyntaxKind.WhileKeyword)
-    const open = node.getFirstChildByKind(SyntaxKind.OpenParenToken)
-    if (!keyword || !open) return null
-    return classifyParenGap(keyword.getEnd(), open)
+// Turn the gap between a token's end and the `(` that should follow into a
+// vote: `off` when they touch, `on` for a whitespace-only gap, null when a
+// comment or any other token sits between (so `(` is not reached). The last
+// case also rejects shapes like `for await (`, whose neighbour is not `(`.
+function classifyParenGap(from: number, text: string): Style | null {
+    const open = skipSpaces(text, from)
+    if (text.charCodeAt(open) !== 0x28) return null // '('
+    return open === from ? "off" : "on"
 }
 
-// Turn a token-adjacent gap into `off` for `foo()` or `on` for `foo ()`.
-// Comments and non-adjacent tokens like `for await (` return null instead of voting.
-function classifyParenGap(from: number, open: Node): Style | null {
-    if (open.getFullStart() !== from) return null
-    const to = open.getStart()
-    if (to < from) return null
-    if (from === to) return "off"
-    if (to === from + 1) return "on"
-    const trivia = open.getFullText().slice(0, open.getLeadingTriviaWidth())
-    return trivia.trim() ? null : "on"
+// Skip ASCII whitespace forward.
+function skipSpaces(text: string, pos: number): number {
+    while (pos < text.length) {
+        const c = text.charCodeAt(pos)
+        if (c === 0x20 || c === 0x09 || c === 0x0a || c === 0x0d) pos++
+        else break
+    }
+    return pos
 }
 
-// Return the end offset of the keyword before `(`: `if`, `for`, `while`,
-// `switch`, or `catch`, so the gap to `(` can be classified.
-function controlKeywordEnd(node: Node): number {
-    return node.getStart() + (Node.isIfStatement(node) ? 2 : Node.isForStatement(node) || Node.isForInStatement(node) || Node.isForOfStatement(node) ? 3 : Node.isWhileStatement(node) ? 5 : Node.isSwitchStatement(node) ? 6 : 5)
-}
-
-// Select only control nodes whose keyword spacing maps to the TS LS setting:
-// `if`, `for`/`for-in`/`for-of`, `while`, `switch`, `catch`, and `do while`.
-function isControlKeywordNode(node: Node): boolean {
-    return Node.isIfStatement(node) || Node.isForStatement(node) || Node.isForInStatement(node) || Node.isForOfStatement(node) || Node.isWhileStatement(node) || Node.isDoStatement(node) || Node.isSwitchStatement(node) || Node.isCatchClause(node)
-}
-
-// Recognize generic function shapes through the AST, e.g. `function<T>()`
-// and `function foo<T>()`, so literal `<` characters never affect the vote.
-function hasFunctionTypeParameters(node: Node): boolean {
-    if (Node.isFunctionDeclaration(node) || Node.isFunctionExpression(node) || Node.isMethodDeclaration(node)) return node.getTypeParameters().length > 0
-    return false
-}
-
-function hasFunctionName(node: Node): boolean {
-    if (Node.isFunctionDeclaration(node) || Node.isFunctionExpression(node) || Node.isMethodDeclaration(node)) return !!node.getNameNode()
-    return false
+// Skip whitespace and comments forward, used to step over leading trivia to a
+// keyword (e.g. `function` after a jsdoc block or modifiers).
+function skipTrivia(text: string, pos: number): number {
+    while (pos < text.length) {
+        const c = text.charCodeAt(pos)
+        if (c === 0x20 || c === 0x09 || c === 0x0a || c === 0x0d) {
+            pos++
+            continue
+        }
+        if (c === 0x2f) {
+            const n = text.charCodeAt(pos + 1)
+            if (n === 0x2f) {
+                const nl = text.indexOf("\n", pos + 2)
+                if (nl < 0) return text.length
+                pos = nl + 1
+                continue
+            }
+            if (n === 0x2a) {
+                const end = text.indexOf("*/", pos + 2)
+                if (end < 0) return text.length
+                pos = end + 2
+                continue
+            }
+        }
+        break
+    }
+    return pos
 }
 
 // Group files by their primary style on one axis. For example, a file with

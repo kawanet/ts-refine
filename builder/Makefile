@@ -23,7 +23,7 @@ NAMED_EXPORTS := $(shell sed -nE 's/^export declare function ([a-zA-Z_$$]+).*/\1
 # of a transitive dep (which would be hundreds of KB); fail the build so it
 # cannot slip in. This cap is not a minifier target: raise it for real feature
 # growth, and keep source code readable.
-MJS_MAX_BYTES := 130000
+MJS_MAX_BYTES := 150000
 CLI_MAX_BYTES := 50000
 
 ALL := $(MJS_DST) $(CLI_DST)
