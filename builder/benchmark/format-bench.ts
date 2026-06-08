@@ -17,18 +17,20 @@ import type {BenchmarkArgs} from "./parse-benchmark-args.ts"
 import {createScratchFiles, type Fixture} from "./scratch.ts"
 import {printStatsTable, type StatRow, summarize} from "./stats.ts"
 
-// Style type erased behind defineCase so the heterogeneous passes share one
-// array. Each pass keeps its own FormatStyle union at the call site (no casts);
-// the swept styles are addressed by index, and a no-style pass uses `[null]`.
+// Each pass is benchmarked at a single representative style, bound here so the
+// case exposes a plain `run(sf)`. The style type is erased behind defineCase
+// (a `const` type parameter keeps the literal), so the heterogeneous passes
+// share one array while each keeps its own FormatStyle union with no casts.
+// One style means one timed run per iteration, so every format pass — and the
+// report section — reports the same `calls`.
 interface FormatCase {
     name: string
-    styleCount: number
     prepare?: (sf: SourceFile) => void
-    runStyle: (sf: SourceFile, styleIndex: number) => void
+    run: (sf: SourceFile) => void
 }
 
-function defineCase<TStyle>(name: string, styles: readonly TStyle[], run: (sf: SourceFile, style: TStyle) => void, prepare?: (sf: SourceFile) => void): FormatCase {
-    return {name, styleCount: styles.length, prepare, runStyle: (sf, i) => run(sf, styles[i])}
+function defineCase<const TStyle>(name: string, style: TStyle, run: (sf: SourceFile, style: TStyle) => void, prepare?: (sf: SourceFile) => void): FormatCase {
+    return {name, prepare, run: (sf) => run(sf, style)}
 }
 
 // Built on demand rather than at module load: defineCase runs once per call,
@@ -50,12 +52,12 @@ function getFormatCases(): ReadonlyArray<FormatCase> {
     const prepSemiOn = prepAt("on")
 
     return [
-        defineCase("applyAsiGuard", ["off", "on"] as const, applyAsiGuard, prepAt("off")),
-        defineCase("applySingleLineTypeLiteralTail", ["on", "off"] as const, applySingleLineTypeLiteralTail, prepSemiOn),
-        defineCase("applyForHeaderSemicolons", [null] as const, (sf) => applyForHeaderSemicolons(sf), prepSemiOn),
-        defineCase("applyMemberDelimiter", ["semi", "none"] as const, applyMemberDelimiter),
-        defineCase("applyTrailingComma", ["on", "off"] as const, applyTrailingComma),
-        defineCase("applyTypeBracketSpacing", ["on", "off"] as const, applyTypeBracketSpacing),
+        defineCase("applyAsiGuard", "off", applyAsiGuard, prepAt("off")),
+        defineCase("applySingleLineTypeLiteralTail", "on", applySingleLineTypeLiteralTail, prepSemiOn),
+        defineCase("applyForHeaderSemicolons", null, (sf) => applyForHeaderSemicolons(sf), prepSemiOn),
+        defineCase("applyMemberDelimiter", "semi", applyMemberDelimiter),
+        defineCase("applyTrailingComma", "on", applyTrailingComma),
+        defineCase("applyTypeBracketSpacing", "on", applyTypeBracketSpacing),
     ]
 }
 
@@ -64,13 +66,13 @@ function getFormatCases(): ReadonlyArray<FormatCase> {
 // avoid timing an already-fixed no-op and to measure the cold path the tool
 // actually runs. prepare (when present) runs untimed so the timed call starts
 // from the post-formatter state refineFormat's self-passes see.
-function runOnce(benchCase: FormatCase, fixtures: ReadonlyArray<Fixture>, styleIndex: number): number {
+function runOnce(benchCase: FormatCase, fixtures: ReadonlyArray<Fixture>): number {
     const files = createScratchFiles(fixtures)
     if (benchCase.prepare) {
         for (const sf of files) benchCase.prepare(sf)
     }
     const start = performance.now()
-    for (const sf of files) benchCase.runStyle(sf, styleIndex)
+    for (const sf of files) benchCase.run(sf)
     return performance.now() - start
 }
 
@@ -80,14 +82,12 @@ export function runFormatBench(args: BenchmarkArgs, fixtures: ReadonlyArray<Fixt
     for (const benchCase of getFormatCases()) {
         log.write(`format: ${benchCase.name}\n`)
 
+        // One fixed warmup run (the 0th), discarded; then the measured runs.
+        runOnce(benchCase, fixtures)
         const samples: number[] = []
-        for (let s = 0; s < benchCase.styleCount; s++) {
-            // One fixed warmup run (the 0th), discarded; then the measured runs.
-            runOnce(benchCase, fixtures, s)
-            for (let i = 0; i < args.iterations; i++) samples.push(runOnce(benchCase, fixtures, s))
-        }
+        for (let i = 0; i < args.runs; i++) samples.push(runOnce(benchCase, fixtures))
 
-        rows.push({name: benchCase.name, calls: samples.length, ...summarize(samples)})
+        rows.push({name: benchCase.name, runs: samples.length, ...summarize(samples)})
     }
 
     printStatsTable(output, "pass", rows)

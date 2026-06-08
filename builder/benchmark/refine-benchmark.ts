@@ -40,7 +40,7 @@ export const refineBenchmark: CLI = async (ctx) => {
     output.write(`project: ${args.project}\n`)
     output.write(`files: ${fixtures.length}\n`)
     output.write(`setup: project=${formatMs(projectMs)} select=${formatMs(selectMs)}\n`)
-    output.write(`runs: iterations=${args.iterations} (after 1 warmup) importsOnly=${args.importsOnly}\n`)
+    output.write(`runs: ${args.runs} (after 1 warmup) importsOnly=${args.importsOnly}\n`)
     output.write("\n")
 
     output.write("## report\n")

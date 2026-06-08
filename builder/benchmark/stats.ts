@@ -32,7 +32,7 @@ export function formatMs(value: number): string {
 
 export interface StatRow extends Summary {
     name: string
-    calls: number
+    runs: number
 }
 
 // Single renderer for both the report and format sections so their columns
@@ -42,8 +42,8 @@ export function printStatsTable(output: TSR.Writer, nameHeader: string, rows: St
     const sorted = [...rows].sort((a, b) => b.mean - a.mean)
     printTable(
         output,
-        [nameHeader, "calls", "total", "mean", "median", "min", "max"],
-        sorted.map((row) => [row.name, String(row.calls), formatMs(row.total), formatMs(row.mean), formatMs(row.median), formatMs(row.min), formatMs(row.max)]),
+        [nameHeader, "runs", "total", "mean", "median", "min", "max"],
+        sorted.map((row) => [row.name, String(row.runs), formatMs(row.total), formatMs(row.mean), formatMs(row.median), formatMs(row.min), formatMs(row.max)]),
     )
 }
 

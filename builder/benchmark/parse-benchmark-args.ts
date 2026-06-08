@@ -5,7 +5,7 @@
 export interface BenchmarkArgs {
     project: string
     paths: string[]
-    iterations: number
+    runs: number
     importsOnly: boolean
     help: boolean
 }
@@ -14,7 +14,7 @@ export function parseBenchmarkArgs(tokens: string[]): BenchmarkArgs {
     const parsed: BenchmarkArgs = {
         project: "tsconfig.json",
         paths: [],
-        iterations: 5,
+        runs: 5,
         importsOnly: false,
         help: false,
     }
@@ -25,8 +25,8 @@ export function parseBenchmarkArgs(tokens: string[]): BenchmarkArgs {
             parsed.project = requireValue(tokens, ++i, arg)
         } else if (arg === "--path") {
             parsed.paths.push(requireValue(tokens, ++i, arg))
-        } else if (arg === "--iterations") {
-            parsed.iterations = parsePositiveInt(requireValue(tokens, ++i, arg), arg)
+        } else if (arg === "--runs") {
+            parsed.runs = parsePositiveInt(requireValue(tokens, ++i, arg), arg)
         } else if (arg === "--imports-only") {
             parsed.importsOnly = true
         } else if (arg === "--help" || arg === "-h") {
@@ -62,7 +62,7 @@ There is no case selection: all passes run on every invocation.
 Options:
   --project <path>      tsconfig path to benchmark (default: tsconfig.json)
   --path <glob>         source-file selector passed to the project; repeatable
-  --iterations <n>      measured runs per pass (default: 5)
+  --runs <n>            measured runs per pass (default: 5)
   --imports-only        pass importsOnly=true to the report passes
   -h, --help            print this help`
 }

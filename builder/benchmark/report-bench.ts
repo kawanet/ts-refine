@@ -51,11 +51,11 @@ export async function runReportBench(args: BenchmarkArgs, fixtures: ReadonlyArra
         // One fixed warmup run (the 0th), discarded; then the measured runs.
         await runOnce(run, fixtures, args.importsOnly)
         const samples: number[] = []
-        for (let i = 0; i < args.iterations; i++) {
+        for (let i = 0; i < args.runs; i++) {
             samples.push(await runOnce(run, fixtures, args.importsOnly))
         }
 
-        rows.push({name, calls: samples.length, ...summarize(samples)})
+        rows.push({name, runs: samples.length, ...summarize(samples)})
     }
 
     printStatsTable(output, "report", rows)
