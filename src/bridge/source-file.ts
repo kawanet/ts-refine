@@ -25,7 +25,8 @@ export class SourceFile implements TSR.SourceFile {
     private readonly project: Project
     private filePath: string
     private text: string
-    private readonly scriptKind: ts.ScriptKind
+    // Not readonly: a move can change the extension, which changes the grammar.
+    private scriptKind: ts.ScriptKind
     private tsSourceFile: ts.SourceFile
     // Bumped on each edit; wrappers compare against it to revalidate lazily.
     scriptVersion = 0
@@ -57,10 +58,17 @@ export class SourceFile implements TSR.SourceFile {
         return this.filePath
     }
 
-    // Project-internal: used by a move to repath the wrapper in place.
+    // Project-internal: used by a move to repath the wrapper in place. The
+    // repath replaces the parsed tree (and may change the grammar via a new
+    // extension), so it is treated like an edit: refresh the script kind, bump
+    // the version, and drop the wrapper cache so captured wrappers revalidate
+    // against the new tree rather than a stale node.
     setFilePath(filePath: string): void {
         this.filePath = filePath
+        this.scriptKind = scriptKindForPath(filePath)
         this.tsSourceFile = this.parse()
+        this.scriptVersion++
+        this.wrapperCache = new WeakMap()
     }
 
     getDirectoryPath(): string {

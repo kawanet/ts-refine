@@ -50,6 +50,23 @@ test("move relocates the file and rewrites importer specifiers", () => {
     assert.match(b.getFullText(), /from "\.\/sub\/a/)
 })
 
+test("a wrapper on the moved file revalidates against the reparsed tree", () => {
+    const project = emptyProject()
+    // No importers and no outgoing specifiers, so the move produces no text
+    // edits for this file — only the repath replaces its tree.
+    const a = project.createSourceFile("/p/a.ts", "export const value = 1\n")
+    const decl = a.getStatements()[0]
+    a.move("/p/sub/a.ts")
+    assert.equal(decl.compilerNode.getSourceFile(), a.compilerNode)
+})
+
+test("a move that changes the extension updates the script kind", () => {
+    const project = emptyProject()
+    const a = project.createSourceFile("/p/a.ts", "export const value = 1\n")
+    a.move("/p/a.tsx")
+    assert.equal(a.getScriptKind(), ts.ScriptKind.TSX)
+})
+
 test("organizeImports sorts named specifiers", () => {
     const project = emptyProject()
     const a = project.createSourceFile("/p/a.ts", `import {b, a} from "./x.ts"\nconsole.log(a, b)\n`)
