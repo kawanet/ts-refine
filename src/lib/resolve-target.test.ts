@@ -12,14 +12,14 @@ import {inProjectSourceFileOrThrow, inProjectSourceFiles} from "./source-files.t
 // actually contains an external-library file, which an in-memory project can't
 // produce (isFromExternalLibrary needs real node_modules resolution). So we
 // build the repo's own project — where node_modules sits under the root — and
-// pull in ts-morph's bundled .d.ts, a guaranteed external file that exports the
-// stable symbol `Directory` — a name no in-project file declares (unlike
-// `SourceFile`, which the bridge compat layer now exports).
+// pull in typescript's bundled .d.ts (typescript is the one runtime
+// dependency, so it is always installed). It is a guaranteed external file that
+// exports a stable symbol — `createProgram` — that no in-project file declares.
 const REPO_TSCONFIG = path.resolve(import.meta.dirname, "../../tsconfig.json")
 
-function tsMorphDtsPath(): string {
+function typescriptDtsPath(): string {
     const require = createRequire(import.meta.url)
-    const pkgPath = require.resolve("ts-morph/package.json")
+    const pkgPath = require.resolve("typescript/package.json")
     const pkg = JSON.parse(fs.readFileSync(pkgPath, "utf8"))
     return path.resolve(path.dirname(pkgPath), pkg.types ?? pkg.typings)
 }
@@ -29,7 +29,7 @@ describe("resolve-target external-library exclusion", () => {
     let dts: string
 
     before(() => {
-        dts = tsMorphDtsPath()
+        dts = typescriptDtsPath()
         project = initTestProject(REPO_TSCONFIG)
         project.addSourceFileAtPath(dts)
     })
@@ -44,14 +44,14 @@ describe("resolve-target external-library exclusion", () => {
     })
 
     it("yields no in-project anchor for a name only an external dependency exports", () => {
-        // `Directory` is exported by ts-morph's .d.ts (now in the program) but by
-        // no in-project file — so the in-project resolver finds nothing rather than
-        // reaching into node_modules.
-        assert.deepEqual(resolveInProjectAnchors(project, "Directory", null), [])
+        // `createProgram` is exported by typescript's .d.ts (now in the program)
+        // but by no in-project file — so the in-project resolver finds nothing
+        // rather than reaching into node_modules.
+        assert.deepEqual(resolveInProjectAnchors(project, "createProgram", null), [])
     })
 
     it("rejects a file scope that points at an external-library file", () => {
-        assert.throws(() => resolveInProjectAnchors(project, "Directory", dts), /not in the project/)
+        assert.throws(() => resolveInProjectAnchors(project, "createProgram", dts), /not in the project/)
         assert.throws(() => inProjectSourceFileOrThrow(project, dts), /not in the project/)
     })
 
