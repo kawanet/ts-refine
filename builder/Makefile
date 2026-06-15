@@ -59,7 +59,7 @@ $(MJS_DST): $(MJS_CONFIG) $(SRC) $(BUILDER_SRC)
 	@test "$$(wc -c < $@)" -le $(MJS_MAX_BYTES) || { echo "ERROR: $@ exceeds $(MJS_MAX_BYTES) byte cap" >&2; exit 1; }
 	@echo ""
 
-$(CLI_DST): $(CLI_CONFIG) $(SRC) $(BUILDER_SRC)
+$(CLI_DST): $(CLI_CONFIG) $(SRC) $(BUILDER_SRC) $(MJS_DST)
 	@mkdir -p $(dir $@)
 	../node_modules/.bin/rollup -c $<
 	chmod a+x $@
@@ -76,15 +76,17 @@ smoke: $(MJS_DST)
 	cd .. && node --input-type=module -e 'const m = await import("ts-refine"); for (const k of process.argv.slice(1)) { if (typeof m[k] !== "function") { console.error("missing MJS export:", k); process.exit(1); } console.log("MJS export OK:", k); }' $(NAMED_EXPORTS)
 
 # Consumer `npm install` skips the heavy test-full step to keep install fast.
-test: all $(TYPES)
+test:
 	@case "$$npm_command" in \
 		install|ci) echo "npm $$npm_command detected: skipping full tests." ;; \
 		*) $(MAKE) test-full ;; \
 	esac
 
-test-full: smoke $(CLI_DST)
-	cd .. && ./node_modules/.bin/tsc --noEmit
+test-full: smoke test-quick
 	cd .. && node --test 'src/**/*.test.ts'
+
+test-quick: all
+	cd .. && ./node_modules/.bin/tsc --noEmit
 	cd .. && node dist/ts-refine.cli.mjs imports --check
 	cd .. && node dist/ts-refine.cli.mjs format --check
 
