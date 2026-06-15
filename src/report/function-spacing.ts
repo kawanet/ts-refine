@@ -78,10 +78,8 @@ export async function runReportFunctionSpacing({sourceFiles, importsOnly, log}: 
         const files = perAxis.get(config.axis) ?? []
         const buckets = buildBuckets(files)
         const recommend = pickRecommendByFiles(config.order, (k) => buckets.get(k))
-        if (recommend) {
-            report[config.axis] = recommend
-            logging(log, `report ${config.label}: ${files.length} files counted / ${sourceFiles.length} files total`)
-        }
+        if (recommend) report[config.axis] = recommend
+        logging(log, `report ${config.label}: ${files.length} files counted / ${sourceFiles.length} files total`)
         rows.push({
             config,
             buckets,
