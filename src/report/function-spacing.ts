@@ -7,19 +7,15 @@ import {displayPath} from "../lib/source-files.ts"
 import {pickRecommendByFiles} from "./pick-recommend.ts"
 import type {ReportRunOpts} from "./report-run-opts.ts"
 
-export type FunctionSpacingStyle = "on" | "off"
+type Style = "on" | "off"
+
 // The three spacing knobs only — exclude the `sections` display slot that
 // FunctionSpacingReport inherits from ReportSections.
-export type FunctionSpacingAxis = Exclude<keyof TSR.FunctionSpacingReport, "sections">
-export type FunctionSpacingBucket = {lines: number; files: number; topPath: string; topLines: number}
-export type FunctionSpacingStyleCounts = Partial<Record<FunctionSpacingStyle, number>>
-export type FunctionSpacingAxisConfig = {axis: FunctionSpacingAxis; label: string; order: readonly FunctionSpacingStyle[]; sample: Record<FunctionSpacingStyle, string>}
-export type FunctionSpacingRow = {config: FunctionSpacingAxisConfig; buckets: Map<FunctionSpacingStyle, FunctionSpacingBucket>; files: number; total: number}
-type Style = FunctionSpacingStyle
-type Axis = FunctionSpacingAxis
-type Bucket = FunctionSpacingBucket
-type AxisConfig = FunctionSpacingAxisConfig
-type StyleCounts = FunctionSpacingStyleCounts
+type Axis = Exclude<keyof TSR.FunctionSpacingReport, "sections">
+type Bucket = {lines: number; files: number; topPath: string; topLines: number}
+type StyleCounts = Partial<Record<Style, number>>
+type AxisConfig = {axis: Axis; label: string; order: readonly Style[]; sample: Record<Style, string>}
+type AxisRow = {config: AxisConfig; buckets: Map<Style, Bucket>; files: number; total: number}
 type FileCounts = Record<Axis, StyleCounts>
 type PerFile = {path: string; counts: StyleCounts; primary: Style}
 
@@ -74,7 +70,7 @@ export async function runReportFunctionSpacing({sourceFiles, importsOnly}: Repor
         }
     }
 
-    const rows: FunctionSpacingRow[] = []
+    const rows: AxisRow[] = []
     const report: TSR.FunctionSpacingReport = {}
 
     for (const config of AXES) {
