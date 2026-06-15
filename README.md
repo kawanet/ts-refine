@@ -309,6 +309,25 @@ npx ts-refine format --control-keyword-spacing on
 - **What happens to import aliases?**
   - Aliases are kept while the exported name and references are updated.
 
+## Interoperability
+
+`ts-refine` and other formatters can format the same code differently. Where
+their outputs disagree, each tool rewrites the other's result.
+
+### `ts-refine` vs Prettier
+
+For wrapped expressions such as ternaries (`a ? b : c`) and long method chains,
+`ts-refine` indents the continuation lines differently from Prettier. Prettier
+sets this indent deliberately and does not expose it as an option
+([prettier/prettier#11897](https://github.com/prettier/prettier/issues/11897)).
+
+### `ts-refine imports` vs WebStorm/IntelliJ "Optimize Imports"
+
+For the named members inside `import { ... }`, both tools sort them. `ts-refine`
+infers case and type-only order from each file, so it matches the IDE there;
+only the sort key for aliased members differs — `ts-refine` uses the local name
+(`b` in `{ a as b }`), WebStorm/IntelliJ the original (`a`).
+
 ## Links
 
 - https://github.com/kawanet/ts-refine
