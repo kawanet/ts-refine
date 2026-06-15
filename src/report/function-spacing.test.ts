@@ -68,6 +68,17 @@ describe("runReportFunctionSpacing", () => {
         assert.match(renderSections(ret.sections ?? []), /\| function keyword \| total \| 0 \| 0 \| *\|/)
     })
 
+    it("counts a constructor and method past their modifiers and decorators", async () => {
+        const project = initInMemoryProject()
+        // Access modifiers and decorators live in node.modifiers, so the gap to `(`
+        // is measured past them; both members still land on the function-paren axis.
+        project.createSourceFile("a.ts", ["class C {", "    private constructor (x: number) {}", "    @dec method (y: number) {}", "}", ""].join("\n"))
+        const ret = await runReportFunctionSpacing({sourceFiles: selectSourceFiles(project, {paths: []}), log})
+
+        assert.deepEqual(omitSections(ret), {functionParenSpacing: "on"})
+        assert.match(renderSections(ret.sections ?? []), /\| function paren \| total \| 2 \| 1 \| *\|/)
+    })
+
     it("counts anonymous declarations on keyword spacing and generic anonymous functions on paren spacing", async () => {
         const project = initInMemoryProject()
         project.createSourceFile("default.ts", ["export default function () { return 1 }", ""].join("\n"))
