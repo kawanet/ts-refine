@@ -110,11 +110,10 @@ export async function runReportFunctionSpacing({sourceFiles, importsOnly}: Repor
     return report
 }
 
-// Walk one file and count only AST shapes controlled by these TS LS settings.
-// Constructors and async arrows are intentionally absent; these fields do not
-// control `constructor ()` or `async () =>`. The compiler AST is walked
-// directly (not sf.forEachDescendant): the classifiers below only need raw
-// node positions, so the per-visit wrapper is avoided.
+// Walk one file and count the paren-spacing shapes the LS settings expose.
+// Constructors join the function-paren axis (their own knob,
+// insertSpaceAfterConstructor, follows it); async arrows stay out, the LS has
+// no knob. The AST is walked directly: the classifiers need only node positions.
 function collectFileCounts(sf: SourceFile): FileCounts {
     const functionKeywordSpacing: StyleCounts = {}
     const functionParenSpacing: StyleCounts = {}
@@ -133,6 +132,10 @@ function collectFileCounts(sf: SourceFile): FileCounts {
         }
         if (kind === SyntaxKind.FunctionExpression || kind === SyntaxKind.FunctionDeclaration || kind === SyntaxKind.MethodDeclaration) {
             const style = classifyFunctionParen(node, text)
+            if (style) functionParenSpacing[style] = (functionParenSpacing[style] ?? 0) + 1
+        }
+        if (kind === SyntaxKind.Constructor) {
+            const style = classifyConstructorParen(node as FunctionParts, text)
             if (style) functionParenSpacing[style] = (functionParenSpacing[style] ?? 0) + 1
         }
         if (CONTROL_KEYWORD_LEN.has(kind) || kind === SyntaxKind.DoStatement) {
@@ -177,6 +180,14 @@ function classifyFunctionParen(node: TsNode, text: string): Style | null {
     const from = generic ? typeParameterListEnd(fn, text) : fn.name!.end
     if (from < 0) return null
     return classifyParenGap(from, text)
+}
+
+// Constructors share the function-paren style but have no name node, so measure
+// from the `constructor` keyword, after any access modifier (`private` etc.).
+const CONSTRUCTOR_KEYWORD_LENGTH = "constructor".length
+function classifyConstructorParen(fn: FunctionParts, text: string): Style | null {
+    const afterModifiers = fn.modifiers && fn.modifiers.length > 0 ? fn.modifiers.end : fn.pos
+    return classifyParenGap(skipTrivia(text, afterModifiers) + CONSTRUCTOR_KEYWORD_LENGTH, text)
 }
 
 // The `function` keyword end for an anonymous, non-generic, non-generator

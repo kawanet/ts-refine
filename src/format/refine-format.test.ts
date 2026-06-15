@@ -17,6 +17,53 @@ describe("refineFormat", () => {
         assert.match(sf.getFullText(), /\n {4}return 1\n/)
     })
 
+    it("normalizes anonymous function and generator parens to functionKeywordSpacing", async () => {
+        // functionKeywordSpacing governs the space after `function`/`function*` for
+        // anonymous functions; named ones and methods fall under functionParenSpacing.
+        const inputs = [
+            "const f = function(x: number) {}\nconst g = function*(y: number) {}\n",
+            "const f = function (x: number) {}\nconst g = function* (y: number) {}\n",
+        ]
+        const cases = [
+            ["on", /function \(x/, /function\* \(y/],
+            ["off", /function\(x/, /function\*\(y/],
+        ] as const
+
+        for (const input of inputs) {
+            for (const [functionKeywordSpacing, fn, gen] of cases) {
+                const project = initInMemoryProject()
+                const sf = project.createSourceFile("a.ts", input)
+                await refineFormat({project, log, dryRun: true, paths: [], style: {functionKeywordSpacing}})
+                assert.match(sf.getFullText(), fn)
+                assert.match(sf.getFullText(), gen)
+            }
+        }
+    })
+
+    it("normalizes the constructor paren to functionParenSpacing, like methods", async () => {
+        // The LS ignores insertSpaceBeforeFunctionParenthesis for constructors, so the
+        // constructor tracks the style only once insertSpaceAfterConstructor is set too.
+        // Both inputs are tried so each style is checked when it must add and when it must remove.
+        const inputs = [
+            "class C {\n    constructor(x: number) {}\n    foo(x: number) {}\n}\n",
+            "class C {\n    constructor (x: number) {}\n    foo (x: number) {}\n}\n",
+        ]
+        const cases = [
+            ["on", /constructor \(x/, /foo \(x/],
+            ["off", /constructor\(x/, /foo\(x/],
+        ] as const
+
+        for (const input of inputs) {
+            for (const [functionParenSpacing, ctor, method] of cases) {
+                const project = initInMemoryProject()
+                const sf = project.createSourceFile("a.ts", input)
+                await refineFormat({project, log, dryRun: true, paths: [], style: {functionParenSpacing}})
+                assert.match(sf.getFullText(), ctor)
+                assert.match(sf.getFullText(), method)
+            }
+        }
+    })
+
     it("throws on a CR-only file (lone \\r, no \\n)", async () => {
         const project = initInMemoryProject()
         project.createSourceFile("cr.ts", "const a = 1\rconst b = 2\r")

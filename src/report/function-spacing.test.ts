@@ -55,15 +55,35 @@ describe("runReportFunctionSpacing", () => {
         assert.match(out, /control keyword.*4 \| 2/)
     })
 
-    it("ignores constructors and async arrows because these axes do not control them", async () => {
+    it("counts constructors on paren spacing but still ignores async arrows", async () => {
         const project = initInMemoryProject()
-        project.createSourceFile("x.ts", ["class C { constructor () {} }", "const f = async()=>1", "const g = async () => 1", ""].join("\n"))
+        project.createSourceFile("spaced.ts", ["class C { constructor (x) {} }", "const f = async () => 1", ""].join("\n"))
+        project.createSourceFile("compact.ts", ["class D { constructor(x) {} }", "const g = async()=>1", ""].join("\n"))
         const ret = await runReportFunctionSpacing({sourceFiles: selectSourceFiles(project, {paths: []}), log})
 
+        // One file spaces the constructor and one tightens it, so the paren axis ties.
         assert.deepEqual(omitSections(ret), {})
+        // Both constructors land on the paren axis; the async arrows count on none.
+        assert.match(renderSections(ret.sections ?? []), /\| function paren \| total \| 2 \| 2 \| *\|/)
         assert.match(renderSections(ret.sections ?? []), /\| function keyword \| total \| 0 \| 0 \| *\|/)
-        assert.match(renderSections(ret.sections ?? []), /\| function paren \| total \| 0 \| 0 \| *\|/)
-        assert.match(renderSections(ret.sections ?? []), /\| control keyword \| total \| 0 \| 0 \| *\|/)
+    })
+
+    it("classifies a decorated constructor and method on the paren axis, spaced or tight", async () => {
+        // A constructor can't legally be decorated, but the parser still routes the
+        // decorator through node.modifiers, so classifyConstructorParen measures past it.
+        // Both spacings are tried so the modifiers path is checked when spaced and when tight.
+        const cases = [
+            ["on", "class C {\n    @dec constructor (x: number) {}\n    @dec method (y: number) {}\n}\n"],
+            ["off", "class C {\n    @dec constructor(x: number) {}\n    @dec method(y: number) {}\n}\n"],
+        ] as const
+
+        for (const [expected, code] of cases) {
+            const project = initInMemoryProject()
+            project.createSourceFile("a.ts", code)
+            const ret = await runReportFunctionSpacing({sourceFiles: selectSourceFiles(project, {paths: []}), log})
+            assert.deepEqual(omitSections(ret), {functionParenSpacing: expected})
+            assert.match(renderSections(ret.sections ?? []), /\| function paren \| total \| 2 \| 1 \| *\|/)
+        }
     })
 
     it("counts anonymous declarations on keyword spacing and generic anonymous functions on paren spacing", async () => {
