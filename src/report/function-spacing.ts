@@ -3,23 +3,20 @@ import type {Node as TsNode, SourceFile as TsSourceFile} from "typescript"
 import {SyntaxKind} from "typescript"
 import type {SourceFile} from "../bridge/bridge.ts"
 import {getTsRefineFormat} from "../common/emit/emit-ts-refine.ts"
+import {logging} from "../common/logging.ts"
 import {displayPath} from "../lib/source-files.ts"
 import {pickRecommendByFiles} from "./pick-recommend.ts"
 import type {ReportRunOpts} from "./report-run-opts.ts"
 
-export type FunctionSpacingStyle = "on" | "off"
+type Style = "on" | "off"
+
 // The three spacing knobs only — exclude the `sections` display slot that
 // FunctionSpacingReport inherits from ReportSections.
-export type FunctionSpacingAxis = Exclude<keyof TSR.FunctionSpacingReport, "sections">
-export type FunctionSpacingBucket = {lines: number; files: number; topPath: string; topLines: number}
-export type FunctionSpacingStyleCounts = Partial<Record<FunctionSpacingStyle, number>>
-export type FunctionSpacingAxisConfig = {axis: FunctionSpacingAxis; label: string; order: readonly FunctionSpacingStyle[]; sample: Record<FunctionSpacingStyle, string>}
-export type FunctionSpacingRow = {config: FunctionSpacingAxisConfig; buckets: Map<FunctionSpacingStyle, FunctionSpacingBucket>; files: number; total: number}
-type Style = FunctionSpacingStyle
-type Axis = FunctionSpacingAxis
-type Bucket = FunctionSpacingBucket
-type AxisConfig = FunctionSpacingAxisConfig
-type StyleCounts = FunctionSpacingStyleCounts
+type Axis = Exclude<keyof TSR.FunctionSpacingReport, "sections">
+type Bucket = {lines: number; files: number; topPath: string; topLines: number}
+type StyleCounts = Partial<Record<Style, number>>
+type AxisConfig = {axis: Axis; label: string; order: readonly Style[]; sample: Record<Style, string>}
+type AxisRow = {config: AxisConfig; buckets: Map<Style, Bucket>; files: number; total: number}
 type FileCounts = Record<Axis, StyleCounts>
 type PerFile = {path: string; counts: StyleCounts; primary: Style}
 
@@ -28,7 +25,7 @@ type PerFile = {path: string; counts: StyleCounts; primary: Style}
 const AXES: readonly AxisConfig[] = [
     {
         axis: "functionKeywordSpacing",
-        label: "function keyword",
+        label: "function-keyword-spacing",
         order: ["on", "off"],
         sample: {
             on: "`function ()`",
@@ -37,7 +34,7 @@ const AXES: readonly AxisConfig[] = [
     },
     {
         axis: "functionParenSpacing",
-        label: "function paren",
+        label: "function-paren-spacing",
         order: ["off", "on"],
         sample: {
             on: "`function foo ()`",
@@ -46,7 +43,7 @@ const AXES: readonly AxisConfig[] = [
     },
     {
         axis: "controlKeywordSpacing",
-        label: "control keyword",
+        label: "control-keyword-spacing",
         order: ["on", "off"],
         sample: {
             on: "`if (x)`",
@@ -58,7 +55,7 @@ const AXES: readonly AxisConfig[] = [
 // Survey project files for the three spacing axes and render one table.
 // Generic anonymous functions are reported on the paren axis because TS LS
 // formats `function <T>()` with insertSpaceBeforeFunctionParenthesis.
-export async function runReportFunctionSpacing({sourceFiles, importsOnly}: ReportRunOpts): Promise<Partial<TSR.FunctionSpacingReport>> {
+export async function runReportFunctionSpacing({sourceFiles, importsOnly, log}: ReportRunOpts): Promise<Partial<TSR.FunctionSpacingReport>> {
     if (importsOnly) return {}
 
     const perAxis = new Map<Axis, PerFile[]>()
@@ -74,7 +71,7 @@ export async function runReportFunctionSpacing({sourceFiles, importsOnly}: Repor
         }
     }
 
-    const rows: FunctionSpacingRow[] = []
+    const rows: AxisRow[] = []
     const report: TSR.FunctionSpacingReport = {}
 
     for (const config of AXES) {
@@ -82,6 +79,7 @@ export async function runReportFunctionSpacing({sourceFiles, importsOnly}: Repor
         const buckets = buildBuckets(files)
         const recommend = pickRecommendByFiles(config.order, (k) => buckets.get(k))
         if (recommend) report[config.axis] = recommend
+        logging(log, `report ${config.label}: ${files.length} files counted / ${sourceFiles.length} files total`)
         rows.push({
             config,
             buckets,
