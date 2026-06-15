@@ -17,21 +17,27 @@ describe("refineFormat", () => {
         assert.match(sf.getFullText(), /\n {4}return 1\n/)
     })
 
-    it("spaces the constructor paren under functionParenSpacing on, like methods", async () => {
-        // The LS ignores insertSpaceBeforeFunctionParenthesis for constructors, so
-        // `on` spaces `constructor(` only once insertSpaceAfterConstructor is set too.
-        const input = "class C {\n    constructor(x: number) {}\n    foo(x: number) {}\n}\n"
+    it("normalizes the constructor paren to functionParenSpacing, like methods", async () => {
+        // The LS ignores insertSpaceBeforeFunctionParenthesis for constructors, so the
+        // constructor tracks the style only once insertSpaceAfterConstructor is set too.
+        // Both inputs are tried so each style is checked when it must add and when it must remove.
+        const inputs = [
+            "class C {\n    constructor(x: number) {}\n    foo(x: number) {}\n}\n",
+            "class C {\n    constructor (x: number) {}\n    foo (x: number) {}\n}\n",
+        ]
         const cases = [
             ["on", /constructor \(x/, /foo \(x/],
             ["off", /constructor\(x/, /foo\(x/],
         ] as const
 
-        for (const [functionParenSpacing, ctor, method] of cases) {
-            const project = initInMemoryProject()
-            const sf = project.createSourceFile("a.ts", input)
-            await refineFormat({project, log, dryRun: true, paths: [], style: {functionParenSpacing}})
-            assert.match(sf.getFullText(), ctor)
-            assert.match(sf.getFullText(), method)
+        for (const input of inputs) {
+            for (const [functionParenSpacing, ctor, method] of cases) {
+                const project = initInMemoryProject()
+                const sf = project.createSourceFile("a.ts", input)
+                await refineFormat({project, log, dryRun: true, paths: [], style: {functionParenSpacing}})
+                assert.match(sf.getFullText(), ctor)
+                assert.match(sf.getFullText(), method)
+            }
         }
     })
 
