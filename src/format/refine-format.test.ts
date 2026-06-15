@@ -17,24 +17,25 @@ describe("refineFormat", () => {
         assert.match(sf.getFullText(), /\n {4}return 1\n/)
     })
 
-    it("normalizes the anonymous function paren to functionKeywordSpacing", async () => {
-        // functionKeywordSpacing governs the space after `function` for anonymous
-        // functions; named ones and methods fall under functionParenSpacing instead.
+    it("normalizes anonymous function and generator parens to functionKeywordSpacing", async () => {
+        // functionKeywordSpacing governs the space after `function`/`function*` for
+        // anonymous functions; named ones and methods fall under functionParenSpacing.
         const inputs = [
-            "const f = function(x: number) {}\n",
-            "const f = function (x: number) {}\n",
+            "const f = function(x: number) {}\nconst g = function*(y: number) {}\n",
+            "const f = function (x: number) {}\nconst g = function* (y: number) {}\n",
         ]
         const cases = [
-            ["on", /function \(x/],
-            ["off", /function\(x/],
+            ["on", /function \(x/, /function\* \(y/],
+            ["off", /function\(x/, /function\*\(y/],
         ] as const
 
         for (const input of inputs) {
-            for (const [functionKeywordSpacing, fn] of cases) {
+            for (const [functionKeywordSpacing, fn, gen] of cases) {
                 const project = initInMemoryProject()
                 const sf = project.createSourceFile("a.ts", input)
                 await refineFormat({project, log, dryRun: true, paths: [], style: {functionKeywordSpacing}})
                 assert.match(sf.getFullText(), fn)
+                assert.match(sf.getFullText(), gen)
             }
         }
     })
