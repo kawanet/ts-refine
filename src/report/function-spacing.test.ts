@@ -68,15 +68,22 @@ describe("runReportFunctionSpacing", () => {
         assert.match(renderSections(ret.sections ?? []), /\| function keyword \| total \| 0 \| 0 \| *\|/)
     })
 
-    it("counts a constructor and method past their modifiers and decorators", async () => {
-        const project = initInMemoryProject()
-        // Access modifiers and decorators live in node.modifiers, so the gap to `(`
-        // is measured past them; both members still land on the function-paren axis.
-        project.createSourceFile("a.ts", ["class C {", "    private constructor (x: number) {}", "    @dec method (y: number) {}", "}", ""].join("\n"))
-        const ret = await runReportFunctionSpacing({sourceFiles: selectSourceFiles(project, {paths: []}), log})
+    it("classifies a decorated constructor and method on the paren axis, spaced or tight", async () => {
+        // A constructor can't legally be decorated, but the parser still routes the
+        // decorator through node.modifiers, so classifyConstructorParen measures past it.
+        // Both spacings are tried so the modifiers path is checked when spaced and when tight.
+        const cases = [
+            ["on", "class C {\n    @dec constructor (x: number) {}\n    @dec method (y: number) {}\n}\n"],
+            ["off", "class C {\n    @dec constructor(x: number) {}\n    @dec method(y: number) {}\n}\n"],
+        ] as const
 
-        assert.deepEqual(omitSections(ret), {functionParenSpacing: "on"})
-        assert.match(renderSections(ret.sections ?? []), /\| function paren \| total \| 2 \| 1 \| *\|/)
+        for (const [expected, code] of cases) {
+            const project = initInMemoryProject()
+            project.createSourceFile("a.ts", code)
+            const ret = await runReportFunctionSpacing({sourceFiles: selectSourceFiles(project, {paths: []}), log})
+            assert.deepEqual(omitSections(ret), {functionParenSpacing: expected})
+            assert.match(renderSections(ret.sections ?? []), /\| function paren \| total \| 2 \| 1 \| *\|/)
+        }
     })
 
     it("counts anonymous declarations on keyword spacing and generic anonymous functions on paren spacing", async () => {
