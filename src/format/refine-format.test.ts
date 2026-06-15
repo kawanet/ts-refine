@@ -17,6 +17,28 @@ describe("refineFormat", () => {
         assert.match(sf.getFullText(), /\n {4}return 1\n/)
     })
 
+    it("normalizes the anonymous function paren to functionKeywordSpacing", async () => {
+        // functionKeywordSpacing governs the space after `function` for anonymous
+        // functions; named ones and methods fall under functionParenSpacing instead.
+        const inputs = [
+            "const f = function(x: number) {}\n",
+            "const f = function (x: number) {}\n",
+        ]
+        const cases = [
+            ["on", /function \(x/],
+            ["off", /function\(x/],
+        ] as const
+
+        for (const input of inputs) {
+            for (const [functionKeywordSpacing, fn] of cases) {
+                const project = initInMemoryProject()
+                const sf = project.createSourceFile("a.ts", input)
+                await refineFormat({project, log, dryRun: true, paths: [], style: {functionKeywordSpacing}})
+                assert.match(sf.getFullText(), fn)
+            }
+        }
+    })
+
     it("normalizes the constructor paren to functionParenSpacing, like methods", async () => {
         // The LS ignores insertSpaceBeforeFunctionParenthesis for constructors, so the
         // constructor tracks the style only once insertSpaceAfterConstructor is set too.
