@@ -54,6 +54,7 @@ describe("formatStyleToSettings", () => {
         const r = formatStyleToSettings({functionKeywordSpacing: "on", functionParenSpacing: "off", controlKeywordSpacing: "on"})
         assert.equal(r.insertSpaceAfterFunctionKeywordForAnonymousFunctions, true)
         assert.equal(r.insertSpaceBeforeFunctionParenthesis, false)
+        assert.equal(r.insertSpaceAfterConstructor, false)
         assert.equal(r.insertSpaceAfterKeywordsInControlFlowStatements, true)
     })
 })

@@ -65,10 +65,14 @@ export function formatStyleToSettings(options: TSR.FormatStyle): FormatCodeSetti
         settings.insertSpaceAfterFunctionKeywordForAnonymousFunctions = false
     }
 
+    // Constructors take a separate LS knob; mirror the paren style onto it so a
+    // class formats its constructor and methods alike.
     if (options.functionParenSpacing === "on") {
         settings.insertSpaceBeforeFunctionParenthesis = true
+        settings.insertSpaceAfterConstructor = true
     } else if (options.functionParenSpacing === "off") {
         settings.insertSpaceBeforeFunctionParenthesis = false
+        settings.insertSpaceAfterConstructor = false
     }
 
     if (options.controlKeywordSpacing === "on") {
