@@ -22,7 +22,8 @@
     "@typescript-eslint/parser": "^8.61.0",
     "eslint": "^10.4.1",
     "prettier": "^3.8.3",
-    "rollup": "^4.61.1"
+    "rollup": "^4.61.1",
+    "simple-git-hooks": "^2.13.1"
   },
   "engines": {
     "node": ">=22.18"
@@ -63,6 +64,8 @@
     "eslint": "eslint .",
     "eslint:fix": "eslint --fix .",
     "fixpack": "fixpack",
+    "git:pre-push": "make -C builder test-quick",
+    "git:prepare-hooks": "[ -e .git ] && ./node_modules/.bin/simple-git-hooks",
     "prepack": "make -C builder is-buildable",
     "prepare": "make -C builder is-not-buildable 2> /dev/null || make -C builder clean all test",
     "prettier:check": "prettier --check .",
@@ -70,6 +73,9 @@
     "test": "make -C builder test",
     "ts-refine": "node src/cli.ts imports && node src/cli.ts format",
     "ts-refine:check": "node src/cli.ts imports --check && node src/cli.ts format --check"
+  },
+  "simple-git-hooks": {
+    "pre-push": "npm run git:pre-push"
   },
   "type": "module",
   "types": "./types/ts-refine.d.ts"
