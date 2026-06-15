@@ -50,9 +50,9 @@ describe("runReportFunctionSpacing", () => {
 
         assert.deepEqual(omitSections(ret), {functionKeywordSpacing: "on", functionParenSpacing: "off", controlKeywordSpacing: "on"})
         assert.match(out, /^### --function-keyword-spacing on --function-paren-spacing off --control-keyword-spacing on/m)
-        assert.match(out, /function keyword.*compact\.ts/)
-        assert.match(out, /function paren.*3 \| 2/)
-        assert.match(out, /control keyword.*4 \| 2/)
+        assert.match(out, /function-keyword-spacing.*compact\.ts/)
+        assert.match(out, /function-paren-spacing.*3 \| 2/)
+        assert.match(out, /control-keyword-spacing.*4 \| 2/)
     })
 
     it("counts constructors on paren spacing but still ignores async arrows", async () => {
@@ -64,8 +64,8 @@ describe("runReportFunctionSpacing", () => {
         // One file spaces the constructor and one tightens it, so the paren axis ties.
         assert.deepEqual(omitSections(ret), {})
         // Both constructors land on the paren axis; the async arrows count on none.
-        assert.match(renderSections(ret.sections ?? []), /\| function paren \| total \| 2 \| 2 \| *\|/)
-        assert.match(renderSections(ret.sections ?? []), /\| function keyword \| total \| 0 \| 0 \| *\|/)
+        assert.match(renderSections(ret.sections ?? []), /\| function-paren-spacing \| total \| 2 \| 2 \| *\|/)
+        assert.match(renderSections(ret.sections ?? []), /\| function-keyword-spacing \| total \| 0 \| 0 \| *\|/)
     })
 
     it("classifies a decorated constructor and method on the paren axis, spaced or tight", async () => {
@@ -82,7 +82,7 @@ describe("runReportFunctionSpacing", () => {
             project.createSourceFile("a.ts", code)
             const ret = await runReportFunctionSpacing({sourceFiles: selectSourceFiles(project, {paths: []}), log})
             assert.deepEqual(omitSections(ret), {functionParenSpacing: expected})
-            assert.match(renderSections(ret.sections ?? []), /\| function paren \| total \| 2 \| 1 \| *\|/)
+            assert.match(renderSections(ret.sections ?? []), /\| function-paren-spacing \| total \| 2 \| 1 \| *\|/)
         }
     })
 
@@ -95,10 +95,10 @@ describe("runReportFunctionSpacing", () => {
         const out = renderSections(ret.sections ?? [])
 
         assert.deepEqual(omitSections(ret), {functionKeywordSpacing: "on"})
-        assert.match(out, /\| function keyword \| `function\(\)` \| 0 \| 0 \| *\|/)
-        assert.match(out, /\| function keyword \| total \| 1 \| 1 \| *\|/)
-        assert.match(out, /\| function paren \| `function foo\(\)` \| 1 \| 1 \| generic\.ts \|/)
-        assert.match(out, /\| function paren \| `function foo \(\)` \| 1 \| 1 \| generic-spaced\.ts \|/)
+        assert.match(out, /\| function-keyword-spacing \| `function\(\)` \| 0 \| 0 \| *\|/)
+        assert.match(out, /\| function-keyword-spacing \| total \| 1 \| 1 \| *\|/)
+        assert.match(out, /\| function-paren-spacing \| `function foo\(\)` \| 1 \| 1 \| generic\.ts \|/)
+        assert.match(out, /\| function-paren-spacing \| `function foo \(\)` \| 1 \| 1 \| generic-spaced\.ts \|/)
     })
 
     it("counts anonymous generator spacing after the asterisk", async () => {
@@ -109,8 +109,8 @@ describe("runReportFunctionSpacing", () => {
         const out = renderSections(ret.sections ?? [])
 
         assert.deepEqual(omitSections(ret), {})
-        assert.match(out, /\| function keyword \| `function \(\)` \| 1 \| 1 \| spaced-generator\.ts \|/)
-        assert.match(out, /\| function keyword \| `function\(\)` \| 1 \| 1 \| compact-generator\.ts \|/)
+        assert.match(out, /\| function-keyword-spacing \| `function \(\)` \| 1 \| 1 \| spaced-generator\.ts \|/)
+        assert.match(out, /\| function-keyword-spacing \| `function\(\)` \| 1 \| 1 \| compact-generator\.ts \|/)
     })
 
     it("uses the do-while keyword token, not while substrings in the body or condition", async () => {
@@ -121,8 +121,8 @@ describe("runReportFunctionSpacing", () => {
         const out = renderSections(ret.sections ?? [])
 
         assert.deepEqual(omitSections(ret), {})
-        assert.match(out, /\| control keyword \| `if \(x\)` \| 1 \| 1 \| spaced\.ts \|/)
-        assert.match(out, /\| control keyword \| `if\(x\)` \| 1 \| 1 \| compact\.ts \|/)
+        assert.match(out, /\| control-keyword-spacing \| `if \(x\)` \| 1 \| 1 \| spaced\.ts \|/)
+        assert.match(out, /\| control-keyword-spacing \| `if\(x\)` \| 1 \| 1 \| compact\.ts \|/)
     })
 
     it("skips comments and real tokens between the keyword/name and paren", async () => {
@@ -140,9 +140,9 @@ describe("runReportFunctionSpacing", () => {
         const ret = await runReportFunctionSpacing({sourceFiles: selectSourceFiles(project, {paths: []}), log})
 
         assert.deepEqual(omitSections(ret), {})
-        assert.match(renderSections(ret.sections ?? []), /\| function keyword \| total \| 0 \| 0 \| *\|/)
-        assert.match(renderSections(ret.sections ?? []), /\| function paren \| total \| 0 \| 0 \| *\|/)
-        assert.match(renderSections(ret.sections ?? []), /\| control keyword \| total \| 0 \| 0 \| *\|/)
+        assert.match(renderSections(ret.sections ?? []), /\| function-keyword-spacing \| total \| 0 \| 0 \| *\|/)
+        assert.match(renderSections(ret.sections ?? []), /\| function-paren-spacing \| total \| 0 \| 0 \| *\|/)
+        assert.match(renderSections(ret.sections ?? []), /\| control-keyword-spacing \| total \| 0 \| 0 \| *\|/)
     })
 
     it("returns no recommendation when files and nodes tie on an axis", async () => {
